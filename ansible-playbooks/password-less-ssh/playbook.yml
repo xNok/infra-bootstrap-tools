@@ -1,0 +1,87 @@
+---
+- hosts: localhost
+  vars:
+    ssh_include_dir: ~/.ssh/include
+    id_rsa_file: "~/.ssh/infra_rsa"
+    ssh_config_file: "~/.ssh/config"
+  vars_prompt:
+
+    - name: node
+      prompt: What is your node ip?
+      private: no
+
+    - name: user
+      prompt: What is your user?
+      private: no
+
+    - name: password
+      prompt: What is your password?
+
+    # - name: passphrase
+    #   prompt: What is your passphrase?
+
+  tasks:
+    # Gather State
+    - name: SSH key file
+      stat:
+        path: "{{ id_rsa_file }}"
+      register: op
+
+    - name: SSH config
+      stat:
+        path: "{{ ssh_config_file }}"
+      register: conf
+
+    - name: SSH include config
+      stat:
+       path: "{{ ssh_include_dir }}"
+      register: include_folder
+
+    - name: Creates .ssh directory if missing
+      file:
+        path: ~/.ssh
+        state: directory
+
+    # Generate Key
+
+    - name: Generating ssh key pair
+      command: ssh-keygen -t rsa -b 4096 -f "{{ id_rsa_file }}" -q -N ""
+      when: op.stat.exists == false
+
+    - debug: 
+        msg: "Key pair already exists. Using the same key."
+      when: op.stat.exists
+
+    - name: Copy public key to the nodes
+      command: sshpass -p "{{ password }}" ssh-copy-id -i "{{ id_rsa_file }}" "{{ user }}"@"{{ node }}" -f -o StrictHostKeyChecking=no
+
+    # PHASE 2
+    - name: "Generating {{ ssh_config_file }}"
+      template:
+        src: templates/ssh_config_template.j2
+        dest: "{{ ssh_config_file }}"
+      when: conf.stat.exists == false
+
+    - debug: 
+        msg: "{{ ssh_config_file }} already exist. Assuming it has been previously created. If note add the line to the file: `Include {{ ssh_include_dir }}/*`"
+      when: conf.stat.exists
+
+    - name: "Create Include folder for SSH configs"
+      file:
+        path: "{{ ssh_include_dir }}"
+        state: directory
+        mode: 0755
+      when: include_folder.stat.exists == false
+
+    - debug:
+        msg: "{{ ssh_include_dir }} already exist. Assuming it has been previously created."
+      when: include_folder.stat.exists
+
+    - name: Creating local SSH config files
+      template:
+        src: templates/ssh_include_template.j2
+        dest: "{{ ssh_include_dir }}/{{ node }}.conf"
+        mode: 0644 
+
+    - debug: 
+        msg: "Add node to your inventory {{user}}@{{node}}"
