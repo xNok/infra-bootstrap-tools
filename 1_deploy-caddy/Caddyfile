@@ -14,7 +14,7 @@
     # Optional email key for lets encrypt
     email youremail@domain.com 
     # Optional staging lets encrypt for testing. Comment out for production.
-    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }
 
 # Set this path to your site's directory.

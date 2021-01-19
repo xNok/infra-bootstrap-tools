@@ -12,8 +12,12 @@ services:
       replicas: 0
     networks:
       - public
+      - private
 
 networks:
   public:
+    driver: overlay
+    attachable: true
+  private:
     driver: overlay
     attachable: true

@@ -41,12 +41,25 @@
     ###
     # Start Container
     ###
+    - name: Remove stack
+      docker_stack:
+        name: caddy
+        state: absent
+
     - name: Start Caddy Stack
       docker_stack:
         state: present
         name: caddy
         compose: 
         - "{{ caddy_dir }}/docker-compose.yml"
-        # - "{{ caddy_dir }}/docker-compose.prod.yml"
+      tags:
+        - redeploy
+
+    - name: Start Caddy Stack
+      docker_stack:
+        state: present
+        name: caddy
+        compose: 
+        - "{{ caddy_dir }}/docker-compose.yml"
       tags:
         - redeploy

@@ -16,7 +16,8 @@ services:
       - 80:80
       - 443:443
     networks:
-      - caddy
+      - docker_swarm_private
+      - docker_swarm_public
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       # this volume is needed to keep the certificates
@@ -40,15 +41,17 @@ services:
     # A container that exposes an API to show its IP address
     image: containous/whoami
     networks:
-      - caddy
+      - docker_swarm_private
     deploy:
       labels:
         caddy: whoami.nokwebspace.ovh
         caddy.reverse_proxy: "{{upstreams 80}}"
 
 networks:
-  caddy:
-    driver: overlay
+  docker_swarm_public:
+    external: true
+  docker_swarm_private:
+    external: true
 
 volumes:
   caddy_data: {}
