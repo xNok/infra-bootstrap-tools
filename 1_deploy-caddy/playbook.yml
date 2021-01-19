@@ -1,0 +1,57 @@
+
+#################################################
+# INFRA Playbooks: Caddy
+# Source: 
+#################################################
+---
+- hosts: swarm_managers
+  gather_facts: no
+  become: true
+  vars:  
+    caddy_dir: "/var/data/caddy"
+  tasks:
+    ###
+    # GENERAL Setup
+    ###
+    - name: Creates directory
+      file:
+        path: "{{ caddy_dir }}"
+        state: directory
+
+    - name: Copy compose files to remote server
+      copy:
+        src: "{{ item }}"
+        dest: "{{ caddy_dir }}"
+      with_fileglob:
+        - "{{ playbook_dir }}/docker-compose.*"
+      tags:
+        - general_setup
+        - redeploy
+
+    - name: Copy Daddyfile files to remote server
+      copy:
+        src: "{{ item }}"
+        dest: "{{ caddy_dir }}/configs"
+      with_fileglob:
+        - "{{ playbook_dir }}/configs/Caddyfile"
+      tags:
+        - general_setup
+        - redeploy
+    ###
+    # Start Container
+    ###
+    - name: Remove Caddy stack
+      docker_stack:
+        name: caddy
+        state: absent
+      when: traefik_conf.changed
+
+    - name: Start Caddy Stack
+      docker_stack:
+        state: present
+        name: caddy
+        compose: 
+        - "{{ traefik_dir }}/docker-compose.yml"
+        # - "{{ traefik_dir }}/docker-compose.prod.yml"
+      tags:
+        - redeploy

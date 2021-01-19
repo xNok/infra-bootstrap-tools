@@ -1,0 +1,70 @@
+version: "3.7"
+
+# used for specific settings you have outside of your docker config
+# ex: proxies to external servers, storage configuration...
+# remove this block entirely if not needed (Only used for Docker Swarm)
+configs:
+  caddy-basic-content:
+    file: ./Caddyfile
+    labels:
+      caddy:
+
+services:
+  caddy:
+    image: lucaslorentz/caddy-docker-proxy:ci-alpine
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - caddy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # this volume is needed to keep the certificates
+      # otherwise, new ones will be re-issued upon restart
+      - caddy_data:/data
+    deploy:
+      labels: # Global options
+        caddy.email: you@nokwebspace.com
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 200M
+
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: containous/whoami
+    networks:
+      - caddy
+    deploy:
+      labels:
+        caddy: whoami.example.com
+        caddy.reverse_proxy: "{{upstreams 80}}"
+        caddy.tls: "internal"
+
+  # Proxy with matches and route
+  echo_0:
+    image: brndnmtthws/nginx-echo-headers
+    networks:
+      - caddy
+    deploy:
+      labels:
+        caddy: echo0.example.com
+        caddy.@match.path: "/sourcepath /sourcepath/*"
+        caddy.route: "@match"
+        caddy.route.0_uri: "strip_prefix /sourcepath"
+        caddy.route.1_rewrite: "* /targetpath{path}"
+        caddy.route.2_reverse_proxy: "{{upstreams 8080}}"
+        caddy.tls: "internal"
+
+networks:
+  caddy:
+    driver: overlay
+
+volumes:
+  caddy_data: {}
