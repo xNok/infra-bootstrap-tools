@@ -31,27 +31,22 @@
     - name: Copy Daddyfile files to remote server
       copy:
         src: "{{ item }}"
-        dest: "{{ caddy_dir }}/configs"
+        dest: "{{ caddy_dir }}"
       with_fileglob:
-        - "{{ playbook_dir }}/configs/Caddyfile"
+        - "{{ playbook_dir }}/Caddyfile"
+      register: caddyfile
       tags:
         - general_setup
         - redeploy
     ###
     # Start Container
     ###
-    - name: Remove Caddy stack
-      docker_stack:
-        name: caddy
-        state: absent
-      when: traefik_conf.changed
-
     - name: Start Caddy Stack
       docker_stack:
         state: present
         name: caddy
         compose: 
-        - "{{ traefik_dir }}/docker-compose.yml"
-        # - "{{ traefik_dir }}/docker-compose.prod.yml"
+        - "{{ caddy_dir }}/docker-compose.yml"
+        # - "{{ caddy_dir }}/docker-compose.prod.yml"
       tags:
         - redeploy

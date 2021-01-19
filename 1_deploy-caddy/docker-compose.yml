@@ -43,24 +43,8 @@ services:
       - caddy
     deploy:
       labels:
-        caddy: whoami.example.com
+        caddy: whoami.nokwebspace.ovh
         caddy.reverse_proxy: "{{upstreams 80}}"
-        caddy.tls: "internal"
-
-  # Proxy with matches and route
-  echo_0:
-    image: brndnmtthws/nginx-echo-headers
-    networks:
-      - caddy
-    deploy:
-      labels:
-        caddy: echo0.example.com
-        caddy.@match.path: "/sourcepath /sourcepath/*"
-        caddy.route: "@match"
-        caddy.route.0_uri: "strip_prefix /sourcepath"
-        caddy.route.1_rewrite: "* /targetpath{path}"
-        caddy.route.2_reverse_proxy: "{{upstreams 8080}}"
-        caddy.tls: "internal"
 
 networks:
   caddy:

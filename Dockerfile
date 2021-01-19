@@ -27,6 +27,8 @@ RUN apt-get update \
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN pip3 install jsondiff pyyaml
+
 CMD    ["/bin/bash"]
 
 RUN apt-get update \

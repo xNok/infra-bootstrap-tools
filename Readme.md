@@ -8,13 +8,19 @@ Setup machine after recieving it.
 ### 1. Add ssh key
 
 ```
-ansible-playbook ansible-playbooks/password-less-ssh/playbook.yml
+ansible-playbook 0_setup_host/password-less-ssh/playbook.yml
 ```
 
 ### 2. Install docker
 
 ```
-ansible-playbook -i inventory/ ansible-playbooks/install-docker/playbook.yml
+ansible-playbook -i inventory/ 0_setup_host/install-docker/playbook.yml
+```
+
+### 3. Init docker swarm
+
+```
+ansible-playbook -i inventory/ 0_setup_host/init-docker-swarm/playbook.yml
 ```
 
 ## Setup Security

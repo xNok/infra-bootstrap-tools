@@ -1,0 +1,38 @@
+#################################################
+# INFRA Playbooks: Docker Swarm
+# Source: 
+#    https://github.com/arillso/ansible.traefik
+#    https://geek-cookbook.funkypenguin.co.nz/ha-docker-swarm/traefik/
+#################################################
+---
+- hosts: swarm_managers
+  gather_facts: no
+  become: true
+  vars:  
+    docker_swarm_dir: "/var/data/docker_swarm"
+  tasks:
+    ###
+    # GENERAL Setup
+    ###
+    - name: Install jsondiff Require by docker stack module
+      pip:
+          executable: pip3
+          name: jsondiff
+
+    - name: Copy docker_swarm folder to remote server
+      copy:
+        src: "{{ playbook_dir }}/"
+        dest: "{{ docker_swarm_dir }}"
+    ###
+    # SWARM Setup
+    ###
+    - name: Init a new swarm with default parameters
+      docker_swarm:
+        state: present
+      register: swarm_info
+    ###
+    # NETWORK Setup
+    ###
+    - name: Create or Update public network
+      docker_compose:
+        project_src: "{{ docker_swarm_dir }}"

@@ -9,6 +9,14 @@
 # domain name.
 # :80
 
+{
+    # Global options block. Entirely optional, https is on by default
+    # Optional email key for lets encrypt
+    email youremail@domain.com 
+    # Optional staging lets encrypt for testing. Comment out for production.
+    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
 # Set this path to your site's directory.
 # root * /usr/share/caddy
 
@@ -24,7 +32,3 @@
 # Refer to the Caddy docs for more information:
 # https://caddyserver.com/docs/caddyfile
 # This is an example Caddyfile stored inside docker swarm config
-config.example.com {
-    respond / "Hello World" 200
-    tls internal
-}
