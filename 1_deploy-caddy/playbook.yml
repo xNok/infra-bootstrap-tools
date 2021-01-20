@@ -24,6 +24,7 @@
         dest: "{{ caddy_dir }}"
       with_fileglob:
         - "{{ playbook_dir }}/docker-compose.*"
+        - "{{ playbook_dir }}/Dockerfile.*"
       tags:
         - general_setup
         - redeploy
