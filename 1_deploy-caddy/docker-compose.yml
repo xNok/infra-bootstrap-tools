@@ -4,7 +4,7 @@ version: "3.7"
 # ex: proxies to external servers, storage configuration...
 # remove this block entirely if not needed (Only used for Docker Swarm)
 configs:
-  caddy-basic-content:
+  caddy-confs:
     file: ./Caddyfile
     labels:
       caddy:
@@ -28,6 +28,7 @@ services:
       # this volume is needed to keep the certificates
       # otherwise, new ones will be re-issued upon restart
       - ./users.json:/etc/caddy/auth/local/users.json
+      - ./configs/jwt:/etc/caddy/auth/jwt
       - caddy_data:/data
     deploy:
       labels: # Global options
@@ -43,17 +44,35 @@ services:
           cpus: "0.1"
           memory: 200M
 
-  whoami:
+  whoami1:
     # A container that exposes an API to show its IP address
     image: containous/whoami
     networks:
       - docker_swarm_private
     deploy:
       labels:
-        caddy: dev.nokwebspace.ovh
-        caddy.route: /whoami*
-        caddy.route.import: service_route_snippet /whoami 0e2fdcf8-6868-41a7-884b-7308795fc286
-        caddy.route.reverse_proxy: "{{upstreams 80}}"
+        caddy_0: (ui_links)
+        caddy_0.Whoami1: /whoami1
+        caddy_1: dev.nokwebspace.ovh
+        caddy_1.route: /whoami1*
+        caddy_1.route.import: service_route_snippet whoami1
+        caddy_1.route.jwt.allow: roles user admin superadmin
+        caddy_1.route.reverse_proxy: "{{upstreams 80}}"
+
+  whoami2:
+    # A container that exposes an API to show its IP address
+    image: containous/whoami
+    networks:
+      - docker_swarm_private
+    deploy:
+      labels:
+        caddy_0: (ui_links)
+        caddy_0.Whoami2: /whoami2
+        caddy_1: dev.nokwebspace.ovh
+        caddy_1.route: /whoami2*
+        caddy_1.route.import: service_route_snippet whoami2
+        caddy_1.route.jwt.allow: roles user admin superadmin
+        caddy_1.route.reverse_proxy: "{{upstreams 80}}"
 
 networks:
   docker_swarm_public:
