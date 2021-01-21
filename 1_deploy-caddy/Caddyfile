@@ -7,13 +7,13 @@
 # sure your domain's A/AAAA DNS records are properly pointed to
 # this machine's public IP, then replace the line below with your
 # domain name.
-:80
+# :80
 
 # Set this path to your site's directory.
-root * /usr/share/caddy
+# root * /usr/share/caddy
 
 # Enable the static file server.
-file_server
+# file_server
 
 # Another common task is to set up a reverse proxy:
 # reverse_proxy localhost:8080
@@ -34,3 +34,66 @@ file_server
 
 # Caddy auth_portal:
 # https://github.com/greenpau/caddy-auth-portal#authentication-portal
+dev.nokwebspace.ovh {
+  tls internal
+
+  route /auth* {
+    auth_portal {
+      path /auth
+      backends {
+        local_backend {
+          method local
+          path /etc/caddy/auth/local/users.json
+          realm local
+        }
+      }
+      jwt {
+        token_name access_token
+        token_secret 0e2fdcf8-6868-41a7-884b-7308795fc286
+      }
+      ui {
+        links {
+          "Prometheus" /prometheus
+          "Alertmanager" /alertmanager
+          "My App" /myapp
+        }
+      }
+    }
+  }
+
+  route /prometheus* {
+    jwt {
+      primary yes
+      trusted_tokens {
+        static_secret {
+          token_name access_token
+          token_secret 0e2fdcf8-6868-41a7-884b-7308795fc286
+        }
+      }
+      auth_url /auth
+      allow roles anonymous guest admin
+      allow roles superadmin
+    }
+    uri strip_prefix /prometheus
+    reverse_proxy http://127.0.0.1:9080
+  }
+
+  route /alertmanager* {
+    jwt
+    uri strip_prefix /alertmanager
+    reverse_proxy http://127.0.0.1:9083
+  }
+
+  route /myapp* {
+    jwt
+    respond * "myapp" 200
+  }
+
+  route /version* {
+    respond * "1.0.0" 200
+  }
+
+  route {
+    redir https://{hostport}/auth 302
+  }
+}

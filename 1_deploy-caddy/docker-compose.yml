@@ -3,11 +3,11 @@ version: "3.7"
 # used for specific settings you have outside of your docker config
 # ex: proxies to external servers, storage configuration...
 # remove this block entirely if not needed (Only used for Docker Swarm)
-# configs:
-#   caddy-basic-content:
-#     file: ./Caddyfile
-#     labels:
-#       caddy:
+configs:
+  caddy-basic-content:
+    file: ./Caddyfile
+    labels:
+      caddy:
 
 services:
   caddy:
@@ -27,6 +27,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       # this volume is needed to keep the certificates
       # otherwise, new ones will be re-issued upon restart
+      - ./users.json:/etc/caddy/auth/local/users.json
       - caddy_data:/data
     deploy:
       labels: # Global options
