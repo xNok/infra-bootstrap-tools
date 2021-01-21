@@ -52,14 +52,8 @@ services:
       labels:
         caddy: dev.nokwebspace.ovh
         caddy.route: /whoami*
-        caddy.route.0_jwt.primary: 'yes'
-        caddy.route.0_jwt.trusted_tokens.static_secret.token_name: access_token
-        caddy.route.0_jwt.trusted_tokens.static_secret.token_secret: 0e2fdcf8-6868-41a7-884b-7308795fc286
-        caddy.route.0_jwt.auth_url: /auth
-        caddy.route.0_jwt.0_allow: roles anonymous guest admin
-        caddy.route.0_jwt.1_allow: roles superadmin
-        caddy.route.1_uri: strip_prefix /whoami
-        caddy.route.2_reverse_proxy: "{{upstreams 80}}"
+        caddy.route.import: service_route_snippet /whoami 0e2fdcf8-6868-41a7-884b-7308795fc286
+        caddy.route.reverse_proxy: "{{upstreams 80}}"
 
 networks:
   docker_swarm_public:
