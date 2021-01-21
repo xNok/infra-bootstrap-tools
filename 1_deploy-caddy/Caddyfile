@@ -53,41 +53,28 @@ dev.nokwebspace.ovh {
       }
       ui {
         links {
-          "Prometheus" /prometheus
-          "Alertmanager" /alertmanager
-          "My App" /myapp
+          "Whoami" /whoami
         }
       }
     }
   }
 
-  route /prometheus* {
-    jwt {
-      primary yes
-      trusted_tokens {
-        static_secret {
-          token_name access_token
-          token_secret 0e2fdcf8-6868-41a7-884b-7308795fc286
-        }
-      }
-      auth_url /auth
-      allow roles anonymous guest admin
-      allow roles superadmin
-    }
-    uri strip_prefix /prometheus
-    reverse_proxy http://127.0.0.1:9080
-  }
-
-  route /alertmanager* {
-    jwt
-    uri strip_prefix /alertmanager
-    reverse_proxy http://127.0.0.1:9083
-  }
-
-  route /myapp* {
-    jwt
-    respond * "myapp" 200
-  }
+  # route /whoami* {
+  #   jwt {
+  #     primary yes
+  #     trusted_tokens {
+  #       static_secret {
+  #         token_name access_token
+  #         token_secret 0e2fdcf8-6868-41a7-884b-7308795fc286
+  #       }
+  #     }
+  #     auth_url /auth
+  #     allow roles anonymous guest admin
+  #     allow roles superadmin
+  #   }
+  #   uri strip_prefix /whoami
+  #   reverse_proxy http://caddy_whoami:80
+  # }
 
   route /version* {
     respond * "1.0.0" 200
