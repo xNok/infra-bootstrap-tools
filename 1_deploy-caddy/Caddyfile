@@ -39,6 +39,7 @@
 (jwt_shared) {
   token_name access_key
   token_secret /etc/caddy/auth/jwt/access_key
+  # token_lifetime 3600
 }
 
 (ui_links) {
@@ -51,8 +52,8 @@
     uri strip_prefix /{args.0}
 }
 
-dev.nokwebspace.ovh {
-  tls internal
+nokwebspace.ovh {
+  # tls internal
 
   route /auth* {
     auth_portal {

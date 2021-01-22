@@ -9,13 +9,24 @@
   become: true
   vars:  
     caddy_dir: "/var/data/caddy"
+  vars_prompt:
+    - name: admin_password
+      prompt: What is your password?
+    - name: domain
+      prompt: What is your domain name?
+      private: no
   tasks:
     ###
     # GENERAL Setup
     ###
-    - name: Creates directory
+    - name: Creates directory caddy
       file:
         path: "{{ caddy_dir }}"
+        state: directory
+
+    - name: Creates directory jwt
+      file:
+        path: "{{ caddy_dir }}/jwt"
         state: directory
 
     - name: Copy compose files to remote server
@@ -39,6 +50,16 @@
       tags:
         - general_setup
         - redeploy
+
+    - name: Create JWT signature token
+      openssh_keypair:
+        path: "{{ caddy_dir }}/jwt/access_token"
+
+    - name: Create User static file
+      template:
+        src: "templates/users.json.j2"
+        dest: "{{ caddy_dir }}/users.json"
+        mode: 0644
     ###
     # Start Container
     ###
@@ -46,15 +67,6 @@
       docker_stack:
         name: caddy
         state: absent
-
-    - name: Start Caddy Stack
-      docker_stack:
-        state: present
-        name: caddy
-        compose: 
-        - "{{ caddy_dir }}/docker-compose.yml"
-      tags:
-        - redeploy
 
     - name: Start Caddy Stack
       docker_stack:

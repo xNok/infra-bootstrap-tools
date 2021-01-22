@@ -14,10 +14,10 @@
     ###
     # GENERAL Setup
     ###
-    - name: Install jsondiff Require by docker stack module
+    - name: Install python stuff required
       pip:
           executable: pip3
-          name: jsondiff
+          name: [jsondiff, passlib]
 
     - name: Copy docker_swarm folder to remote server
       copy:

@@ -28,7 +28,7 @@ services:
       # this volume is needed to keep the certificates
       # otherwise, new ones will be re-issued upon restart
       - ./users.json:/etc/caddy/auth/local/users.json
-      - ./configs/jwt:/etc/caddy/auth/jwt
+      - ./jwt:/etc/caddy/auth/jwt
       - caddy_data:/data
     deploy:
       labels: # Global options
@@ -53,7 +53,7 @@ services:
       labels:
         caddy_0: (ui_links)
         caddy_0.Whoami1: /whoami1
-        caddy_1: dev.nokwebspace.ovh
+        caddy_1: nokwebspace.ovh
         caddy_1.route: /whoami1*
         caddy_1.route.import: service_route_snippet whoami1
         caddy_1.route.jwt.allow: roles user admin superadmin
@@ -68,7 +68,7 @@ services:
       labels:
         caddy_0: (ui_links)
         caddy_0.Whoami2: /whoami2
-        caddy_1: dev.nokwebspace.ovh
+        caddy_1: nokwebspace.ovh
         caddy_1.route: /whoami2*
         caddy_1.route.import: service_route_snippet whoami2
         caddy_1.route.jwt.allow: roles user admin superadmin

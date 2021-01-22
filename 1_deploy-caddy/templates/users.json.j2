@@ -1,0 +1,33 @@
+{
+    "revision": 1,
+    "users": [
+      {
+        "id": "{{ 99999999 | random | to_uuid }}",
+        "username": "webadmin",
+        "email_addresses": [
+          {
+            "address": "webadmin@{{ domain }}",
+            "domain": "{{ domain }}"
+          }
+        ],
+        "passwords": [
+          {
+            "purpose": "generic",
+            "type": "bcrypt",
+            "hash": "{{ admin_password | password_hash('bcrypt') }}",
+            "cost": 10,
+            "expired_at": "0001-01-01T00:00:00Z",
+            "created_at": "2020-05-05T18:47:51.513552501Z",
+            "disabled_at": "0001-01-01T00:00:00Z"
+          }
+        ],
+        "created": "2020-05-05T18:47:51.513552066Z",
+        "last_modified": "2020-05-05T18:47:51.513552175Z",
+        "roles": [
+          {
+            "name": "superadmin"
+          }
+        ]
+      }
+    ]
+  }
