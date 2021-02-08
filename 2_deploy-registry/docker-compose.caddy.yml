@@ -1,0 +1,10 @@
+version: "3.7"
+
+
+services:
+  docker-registry:
+    deploy:
+      labels:
+        caddy: registry.nokwebspace.ovh
+        # caddy.tls: "internal" 
+        caddy.reverse_proxy: "{{upstreams 5000}}"

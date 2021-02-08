@@ -1,0 +1,47 @@
+
+#################################################
+# INFRA Playbooks: registry
+# Source: 
+#################################################
+---
+- hosts: swarm_managers
+  gather_facts: no
+  become: true
+  vars:  
+    registry_dir: "/var/data/registry"
+  tasks:
+    ###
+    # GENERAL Setup
+    ###
+    - name: Creates directory registry
+      file:
+        path: "{{ registry_dir }}"
+        state: directory
+
+    - name: Copy compose files to remote server
+      copy:
+        src: "{{ item }}"
+        dest: "{{ registry_dir }}"
+      with_fileglob:
+        - "{{ playbook_dir }}/docker-compose.*"
+      tags:
+        - general_setup
+        - redeploy
+
+    ###
+    # Start Container
+    ###
+    - name: Remove stack
+      docker_stack:
+        name: registry
+        state: absent
+
+    - name: Start registry Stack
+      docker_stack:
+        state: present
+        name: registry
+        compose: 
+        - "{{ registry_dir }}/docker-compose.yml"
+        - "{{ registry_dir }}/docker-compose.caddy.yml"
+      tags:
+        - redeploy
