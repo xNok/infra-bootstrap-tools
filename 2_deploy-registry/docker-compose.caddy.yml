@@ -6,5 +6,5 @@ services:
     deploy:
       labels:
         caddy: ${REGISTRY_DOMAIN}
-        caddy.basicauth.${REGISTRY_USER}: ${REGISTRY_PASSWORD}
+        caddy.basicauth.admin: ${REGISTRY_PASSWORD}
         caddy.reverse_proxy: "{{upstreams 5000}}"
