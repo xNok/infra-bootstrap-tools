@@ -53,7 +53,7 @@ services:
       labels:
         caddy_0: (ui_links)
         caddy_0.Whoami1: /whoami1
-        caddy_1: dev.nokwebspace.ovh
+        caddy_1: ${DOMAIN}
         caddy_1.route: /whoami1*
         caddy_1.route.import: service_route_snippet whoami1
         caddy_1.route.jwt.allow: roles user admin superadmin

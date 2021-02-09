@@ -5,6 +5,6 @@ services:
   docker-registry:
     deploy:
       labels:
-        caddy: registry.nokwebspace.ovh
-        # caddy.tls: "internal" 
+        caddy: ${REGISTRY_DOMAIN}
+        caddy.basicauth.${REGISTRY_USER}: ${REGISTRY_PASSWORD}
         caddy.reverse_proxy: "{{upstreams 5000}}"

@@ -9,12 +9,11 @@
   become: true
   vars:  
     caddy_dir: "/var/data/caddy"
+  vars_files:
+    - ./vars.env.yml
   vars_prompt:
     - name: admin_password
       prompt: What is your password?
-    - name: domain
-      prompt: What is your domain name?
-      private: no
   tasks:
     ###
     # GENERAL Setup
@@ -40,16 +39,11 @@
         - general_setup
         - redeploy
 
-    - name: Copy Daddyfile files to remote server
-      copy:
-        src: "{{ item }}"
-        dest: "{{ caddy_dir }}"
-      with_fileglob:
-        - "{{ playbook_dir }}/Caddyfile"
-      register: caddyfile
-      tags:
-        - general_setup
-        - redeploy
+    - name: Create Caddyfile
+      template:
+        src: "templates/Caddyfile.j2"
+        dest: "{{ caddy_dir }}/Caddyfile"
+        mode: 0644
 
     - name: Create JWT signature token
       openssh_keypair:
@@ -74,5 +68,7 @@
         name: caddy
         compose: 
         - "{{ caddy_dir }}/docker-compose.yml"
+      environment:
+        DOMAIN: "{{domain}}"
       tags:
         - redeploy

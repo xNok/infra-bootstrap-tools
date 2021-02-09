@@ -1,3 +1,5 @@
 test
 *.retry
+*.env
+*.env.yml
 users.json

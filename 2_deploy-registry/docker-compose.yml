@@ -1,6 +1,5 @@
 version: "3.7"
 
-
 services:
   docker-registry:
     image: registry:2

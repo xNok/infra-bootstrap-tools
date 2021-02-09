@@ -1,6 +1,6 @@
 
 #################################################
-# INFRA Playbooks: registry
+# INFRA Playbooks: portainer
 # Source: 
 #################################################
 ---
@@ -8,22 +8,22 @@
   gather_facts: no
   become: true
   vars:  
-    registry_dir: "/var/data/registry"
+    portainer_dir: "/var/data/portainer"
   vars_files:
     - ./vars.env.yml
   tasks:
     ###
     # GENERAL Setup
     ###
-    - name: Creates directory registry
+    - name: Creates directory portainer
       file:
-        path: "{{ registry_dir }}"
+        path: "{{ portainer_dir }}"
         state: directory
 
     - name: Copy compose files to remote server
       copy:
         src: "{{ item }}"
-        dest: "{{ registry_dir }}"
+        dest: "{{ portainer_dir }}"
       with_fileglob:
         - "{{ playbook_dir }}/docker-compose.*"
       tags:
@@ -35,19 +35,17 @@
     ###
     - name: Remove stack
       docker_stack:
-        name: registry
+        name: portainer
         state: absent
 
-    - name: Start registry Stack
+    - name: Start portainer Stack
       docker_stack:
         state: present
-        name: registry
+        name: portainer
         compose: 
-        - "{{ registry_dir }}/docker-compose.yml"
-        - "{{ registry_dir }}/docker-compose.caddy.yml"
+        - "{{ portainer_dir }}/docker-compose.yml"
+        - "{{ portainer_dir }}/docker-compose.caddy.yml"
       environment:
-        REGISTRY_DOMAIN: "{{ REGISTRY_DOMAIN }}"
-        REGISTRY_USER: "{{ REGISTRY_USER }}"
-        REGISTRY_PASSWORD: "{{ REGISTRY_PASSWORD }}"
+        PORTAINER_DOMAIN: "{{PORTAINER_DOMAIN}}"
       tags:
         - redeploy

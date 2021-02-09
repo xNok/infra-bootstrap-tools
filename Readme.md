@@ -56,6 +56,26 @@ labels:
     caddy_1.route.reverse_proxy: "{{upstreams 80}}"
 ```
 
+## Setup Tools
+
+### 1. Docker Registry
+
+Download the caddy client locally and hash you docker-registry password. Then add it to `vars.env.yml` as the value for `REGISTRY_PASSWORD`
+
+```
+caddy hash-password
+```
+
+```
+ansible-playbook -i inventory/ 2_deploy-registry/playbook.yml
+```
+
+### 2. Portainer
+
+```
+ansible-playbook -i inventory/ 3_deploy-portainer/playbook.yml
+```
+
 ## Alias
 
 Use common infrastructure tools in docker with:
