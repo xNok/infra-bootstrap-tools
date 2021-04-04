@@ -1,10 +1,18 @@
-# Bootstap your small infra
+# Startup infra for small self-hosted project
+
+This repository provide ansible playbook to setup a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects.
+
+![](./diagrams/startup_infra_for_small_self_hosted_project.png)
 
 Features:
 * docker-swarm
 * Caddy
     * [Auth Portal](https://github.com/greenpau/caddy-auth-portal)
     * [Docker Proxy](https://github.com/lucaslorentz/caddy-docker-proxy)
+* Private docker registery
+* Portainer
+* Prometeuse
+* Graphana
 
 ## Setup host
 
@@ -93,3 +101,9 @@ use dpk for packer in docker
 use dtf for terraform in docker
 use dbash for bash in docker
 ```
+
+## Scale Up
+
+With docker swarm and portainer it because easy to manager multiple nodes.
+
+![](./diagrams/scaled_up_infra_for_small_self_hosted_project.png)
