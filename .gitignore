@@ -3,3 +3,4 @@ test
 *.env
 *.env.yml
 users.json
+.vagrant

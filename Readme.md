@@ -2,8 +2,6 @@
 
 This repository provide ansible playbook to setup a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects.
 
-![](./diagrams/startup_infra_for_small_self_hosted_project.png)
-
 Features:
 * docker-swarm
 * Caddy
@@ -16,8 +14,19 @@ Features:
 
 ## Articles and Tutorials
 
-* WIP: Article 1: [Setup a local environnement for to test ansible playbooks with Vagrant]()
-* WIP: Article 2: [Startup infra for small self-hosted project]()
+The article / tutorial are splited into two section. The first teaches you the tools I use to complete this project. The second give you introduction to the application I selected to help me manage this project and how to deploy them using the 
+
+### Learn the tools
+
+* [ ] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
+
+### Learn the applications used in this setup
+
+* [ ] WIP: ☸️ 1: [What is Portainer and why you might need it.]()
+
+## Architecture
+
+![](./diagrams/startup_infra_for_small_self_hosted_project.png)
 
 ## Setup host
 
