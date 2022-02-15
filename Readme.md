@@ -19,10 +19,13 @@ The article / tutorial are splited into two section. The first teaches you the t
 ### Learn the tools
 
 * [ ] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
+* [ ] WIP: 🧰 2: [Automate Infrastructure provisionning with Ansible and Github action]()
 
-### Learn the applications used in this setup
+### Learn about the applications used in this setup
 
 * [ ] WIP: ☸️ 1: [What is Portainer and why you might need it.]()
+* [ ] WIP: ☸️ 2: [What is Prometheus and why you might need it.]()
+* [ ] WIP: ☸️ 3: [What is Caddy and why you might need it.]()
 
 ## Architecture
 
