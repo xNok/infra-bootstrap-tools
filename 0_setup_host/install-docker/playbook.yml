@@ -32,9 +32,11 @@
     pip:
         executable: pip3
         name: docker
-  ###
+
+  ########
   # Testing Setup
-  ###
+  # Pull, start, stop a hello-world container
+  ########
   - name: Pull default Docker image for testing
     docker_image:
       name: "hello-world"

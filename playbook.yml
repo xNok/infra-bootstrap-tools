@@ -1,7 +1,11 @@
 - name: This is a hello-world example
   hosts: all
+
+  roles:
+  - docker
+
   tasks:
     - name: Create a file called '/tmp/testfile.txt' with the content 'hello world'.
       copy:
-        content: hello worldn
+        content: hello-world
         dest: /tmp/testfile.txt

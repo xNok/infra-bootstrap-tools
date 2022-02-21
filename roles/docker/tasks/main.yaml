@@ -1,0 +1,58 @@
+#################################################
+# OR INFRA Role: Docker
+# Source: https://docs.docker.com/install/linux/docker-ce/debian/
+#################################################
+---
+###
+# GENERAL Setup
+###
+- name: Install required system packages
+  apt: name={{ item }} state=latest update_cache=yes
+  loop: [ 'apt-transport-https', 'ca-certificates', 'software-properties-common']
+
+- name: Add Docker GPG apt Key
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/{{ansible_distribution | lower }} {{ansible_distribution_release}} stable
+    state: present
+
+- name: Update apt and install docker-ce
+  apt: name={{ item }} state=latest update_cache=yes
+  loop: ['docker-ce', 'docker-ce-cli', 'docker-compose', 'containerd.io']
+
+- name: Ensure docker users are added to the docker group.
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  with_items: "{{ docker_users }}"
+
+- name: Start docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+########
+# Testing Setup
+# Pull, start, stop a hello-world container
+########
+- name: Pull default Docker image for testing
+  docker_image:
+    name: "hello-world"
+    source: pull
+
+- name: Create default containers
+  docker_container:
+    name: "hello-world"
+    image: "hello-world"
+    state: present
+
+- name: Stop a container
+  docker_container:
+    name: "hello-world"
+    state: stopped

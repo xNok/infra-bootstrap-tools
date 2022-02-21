@@ -3,7 +3,7 @@ FROM ubuntu:focal
 ARG TERRAFORM_VERSION="0.12.23"
 # TODO: currnet ubuntu ansible version 2.5.1 update to use variable
 # TODO: reduce size of image is pip or binary tarball better
-ARG ANSIBLE_VERSION="2.9.1"
+ARG ANSIBLE_VERSION="2.10.7"
 ARG PACKER_VERSION="1.5.4"
 ARG AWSCLI_VERSION="1.18.19"
 
