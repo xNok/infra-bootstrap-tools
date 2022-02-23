@@ -19,7 +19,10 @@ The article / tutorial are splited into two section. The first teaches you the t
 ### Learn the tools
 
 * [ ] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
-* [ ] WIP: 🧰 2: [Automate Infrastructure provisionning with Ansible and Github action]()
+   * Example code [.articles/1_vagrant_101](.articles/1_vagrant_101)   
+* [ ] 🧰 2 [Experimenting on Docker Swarm with Vagrant and Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4?sk=1eac227cf3c9ec5dc5abbf06f38e92c3)
+   * Example code [.articles/2_docker_swarm_101](.articles/2_docker_swarm_101)
+* [ ] WIP: 🧰 3: [Automate Infrastructure provisionning with Ansible and Github action]()
 
 ### Learn about the applications used in this setup
 
