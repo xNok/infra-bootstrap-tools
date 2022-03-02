@@ -1,6 +1,6 @@
 FROM ubuntu:focal
 
-ARG TERRAFORM_VERSION="0.12.23"
+ARG TERRAFORM_VERSION="1.1.6"
 # TODO: currnet ubuntu ansible version 2.5.1 update to use variable
 # TODO: reduce size of image is pip or binary tarball better
 ARG ANSIBLE_VERSION="2.10.7"
@@ -29,7 +29,7 @@ RUN apt-get clean && \
 
 RUN pip3 install jsondiff pyyaml passlib
 
-CMD    ["/bin/bash"]
-
 RUN apt-get update \
      && apt-get install -y openssh-client openssh-server sshpass
+
+CMD    ["/bin/bash"]

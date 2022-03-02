@@ -4,3 +4,4 @@ test
 *.env.yml
 users.json
 .vagrant
+.terraform

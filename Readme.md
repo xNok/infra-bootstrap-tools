@@ -16,6 +16,14 @@ Features:
 
 The article / tutorial are splited into two section. The first teaches you the tools I use to complete this project. The second give you introduction to the application I selected to help me manage this project and how to deploy them using the 
 
+### Introduction to tools
+
+* [ ] WIP: 📚 1: [What is **Terraform** and why you might need it.]()
+* [ ] WIP: 📚 2: [What is **Terraform Cloud** and why you might need it.]()
+* [ ] WIP: 📚 3: [What is **Github Action** and why you might need it.]()
+* [ ] WIP: 📚 4: [What is **Ansible** and why you might need it.]()
+* [ ] WIP: 📚 5: [What is **Ansible AWX** and why you might need it.]()
+
 ### Learn the tools
 
 * [ ] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
