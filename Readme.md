@@ -19,16 +19,16 @@ The article / tutorial are splited into two section. The first teaches you the t
 ### Introduction to tools
 
 * [ ] WIP: 📚 1: [What is **Terraform** and why you might need it.]()
-* [ ] WIP: 📚 2: [What is **Terraform Cloud** and why you might need it.]()
+* [X] 📚 2: [What is **Terraform Cloud** and why you might need it.](https://faun.pub/what-is-terraform-cloud-and-why-you-might-need-it-c9847fb8f6e6?sk=ee85423512f39030bb287a3f2a6623d3)
 * [ ] WIP: 📚 3: [What is **Github Action** and why you might need it.]()
 * [ ] WIP: 📚 4: [What is **Ansible** and why you might need it.]()
 * [ ] WIP: 📚 5: [What is **Ansible AWX** and why you might need it.]()
 
 ### Learn the tools
 
-* [ ] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
+* [X] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
    * Example code [.articles/1_vagrant_101](.articles/1_vagrant_101)   
-* [ ] 🧰 2 [Experimenting on Docker Swarm with Vagrant and Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4?sk=1eac227cf3c9ec5dc5abbf06f38e92c3)
+* [X] 🧰 2 [Experimenting on Docker Swarm with Vagrant and Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4?sk=1eac227cf3c9ec5dc5abbf06f38e92c3)
    * Example code [.articles/2_docker_swarm_101](.articles/2_docker_swarm_101)
 * [ ] WIP: 🧰 3: [Automate Infrastructure provisionning with Ansible and Github action]()
 
