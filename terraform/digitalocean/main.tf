@@ -29,5 +29,5 @@ resource "digitalocean_droplet" "node" {
 }
 
 output "nodes_ip" {
-  value = digitalocean_droplet.node.ipv4_address
+  value = digitalocean_droplet.node.*.ipv4_address
 }
