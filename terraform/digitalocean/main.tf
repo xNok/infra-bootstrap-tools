@@ -18,7 +18,7 @@ data "digitalocean_ssh_key" "infra" {
 }
 
 resource "digitalocean_droplet" "node" {
-  count = 2
+  count = var.worker_count
 
   image  = "ubuntu-20-04-x64"
   name   = "node${count.index}"
