@@ -27,7 +27,7 @@ RUN apt-get update \
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN pip3 install jsondiff pyyaml passlib
+RUN pip3 install jsondiff pyyaml passlib ansible-lint[yamllint]
 
 RUN apt-get update \
      && apt-get install -y openssh-client openssh-server sshpass
