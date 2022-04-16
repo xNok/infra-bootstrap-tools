@@ -7,3 +7,7 @@ exclude_paths:
   - .cache/ # implicit unless exclude_paths is defined in config
   - .github/
   - legacy_playbooks
+
+# This makes linter to fully ignore rules/tags listed below
+skip_list:
+  - 'fqcn-builtins'
