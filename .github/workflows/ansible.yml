@@ -27,4 +27,4 @@ jobs:
         # replace `main` with any valid ref, or tags like `v6`
         uses: ansible-community/ansible-lint-action@v6
         with:
-          targets: "./"
+          targets: "$EMPTY"
