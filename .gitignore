@@ -5,3 +5,6 @@ test
 users.json
 .vagrant
 .terraform
+.aws
+.ssh
+venv/

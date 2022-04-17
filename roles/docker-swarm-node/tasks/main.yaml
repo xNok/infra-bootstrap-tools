@@ -1,10 +1,10 @@
 #################################################
 # OR INFRA Role: Docker Swarm Node
-# Source: 
+# Source:
 #    https://github.com/arillso/ansible.traefik
 #    https://geek-cookbook.funkypenguin.co.nz/ha-docker-swarm/traefik/
 #################################################
----
+
 ###
 # GENERAL Setup
 ###

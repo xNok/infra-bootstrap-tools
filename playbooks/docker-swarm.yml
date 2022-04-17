@@ -2,14 +2,14 @@
   hosts: all
 
   roles:
-  - {name: docker, become: yes}
+  - {name: docker, become: true}
 
 - name: This setup the Docker Swarm Manager
   hosts: managers
 
   roles:
-  - {name: docker-swarm-controller, become: yes} # this role is for the host running ansible to manager the swarm
-  - {name: docker-swarm-manager, become: yes}    # this role is for creating the swarm and adding host as manager
+  - {name: docker-swarm-controller, become: true} # this role is for the host running ansible to manager the swarm
+  - {name: docker-swarm-manager, become: true}    # this role is for creating the swarm and adding host as manager
 
 - name: This setup nodes dans join the swarm
   hosts: nodes

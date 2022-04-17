@@ -9,3 +9,4 @@
       copy:
         content: hello-world
         dest: /tmp/testfile.txt
+        mode: 0644

@@ -7,8 +7,8 @@
 # GENERAL Setup
 ###
 - name: Install required system packages
-  apt: name={{ item }} state=latest update_cache=yes
-  loop: [ 'apt-transport-https', 'ca-certificates', 'software-properties-common']
+  apt: name={{ item }} state=present update_cache=yes
+  loop: ['apt-transport-https', 'ca-certificates', 'software-properties-common']
 
 - name: Add Docker GPG apt Key
   apt_key:
@@ -17,11 +17,11 @@
 
 - name: Add Docker Repository
   apt_repository:
-    repo: deb [arch=amd64] https://download.docker.com/linux/{{ansible_distribution | lower }} {{ansible_distribution_release}} stable
+    repo: deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
     state: present
 
 - name: Update apt and install docker-ce
-  apt: name={{ item }} state=latest update_cache=yes
+  apt: name={{ item }} state=present update_cache=yes
   loop: ['docker-ce', 'docker-ce-cli', 'docker-compose', 'containerd.io']
 
 - name: Ensure docker users are added to the docker group.
@@ -35,7 +35,7 @@
   service:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 ########
 # Testing Setup

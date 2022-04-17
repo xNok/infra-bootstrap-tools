@@ -8,7 +8,7 @@ fi
 
 drun () 
 {
-  docker run --rm "${TTY}" \
+  docker run --rm ${TTY} \
             -w /home/ubuntu \
             -v "$(pwd)":/home/ubuntu \
             -v ~/.ssh:/home/ubuntu/.ssh \
