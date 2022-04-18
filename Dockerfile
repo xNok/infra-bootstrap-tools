@@ -16,7 +16,7 @@ ENV PACKER_VERSION=${PACKER_VERSION}
 
 # Install apt packages and hashicorp products
 RUN apt-get update \
-    && apt-get install -y curl python3 python3-pip python3-boto unzip  \
+    && apt-get install -y curl python3 python3-pip unzip  \
     && apt-get install -y openssh-client openssh-server sshpass \
     && curl -LO https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip \
     && curl -LO https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip \
@@ -27,6 +27,6 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install ansible with pip plus require packages
-RUN pip3 install pip install ansible==${ANSIBLE_VERSION} jsondiff pyyaml passlib ansible-lint
+RUN pip3 install -r requirement.txt
 
 CMD    ["/bin/bash"]

@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Ansible Docker Swarm Digital Ocean
 
 # Controls when the workflow will run
 on:
@@ -13,8 +13,8 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+
+  validate:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -28,3 +28,28 @@ jobs:
         uses: ansible-community/ansible-lint-action@v6
         with:
           args: "./roles ./playbooks .articles"
+
+  run-playbook:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # The validate Job need to be sucessfull
+    needs: [ validate ]
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies Including Ansible
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; fi
+
+      - name: run playbook
+        run: |
+          ansible-playbook -i inventory playbooks/hello-world.yml
