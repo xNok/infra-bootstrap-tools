@@ -10,12 +10,12 @@ data "github_repository" "repo" {
 }
 
 resource "github_repository_environment" "digitalocean_environment" {
-  repository       = data.github_repository.repo.full_name
+  repository       = data.github_repository.repo.name
   environment      = "digitalocean"
 }
 
 resource "github_actions_environment_secret" "test_secret" {
-  repository       = data.github_repository.repo.full_name
+  repository       = data.github_repository.repo.name
   environment      = github_repository_environment.digitalocean_environment.environment
   secret_name      = "test_secret_name"
   plaintext_value  = "%s"
