@@ -57,6 +57,11 @@ jobs:
           INVENTORY: ${{ secrets.INVENTORY }}
         run: 'echo "$INVENTORY" > inventory'
 
+      - name: write SSH key to file
+        env:
+          INVENTORY: ${{ secrets.SSH_KEY }}
+        run: 'echo "$SSH_KEY" > key'
+
       - name: run playbook
         run: |
-          ansible-playbook -i inventory playbooks/hello-world.yml
+          ansible-playbook -i inventory --key-file key playbooks/hello-world.yml
