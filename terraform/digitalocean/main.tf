@@ -36,7 +36,7 @@ output "nodes_ip" {
 data "template_file" "inventory" {
     template = "${file("./templates/ansible_inventory.tpl")}"
 
-    vars {
+    vars = {
       nodes = digitalocean_droplet.node.*.ipv4_address
       managers = digitalocean_droplet.node.*.ipv4_address
     }
