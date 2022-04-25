@@ -59,7 +59,7 @@ jobs:
 
       - name: write SSH key to file
         env:
-          INVENTORY: ${{ secrets.SSH_KEY }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
         run: 'echo "$SSH_KEY" > key'
 
       - name: run playbook
