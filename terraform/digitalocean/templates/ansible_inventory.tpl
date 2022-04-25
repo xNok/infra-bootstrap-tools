@@ -1,9 +1,9 @@
 [nodes]
-%{ for ip in nodes_docker_swarm ~}
+%{ for ip in nodes ~}
 ${ip}
 %{ endfor ~}
 
 [managers]
-%{ for ip in managers_docker_swarm ~}
+%{ for ip in managers ~}
 ${ip}
 %{ endfor ~}

@@ -25,6 +25,12 @@ resource "github_actions_environment_secret" "inventory" {
   repository       = data.github_repository.repo.name
   environment      = github_repository_environment.digitalocean_environment.environment
   secret_name      = "inventory"
-  plaintext_value  = data.template_file.inventory
+  plaintext_value  = templatefile(
+    "${path.module}/templates/ansible_inventory.tpl",
+    { 
+      nodes = digitalocean_droplet.node.*.ipv4_address,
+      managers = digitalocean_droplet.node.*.ipv4_address
+    }
+  )
 }
 

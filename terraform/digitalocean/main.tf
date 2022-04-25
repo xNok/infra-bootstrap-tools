@@ -31,13 +31,3 @@ resource "digitalocean_droplet" "node" {
 output "nodes_ip" {
   value = digitalocean_droplet.node.*.ipv4_address
 }
-
-# generate inventory file for Ansible
-data "template_file" "inventory" {
-    template = "${file("./templates/ansible_inventory.tpl")}"
-
-    vars = {
-      nodes = digitalocean_droplet.node.*.ipv4_address
-      managers = digitalocean_droplet.node.*.ipv4_address
-    }
-}

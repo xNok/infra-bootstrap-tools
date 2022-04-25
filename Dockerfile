@@ -26,7 +26,9 @@ RUN apt-get update \
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install ansible with pip plus require packages
-RUN pip3 install -r requirements.txt
+COPY ./requirements.txt requirements.txt
 
-CMD    ["/bin/bash"]
+# Install ansible with pip plus require packages
+RUN pip3 install -r ./requirements.txt
+
+CMD ["/bin/bash"]
