@@ -55,9 +55,7 @@ jobs:
       - name: write inventory to file
         env:
           INVENTORY: ${{ secrets.INVENTORY }}
-        run: |
-          echo $INVENTORY > inventory
-          cat inventory
+        run: 'echo "$INVENTORY" > inventory'
 
       - name: run playbook
         run: |
