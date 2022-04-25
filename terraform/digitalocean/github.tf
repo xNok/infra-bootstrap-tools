@@ -34,3 +34,10 @@ resource "github_actions_environment_secret" "inventory" {
   )
 }
 
+resource "github_actions_environment_secret" "ssh" {
+  repository       = data.github_repository.repo.name
+  environment      = github_repository_environment.digitalocean_environment.environment
+  secret_name      = "ssh_key"
+  plaintext_value  = tls_private_key.ssh.private_key_pem
+}
+

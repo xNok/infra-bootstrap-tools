@@ -8,6 +8,11 @@ terraform {
       source = "integrations/github"
       version = "4.23.0"
     }
+
+    tls = {
+      source = "hashicorp/tls"
+      version = "3.3.0"
+    }
   }
 }
 
@@ -15,5 +20,9 @@ provider "digitalocean" {
   # Configuration options
 }
 provider "github" {
+  # Configuration options
+}
+
+provider "tls" {
   # Configuration options
 }

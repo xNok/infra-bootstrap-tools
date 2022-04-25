@@ -13,8 +13,16 @@ resource "digitalocean_project" "infra-bootstrap-tools" {
   resources = digitalocean_droplet.node.*.urn
 }
 
-data "digitalocean_ssh_key" "infra" {
-  name = "infra-bootstrap-tools"
+# Generate a new SSH key
+resource "tls_private_key" "ssh" {
+  algorithm = "RSA"
+  rsa_bits  = "4096"
+}
+
+# Reguster the new SSH key to digitalocean
+resource "digitalocean_ssh_key" "infra" {
+  name       = "infra-bootstrap-tools-digitalocean"
+  public_key = tls_private_key.ssh.public_key_openssh
 }
 
 resource "digitalocean_droplet" "node" {
@@ -25,7 +33,7 @@ resource "digitalocean_droplet" "node" {
   region = "lon1"
   size   = "s-1vcpu-1gb"
 
-  ssh_keys = [data.digitalocean_ssh_key.infra.id]
+  ssh_keys = [digitalocean_ssh_key.infra.id]
 }
 
 output "nodes_ip" {
