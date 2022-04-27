@@ -46,7 +46,7 @@ resource "github_actions_environment_secret" "known_hosts" {
   environment      = github_repository_environment.digitalocean_environment.environment
   secret_name      = "known_hosts"
   plaintext_value  = templatefile(
-    "${path.module}/templates/known_hosts",
+    "${path.module}/templates/known_hosts.tpl",
     { 
       host = digitalocean_droplet.node.*.ipv4_address,
       key = tls_private_key.ssh.public_key_openssh
