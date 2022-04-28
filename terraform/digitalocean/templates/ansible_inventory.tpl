@@ -1,9 +1,9 @@
 [nodes]
 %{ for ip in nodes ~}
-${ip}
+${ip} ansible_user=root
 %{ endfor ~}
 
 [managers]
 %{ for ip in managers ~}
-${ip}
+${ip} ansible_user=root
 %{ endfor ~}
