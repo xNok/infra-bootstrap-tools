@@ -1,3 +1,3 @@
 %{ for ip in host ~}
-${ip} ${key}
+${ip} ${algorithm} ${fingerprint}
 %{ endfor ~}

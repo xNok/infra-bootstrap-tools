@@ -13,7 +13,16 @@ terraform {
       source = "hashicorp/tls"
       version = "3.3.0"
     }
+
+    sshclient = {
+      source = "luma-planet/sshclient"
+      version = "1.0.1"
+    }
   }
+}
+
+provider "sshclient" {
+  # Configuration options
 }
 
 provider "digitalocean" {

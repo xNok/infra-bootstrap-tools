@@ -41,16 +41,22 @@ resource "github_actions_environment_secret" "ssh" {
   plaintext_value  = tls_private_key.ssh.private_key_pem
 }
 
-resource "github_actions_environment_secret" "known_hosts" {
-  repository       = data.github_repository.repo.name
-  environment      = github_repository_environment.digitalocean_environment.environment
-  secret_name      = "known_hosts"
-  plaintext_value  = templatefile(
-    "${path.module}/templates/known_hosts.tpl",
-    { 
-      host = digitalocean_droplet.node.*.ipv4_address,
-      key = tls_private_key.ssh.public_key_fingerprint_md5
-    }
-  )
+data "sshclient_host" "host" {
+  for_each = { for node in digitalocean_droplet.node : node.ipv4_address => node }
+  hostname = each.key
+  username = "keyscan"
+  insecure_ignore_host_key = true
 }
+
+data "sshclient_keyscan" "keyscan" {
+  for_each  = data.sshclient_host.host
+  host_json = each.value.json
+}
+
+# resource "github_actions_environment_secret" "known_hosts" {
+#   repository       = data.github_repository.repo.name
+#   environment      = github_repository_environment.digitalocean_environment.environment
+#   secret_name      = "known_hosts"
+#   plaintext_value  = tostring(data.sshclient_keyscan.keyscan)
+# }
 
