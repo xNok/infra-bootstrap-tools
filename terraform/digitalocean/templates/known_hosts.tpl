@@ -1,3 +1,3 @@
-%{ for ip in host ~}
-${ip} ${algorithm} ${fingerprint}
+%{ for k, v in keyscan ~}
+${k} ${v.authorized_key}
 %{ endfor ~}

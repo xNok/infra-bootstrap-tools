@@ -42,20 +42,26 @@ resource "github_actions_environment_secret" "ssh" {
 }
 
 data "sshclient_host" "host" {
-  # for_each = { for node in digitalocean_droplet.node : node.ipv4_address => node }
-  hostname = "138.68.168.183"
+  for_each = { for node in digitalocean_droplet.node : node.ipv4_address => node }
+  hostname = each.key
   username = "keyscan"
   insecure_ignore_host_key = true # we use this to scan and obtain the key
 }
 
 data "sshclient_keyscan" "keyscan" {
-  # for_each  = data.sshclient_host.host
-  host_json = data.sshclient_host.host.json
+  for_each  = data.sshclient_host.host
+  host_json = each.value.json
 }
+
 resource "github_actions_environment_secret" "known_hosts" {
   repository       = data.github_repository.repo.name
   environment      = github_repository_environment.digitalocean_environment.environment
   secret_name      = "known_hosts"
-  plaintext_value  = data.sshclient_keyscan.keyscan.authorized_key
+  plaintext_value  = templatefile(
+    "${path.module}/templates/known_hosts.tpl",
+    { 
+      keyscan = data.sshclient_keyscan.keyscan,
+    }
+  )
 }
 
