@@ -33,16 +33,23 @@ resource "github_repository_environment" "digitalocean_environment" {
  *
  */
 
-resource "github_branch_protection_v3" "main" {
-  repository     = data.github_repository.repo.name
-  branch         = "main"
-  # enforce_admins = true 
+resource "github_branch_protection" "main" {
+  repository_id     = data.github_repository.repo.name
+
+  pattern          = "main"
+  # enforce_admins   = true
 
   # Configure the check api
   required_status_checks {
     strict   = false
     contexts = ["validate"]
   }
+
+  push_restrictions = [
+    data.github_user.deployement_approver.node_id,
+    # limited to a list of one type of restriction (user, team, app)
+    # github_team.example.node_id
+  ]
 }
 
 /**
