@@ -43,12 +43,6 @@ resource "github_branch_protection_v3" "main" {
     strict   = false
     contexts = ["validate"]
   }
-
-  required_pull_request_reviews {
-    dismiss_stale_reviews = true
-    dismissal_users       = [data.github_user.deployement_approver.id]
-    # dismissal_teams       = []
-  }
 }
 
 /**
