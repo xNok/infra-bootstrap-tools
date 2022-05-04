@@ -17,7 +17,7 @@ resource "github_repository_environment" "digitalocean_environment" {
   repository       = data.github_repository.repo.name
   environment      = "digitalocean"
   reviewers {
-    users = [data.github_user.deployement_approver]
+    users = [data.github_user.deployement_approver.id]
     # teams = [] an entire team can be approver
   }
 
@@ -46,7 +46,7 @@ resource "github_branch_protection_v3" "main" {
 
   required_pull_request_reviews {
     dismiss_stale_reviews = true
-    dismissal_users       = [data.github_user.deployement_approver]
+    dismissal_users       = [data.github_user.deployement_approver.id]
     # dismissal_teams       = []
   }
 }
