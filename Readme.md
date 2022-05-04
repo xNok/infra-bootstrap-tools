@@ -1,6 +1,6 @@
 # Startup infra for small self-hosted project
 
-This repository provide ansible playbook to setup a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects.
+This repository provides Ansible playbooks to set up a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects.
 
 Features:
 * docker-swarm
