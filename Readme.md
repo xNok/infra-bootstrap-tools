@@ -26,11 +26,11 @@ The article / tutorial are splited into two section. The first teaches you the t
 
 ### Learn the Tools
 
-[X] 🌍 [How to configure GitHub Environments with Terraform?](https://faun.pub/how-to-configure-github-environments-with-terraform-d2b76766547b?sk=b50616eed7da268d5a99c459fc9c57d5)
-[ ] 🏭 How to provision VM on Digital Ocean with Terraform?
-[ ] 🔏 How to create SSH keys with Terraform?
-[ ] 🗺️ How to create Ansible Inventory with Terraform?
-[ ] 👩 How to run an Ansible playbook using GitHub Action?
+* [X] 🌍 [How to configure GitHub Environments with Terraform?](https://faun.pub/how-to-configure-github-environments-with-terraform-d2b76766547b?sk=b50616eed7da268d5a99c459fc9c57d5)
+* [ ] 🏭 How to provision VM on Digital Ocean with Terraform?
+* [ ] 🔏 How to create SSH keys with Terraform?
+* [ ] 🗺️ How to create Ansible Inventory with Terraform?
+* [ ] 👩 How to run an Ansible playbook using GitHub Action?
 
 
 ### Main Quest - Put it all together
