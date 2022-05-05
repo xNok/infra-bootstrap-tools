@@ -16,7 +16,7 @@ Features:
 
 The article / tutorial are splited into two section. The first teaches you the tools I use to complete this project. The second give you introduction to the application I selected to help me manage this project and how to deploy them using the 
 
-### Introduction to tools
+### Tools Introduction
 
 * [ ] WIP: 📚 1: [What is **Terraform** and why you might need it.]()
 * [X] 📚 2: [What is **Terraform Cloud** and why you might need it.](https://faun.pub/what-is-terraform-cloud-and-why-you-might-need-it-c9847fb8f6e6?sk=ee85423512f39030bb287a3f2a6623d3)
@@ -24,7 +24,16 @@ The article / tutorial are splited into two section. The first teaches you the t
 * [ ] WIP: 📚 4: [What is **Ansible** and why you might need it.]()
 * [ ] WIP: 📚 5: [What is **Ansible AWX** and why you might need it.]()
 
-### Learn the tools
+### Learn the Tools
+
+[X] 🌍 [How to configure GitHub Environments with Terraform?](https://faun.pub/how-to-configure-github-environments-with-terraform-d2b76766547b?sk=b50616eed7da268d5a99c459fc9c57d5)
+[ ] 🏭 How to provision VM on Digital Ocean with Terraform?
+[ ] 🔏 How to create SSH keys with Terraform?
+[ ] 🗺️ How to create Ansible Inventory with Terraform?
+[ ] 👩 How to run an Ansible playbook using GitHub Action?
+
+
+### Main Quest - Put it all together
 
 * [X] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
    * Example code [.articles/1_vagrant_101](.articles/1_vagrant_101)   
