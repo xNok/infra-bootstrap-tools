@@ -36,7 +36,7 @@ Vagrant.configure("2") do |config|
 
     # /!\ This is only usefull because the tutorial files are under .articles/xyz
     # otherwise Ansible would get the roles from the root folder
-    machine.vm.synced_folder "../../roles", "/vagrant/roles",
+    machine.vm.synced_folder "../../ansible/roles", "/vagrant/roles",
       owner: "vagrant", group: "vagrant", mount_options: ["dmode=755,fmode=600"]
     
     machine.vm.network "private_network", ip: "172.17.177.11"
