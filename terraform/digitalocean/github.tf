@@ -44,12 +44,6 @@ resource "github_branch_protection" "main" {
     strict   = false
     contexts = ["validate"]
   }
-
-  # push_restrictions = [
-  #   data.github_user.deployement_approver.node_id,
-  #   # limited to a list of one type of restriction (user, team, app)
-  #   # github_team.example.node_id
-  # ]
 }
 
 /**
