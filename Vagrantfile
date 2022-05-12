@@ -35,7 +35,7 @@ Vagrant.configure("2") do |config|
     machine.vm.network "private_network", ip: "172.17.177.11"
 
     machine.vm.provision "ansible_local" do |ansible|
-      ansible.playbook       = "playbook.yml"
+      ansible.playbook       = "ansible/hello-world.yml"
       ansible.verbose        = true
       ansible.install        = true
       ansible.limit          = "all" # or only "nodes" group, etc.
