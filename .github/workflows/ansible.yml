@@ -27,7 +27,7 @@ jobs:
         # replace `main` with any valid ref, or tags like `v6`
         uses: ansible-community/ansible-lint-action@v6.0.2
         with:
-          path: "ansible"
+          args: "ansible"
 
   run-playbook:
     # The type of runner that the job will run on
