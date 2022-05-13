@@ -65,6 +65,8 @@ resource "github_actions_environment_secret" "inventory" {
   plaintext_value  = templatefile(
     "${path.module}/templates/ansible_inventory.tpl",
     { 
+      user = "root"
+      prefix = "swarm"
       nodes = digitalocean_droplet.node.*.ipv4_address,
       managers = digitalocean_droplet.node.*.ipv4_address
     }
