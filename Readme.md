@@ -14,7 +14,11 @@ Features:
 
 ## Articles and Tutorials
 
-The article / tutorial are splited into two section. The first teaches you the tools I use to complete this project. The second give you introduction to the application I selected to help me manage this project and how to deploy them using the 
+The article / tutorial are splited into sections. 
+* **Introduction** -> What are the tools to use to manager infrastructure. Perfect to learn the basis.
+* **How-tos** -> Good take away fron this project - Answers many questions you could encounter in the future
+* **Main quest** -> Deploy the Infrastructure using Ansible, Terraform and Github Action
+* **Deepening Understanding** -> learn more about each applicaton used in this setup (Portainer, Graphana, Caddy, etc.)
 
 ### Tools Introduction
 
@@ -31,7 +35,6 @@ The article / tutorial are splited into two section. The first teaches you the t
 * [ ] 🔏 How to create SSH keys with Terraform?
 * [ ] 🗺️ How to create Ansible Inventory with Terraform?
 * [ ] 👩 How to run an Ansible playbook using GitHub Action?
-
 
 ### Main Quest - Put it all together
 
@@ -51,77 +54,11 @@ The article / tutorial are splited into two section. The first teaches you the t
 
 ![](./diagrams/startup_infra_for_small_self_hosted_project.png)
 
-## Setup host
+## Handy tool chain
 
-Setup machine after recieving it.
+Wanna go fast? Too lazy to setup your local env?
 
-### 1. Add ssh key
-
-```
-ansible-playbook 0_setup_host/password-less-ssh/playbook.yml
-```
-
-### 2. Install docker
-
-```
-ansible-playbook -i inventory/ 0_setup_host/install-docker/playbook.yml
-```
-
-### 3. Init docker swarm
-
-```
-ansible-playbook -i inventory/ 0_setup_host/init-docker-swarm/playbook.yml
-```
-
-## Setup Security
-
-### 1. Caddy reverse proxy
-
-```
-ansible-playbook -i inventory/ 1_deploy-caddy/playbook.yml
-```
-
-Now you can protect your container behind the caddy auth portal by adding labels in your deployment
-
-```
-labels:
-    # Add the link of the container to the auth portal
-    caddy_0: (ui_links)
-    caddy_0.Whoami1: /whoami1
-    # Add a route to your container
-    ## Domain for your container
-    caddy_1: nokwebspace.ovh
-    ## Route to access your container
-    caddy_1.route: /whoami1*
-    ## A snippet is create do add all you need for the route
-    caddy_1.route.import: service_route_snippet whoami1
-    ## Define who can access that container
-    caddy_1.route.jwt.allow: roles user admin superadmin
-    ## Define the reverse proxy to point to your container
-    caddy_1.route.reverse_proxy: "{{upstreams 80}}"
-```
-
-## Setup Tools
-
-### 1. Docker Registry
-
-Download the caddy client locally and hash you docker-registry password. Then add it to `vars.env.yml` as the value for `REGISTRY_PASSWORD`
-
-```
-caddy hash-password
-```
-
-```
-ansible-playbook -i inventory/ 2_deploy-registry/playbook.yml
-```
-
-### 2. Portainer
-
-```
-ansible-playbook -i inventory/ 3_deploy-portainer/playbook.yml
-```
-
-## Alias
+Then use the the tools from a docker container. I included a simple toochain in this repository and usefull alias to use it.
 
 Use common infrastructure tools in docker with:
 * [docker_tools_alias.sh](./bin/docker_tools_alias.sh)
