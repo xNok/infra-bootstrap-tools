@@ -1,0 +1,29 @@
+#################################################
+# OR INFRA Role: Portainer
+# Source: https://docs.portainer.io/v/ce-2.9/start/install/server/swarm/linux
+#################################################
+---
+###
+# GENERAL Setup
+###
+- name: Creates directory portainer
+  file:
+    path: "{{ portainer_dir }}"
+    state: directory
+
+- name: Copy Compose file to remote server
+  copy:
+    src: "{{ item }}"
+    dest: "{{ portainer_dir }}"
+  with_fileglob:
+    - "{{ playbook_dir }}/*-stack.yml"
+
+###
+# Start Container
+###
+- name: Start portainer Stack
+  docker_stack:
+    state: present
+    name: portainer
+    compose: 
+    - "{{ portainer_dir }}/portainer-agent-stack.yml"
