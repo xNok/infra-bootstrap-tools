@@ -1,13 +1,12 @@
-# Startup infra for small self-hosted project
+# Startup Infra for Small Self-hosted Projects
 
-This repository provides Ansible playbooks to set up a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects.
+![Ansible](https://img.shields.io/badge/ansible-%231A1918.svg?style=for-the-badge&logo=ansible&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Vagrant](https://img.shields.io/badge/vagrant-%231563FF.svg?style=for-the-badge&logo=vagrant&logoColor=white)
+
+This repository provides Ansible playbooks to set up a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects. I made this repository a place to **Learn** about DevOps and Cloud Infrastructure. You have all the tutorial you need to get started.
 
 Features:
 * docker-swarm
 * Caddy
-    * [Auth Portal](https://github.com/greenpau/caddy-auth-portal)
-    * [Docker Proxy](https://github.com/lucaslorentz/caddy-docker-proxy)
-* Private docker registery
 * Portainer
 * Prometheus 
 * Graphana
