@@ -15,6 +15,7 @@
   copy:
     src: "{{ item }}"
     dest: "{{ portainer_dir }}"
+    mode: '0644'
   with_fileglob:
     - "{{ playbook_dir }}/*-stack.yml"
 
@@ -25,5 +26,5 @@
   docker_stack:
     state: present
     name: portainer
-    compose: 
-    - "{{ portainer_dir }}/portainer-agent-stack.yml"
+    compose:
+      - "{{ portainer_dir }}/portainer-agent-stack.yml"
