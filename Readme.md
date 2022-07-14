@@ -33,7 +33,7 @@ The article / tutorial are splited into sections.
 * [ ] 🏭 How to provision VM on Digital Ocean with Terraform?
 * [X] 🔏 [How to create SSH keys with Terraform?](https://faun.pub/how-to-create-ssh-keys-with-terraform-a615dfc631c1?sk=176a8f5c0c0517a01e8fabd5bb7c18fa)
 * [x] 🗺️ [How to create Ansible Inventory with Terraform?](https://faun.pub/how-to-create-ansible-inventory-with-terraform-a32fcbe11be6?sk=da18fba15ee996e4c3b92782229654ee)
-* [ ] 👩 How to run an Ansible playbook using GitHub Action?
+* [x] 👩 [How to run an Ansible playbook using GitHub Action?](https://faun.pub/how-to-create-ansible-inventory-with-terraform-a32fcbe11be6?sk=da18fba15ee996e4c3b92782229654ee)
 
 ### Main Quest - Put it all together
 
