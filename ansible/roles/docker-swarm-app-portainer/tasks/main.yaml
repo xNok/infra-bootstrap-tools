@@ -17,7 +17,7 @@
     dest: "{{ portainer_dir }}"
     mode: '0644'
   with_fileglob:
-    - "{{ playbook_dir }}/*-stack.yml"
+    - "{{ role_path }}/assets/*-stack.yml"
 
 ###
 # Start Container
