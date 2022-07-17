@@ -10,6 +10,9 @@ on:
       - main
     types:
       - opened
+      - edited
+      - ready_for_review
+      - synchronize
     paths:
       - 'ansible/**'
 
