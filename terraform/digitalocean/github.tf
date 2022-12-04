@@ -25,14 +25,12 @@ resource "github_repository_environment" "digitalocean_environment" {
     protected_branches     = true #the main branch protection definition is below
     custom_branch_policies = false
   }
-
 }
 
 /**
  * Github branch permissions
  *
  */
-
 resource "github_branch_protection" "main" {
   repository_id     = data.github_repository.repo.node_id
 
@@ -47,10 +45,9 @@ resource "github_branch_protection" "main" {
 }
 
 /**
- * Github environnement secretes
+ * Github environnement secrets
  *
  */
-
 resource "github_actions_environment_secret" "test_secret" {
   repository       = data.github_repository.repo.name
   environment      = github_repository_environment.digitalocean_environment.environment
@@ -81,15 +78,17 @@ resource "github_actions_environment_secret" "ssh" {
 }
 
 data "sshclient_host" "host" {
-  for_each = { for node in digitalocean_droplet.node : node.ipv4_address => node }
-  hostname = each.key
+  count = length(digitalocean_droplet.node)
+  hostname = digitalocean_droplet.node[count.index].ipv4_address
   username = "keyscan"
   insecure_ignore_host_key = true # we use this to scan and obtain the key
 }
+
 data "sshclient_keyscan" "keyscan" {
-  for_each  = data.sshclient_host.host
-  host_json = each.value.json
+  count  = length(data.sshclient_host.host)
+  host_json = data.sshclient_host.host[count.index].json
 }
+
 resource "github_actions_environment_secret" "known_hosts" {
   repository       = data.github_repository.repo.name
   environment      = github_repository_environment.digitalocean_environment.environment
