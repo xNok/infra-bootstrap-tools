@@ -2,16 +2,16 @@ terraform {
   required_providers {
     digitalocean = {
       source = "digitalocean/digitalocean"
-      version = "2.25.2"
+      version = "~> 2.25"
     }
     github = {
       source = "integrations/github"
-      version = "4.23.0"
+      version = "~> 5.0"
     }
 
     tls = {
       source = "hashicorp/tls"
-      version = "3.3.0"
+      version = "~> 3.3"
     }
 
     sshclient = {
