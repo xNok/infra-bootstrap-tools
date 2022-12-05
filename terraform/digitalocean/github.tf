@@ -96,7 +96,8 @@ resource "github_actions_environment_secret" "known_hosts" {
   plaintext_value  = templatefile(
     "${path.module}/templates/known_hosts.tpl",
     { 
-      keyscan = data.sshclient_keyscan.keyscan,
+      hostname = data.sshclient_host.host.*.hostname,
+      keyscan  = data.sshclient_keyscan.keyscan,
     }
   )
 }
