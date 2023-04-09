@@ -84,9 +84,16 @@ data "sshclient_host" "host" {
   insecure_ignore_host_key = true # we use this to scan and obtain the key
 }
 
+resource "time_sleep" "wait_30_seconds" {
+  depends_on = [digitalocean_droplet.node]
+
+  create_duration = "30s"
+}
+
 data "sshclient_keyscan" "keyscan" {
   count  = length(data.sshclient_host.host)
   host_json = data.sshclient_host.host[count.index].json
+  depends_on = [time_sleep.wait_30_seconds]
 }
 
 resource "github_actions_environment_secret" "known_hosts" {
