@@ -1,3 +1,3 @@
-%{ for k, v in keyscan ~}
-${ hostname[k] } ${v.authorized_key}
+%{ for k, v in known_hosts ~}
+${ k } ${v}
 %{ endfor ~}

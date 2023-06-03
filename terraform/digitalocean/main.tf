@@ -10,7 +10,10 @@ resource "digitalocean_project" "infra-bootstrap-tools" {
   description = "Startup infra for small self-hosted project"
   purpose     = "IoT"
   environment = "Development"
-  resources = digitalocean_droplet.node.*.urn
+  resources = concat(
+    digitalocean_droplet.nodes.*.urn,
+    digitalocean_droplet.managers.*.urn
+  )
 }
 
 # Generate a new SSH key
@@ -25,7 +28,7 @@ resource "digitalocean_ssh_key" "infra" {
   public_key = tls_private_key.ssh.public_key_openssh
 }
 
-resource "digitalocean_droplet" "manager" {
+resource "digitalocean_droplet" "managers" {
   count = var.manager_count
 
   image  = "ubuntu-20-04-x64"
@@ -47,6 +50,10 @@ resource "digitalocean_droplet" "nodes" {
   ssh_keys = [digitalocean_ssh_key.infra.id]
 }
 
+output "managers_ip" {
+  value = digitalocean_droplet.managers.*.ipv4_address
+}
+
 output "nodes_ip" {
-  value = digitalocean_droplet.node.*.ipv4_address
+  value = digitalocean_droplet.nodes.*.ipv4_address
 }
