@@ -76,4 +76,4 @@ jobs:
 
       - name: run playbook
         run: |
-          ansible-playbook -i inventory ansible/docker-swarm-portainer.yml
+          ansible-playbook -i inventory ansible/docker-swarm-portainer-caddy.yml

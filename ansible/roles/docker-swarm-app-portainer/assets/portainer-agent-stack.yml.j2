@@ -16,10 +16,12 @@ services:
   portainer:
     image: portainer/portainer-ce:2.11.1
     command: -H tcp://tasks.agent:9001 --tlsskipverify
+{% if not caddy %}
     ports:
       - "9443:9443"
       - "9000:9000"
       - "8000:8000"
+{% endif %}
     volumes:
       - portainer_data:/data
     networks:
@@ -34,6 +36,12 @@ networks:
   agent_network:
     driver: overlay
     attachable: true
+  # caddy network allow gain access via caddy reverse proxy and auth
+{% if caddy %}
+    caddy:
+    external: true
+{% endif %}
+
 
 volumes:
   portainer_data:

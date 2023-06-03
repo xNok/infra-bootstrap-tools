@@ -11,6 +11,7 @@ exclude_paths:
 # This makes linter to fully ignore rules/tags listed below
 skip_list:
   - 'fqcn-builtins'
+  - 'role-name'
 
 # List of additional kind:pattern to be added at the top of the default
 # match list, first match determines the file kind.

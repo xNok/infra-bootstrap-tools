@@ -64,8 +64,8 @@ resource "github_actions_environment_secret" "inventory" {
     { 
       user = "root"
       prefix = "swarm"
-      nodes = digitalocean_droplet.node.*.ipv4_address,
-      managers = digitalocean_droplet.node.*.ipv4_address
+      nodes = digitalocean_droplet.nodes.*.ipv4_address,
+      managers = digitalocean_droplet.managers.*.ipv4_address
     }
   )
 }
@@ -77,15 +77,22 @@ resource "github_actions_environment_secret" "ssh" {
   plaintext_value  = tls_private_key.ssh.private_key_pem
 }
 
-data "sshclient_host" "host" {
-  count = length(digitalocean_droplet.node)
-  hostname = digitalocean_droplet.node[count.index].ipv4_address
+data "sshclient_host" "nodes" {
+  count = length(digitalocean_droplet.nodes)
+  hostname = digitalocean_droplet.nodes[count.index].ipv4_address
+  username = "keyscan"
+  insecure_ignore_host_key = true # we use this to scan and obtain the key
+}
+
+data "sshclient_host" "managers" {
+  count = length(digitalocean_droplet.managers)
+  hostname = digitalocean_droplet.managers[count.index].ipv4_address
   username = "keyscan"
   insecure_ignore_host_key = true # we use this to scan and obtain the key
 }
 
 resource "time_sleep" "wait_30_seconds" {
-  depends_on = [digitalocean_droplet.node]
+  depends_on = [digitalocean_droplet.nodes, digitalocean_droplet.managers]
 
   create_duration = "30s"
 }
@@ -103,7 +110,7 @@ resource "github_actions_environment_secret" "known_hosts" {
   plaintext_value  = templatefile(
     "${path.module}/templates/known_hosts.tpl",
     { 
-      hostname = data.sshclient_host.host.*.hostname,
+      hostname = concat(data.sshclient_host.nodes.*.hostname, data.sshclient_host.managers.*.hostname),
       keyscan  = data.sshclient_keyscan.keyscan,
     }
   )

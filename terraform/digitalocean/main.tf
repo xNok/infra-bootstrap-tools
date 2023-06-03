@@ -25,7 +25,18 @@ resource "digitalocean_ssh_key" "infra" {
   public_key = tls_private_key.ssh.public_key_openssh
 }
 
-resource "digitalocean_droplet" "node" {
+resource "digitalocean_droplet" "manager" {
+  count = var.manager_count
+
+  image  = "ubuntu-20-04-x64"
+  name   = "manager${count.index}"
+  region = "lon1"
+  size   = "s-1vcpu-1gb"
+
+  ssh_keys = [digitalocean_ssh_key.infra.id]
+}
+
+resource "digitalocean_droplet" "nodes" {
   count = var.worker_count
 
   image  = "ubuntu-20-04-x64"

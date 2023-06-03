@@ -10,14 +10,15 @@
   file:
     path: "{{ portainer_dir }}"
     state: directory
+    mode: '0644'
 
 - name: Copy Compose file to remote server
-  copy:
+  template:
     src: "{{ item }}"
     dest: "{{ portainer_dir }}"
     mode: '0644'
   with_fileglob:
-    - "{{ role_path }}/assets/*-stack.yml"
+    - "{{ role_path }}/assets/*-stack.yml.j2"
 
 ###
 # Start Container

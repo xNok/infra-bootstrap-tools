@@ -1,5 +1,10 @@
 variable "worker_count" {
   type = number
+  default = 0
+}
+
+variable "manager_count" {
+  type = number
   default = 1
 }
 
