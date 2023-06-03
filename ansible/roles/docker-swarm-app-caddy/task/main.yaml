@@ -28,4 +28,3 @@
     name: caddy
     compose:
       - "{{ caddy_dir }}/caddy-stack.yml"
-
