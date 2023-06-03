@@ -6,6 +6,7 @@
 
 - name: This setup the Docker Swarm Manager
   hosts: managers
+  gather_facts: true
 
   roles:
   # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
