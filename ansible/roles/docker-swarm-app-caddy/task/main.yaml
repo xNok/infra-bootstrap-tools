@@ -9,6 +9,7 @@
   file:
     path: "{{ caddy_dir }}"
     state: directory
+    mode: '0644'
 
 - name: Copy Compose file to remote server
   template:
