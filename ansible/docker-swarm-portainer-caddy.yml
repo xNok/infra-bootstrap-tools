@@ -19,14 +19,14 @@
   roles:
   - docker-swarm-node # this role is for host to join the swarm
 
-- name: This install Portainer in the Swarm
-  hosts: managers[0] # Only one manager need to be hit
-
-  roles:
-  - {name: docker-swarm-app-portainer, become: true}
-
 - name: This install caddy in the Swarm
   hosts: managers[0] # Only one manager need to be hit
 
   roles:
   - {name: docker-swarm-app-caddy, become: true}
+
+- name: This install Portainer in the Swarm
+  hosts: managers[0] # Only one manager need to be hit
+
+  roles:
+  - {name: docker-swarm-app-portainer, become: true, caddy: true}

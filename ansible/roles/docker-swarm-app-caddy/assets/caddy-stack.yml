@@ -8,6 +8,8 @@ services:
       - "80:80"
       - "443:443"
       - "443:443/udp"
+    network:
+      - caddy
     volumes:
       - ./Caddyfile:{{ caddy_dir }}/Caddyfile
       - ./site:/srv
@@ -17,3 +19,6 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+
+network:
+  caddy:
