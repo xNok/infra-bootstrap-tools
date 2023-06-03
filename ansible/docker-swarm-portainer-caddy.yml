@@ -1,0 +1,32 @@
+- name: This is the base requirement for all nodes
+  hosts: all
+
+  roles:
+  - {name: docker, become: true}
+
+- name: This setup the Docker Swarm Manager
+  hosts: managers
+
+  roles:
+  # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
+  # I case we have an issue all master are setup as potential controller
+  - {name: docker-swarm-controller, become: true} # this role is for the host running ansible to manage the swarm
+  - {name: docker-swarm-manager, become: true}    # this role is for creating the swarm and adding host as manager
+
+- name: This setup nodes to join the Swarm
+  hosts: nodes
+
+  roles:
+  - docker-swarm-node # this role is for host to join the swarm
+
+- name: This install Portainer in the Swarm
+  hosts: managers[0] # Only one manager need to be hit
+
+  roles:
+  - {name: docker-swarm-app-portainer, become: true}
+
+- name: This install caddy in the Swarm
+  hosts: managers[0] # Only one manager need to be hit
+
+  roles:
+  - {name: docker-swarm-app-caddy, become: true}

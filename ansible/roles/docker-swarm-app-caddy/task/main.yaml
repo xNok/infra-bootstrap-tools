@@ -1,0 +1,31 @@
+#################################################
+# OR INFRA Role: Caddy
+# Source: https://caddyserver.com/docs/running#docker-compose
+# Auth Portal: https://authp.github.io/docs/authenticate/auth-portal
+#################################################
+# GENERAL Setup
+###
+- name: Creates directory portainer
+  file:
+    path: "{{ caddy_dir }}"
+    state: directory
+
+- name: Copy Compose file to remote server
+  template:
+    src: "{{ item }}"
+    dest: "{{ caddy_dir }}"
+    mode: '0644'
+  with_fileglob:
+    - "{{ role_path }}/assets/*-stack.yml"
+    - "{{ role_path }}/asset/Caddyfile"
+
+###
+# Start Container
+###
+- name: Start caddy Stack
+  docker_stack:
+    state: present
+    name: caddy
+    compose:
+      - "{{ caddy_dir }}/caddy-stack.yml"
+
