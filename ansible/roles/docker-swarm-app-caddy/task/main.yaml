@@ -3,9 +3,11 @@
 # Source: https://caddyserver.com/docs/running#docker-compose
 # Auth Portal: https://authp.github.io/docs/authenticate/auth-portal
 #################################################
+---
+###
 # GENERAL Setup
 ###
-- name: Creates directory portainer
+- name: Creates directory caddy
   file:
     path: "{{ caddy_dir }}"
     state: directory
@@ -18,7 +20,7 @@
     mode: '0644'
   with_fileglob:
     - "{{ role_path }}/assets/*-stack.yml"
-    - "{{ role_path }}/asset/Caddyfile"
+    - "{{ role_path }}/assets/Caddyfile"
 
 ###
 # Start Container
