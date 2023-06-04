@@ -21,3 +21,4 @@ volumes:
 
 networks:
   caddy:
+    attachable: true
