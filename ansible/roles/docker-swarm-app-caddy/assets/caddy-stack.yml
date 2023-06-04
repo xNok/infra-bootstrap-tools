@@ -11,8 +11,7 @@ services:
     networks:
       - caddy
     volumes:
-      - ./Caddyfile:{{ caddy_dir }}/Caddyfile
-      - ./site:/srv
+      - "{{ caddy_dir }}/Caddyfile:/etc/caddy/Caddyfile"
       - caddy_data:/data
       - caddy_config:/config
 
