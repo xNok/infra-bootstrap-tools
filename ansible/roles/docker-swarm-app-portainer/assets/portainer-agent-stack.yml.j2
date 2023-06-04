@@ -26,6 +26,9 @@ services:
       - portainer_data:/data
     networks:
       - agent_network
+{% if caddy %}
+      - caddy
+{% endif %}
     deploy:
       mode: replicated
       replicas: 1
@@ -40,6 +43,7 @@ networks:
 {% if caddy %}
   caddy:
     external: true
+    name: caddy_caddy
 {% endif %}
 
 
