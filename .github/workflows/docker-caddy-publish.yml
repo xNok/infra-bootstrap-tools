@@ -6,14 +6,16 @@ name: Docker
 # documentation.
 
 on:
-  schedule:
-    - cron: '19 0 * * *'
   push:
     branches: [ "main" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
+    paths:
+      - 'ansible/roles/docker-swarm-app-caddy/assets/Dockerfile'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'ansible/roles/docker-swarm-app-caddy/assets/Dockerfile'
 
 env:
   # Use docker.io for Docker Hub if empty
