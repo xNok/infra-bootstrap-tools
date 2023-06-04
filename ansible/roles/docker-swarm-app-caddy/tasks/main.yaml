@@ -21,6 +21,7 @@
   with_fileglob:
     - "{{ role_path }}/assets/*-stack.yml"
     - "{{ role_path }}/assets/Caddyfile"
+    - "{{ role_path }}/assets/Dockerfile"
 
 ###
 # Start Container
