@@ -24,6 +24,13 @@
     - "{{ role_path }}/assets/Dockerfile"
 
 ###
+# Create Caddy Network
+###
+- name: Create a network
+  docker_network:
+    name: caddy
+
+###
 # Start Container
 ###
 - name: Start caddy Stack
