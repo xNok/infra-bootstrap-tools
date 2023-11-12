@@ -1,3 +1,0 @@
-portainer.nokwebspace.ovh {
-    reverse_proxy portainer:9000
-}

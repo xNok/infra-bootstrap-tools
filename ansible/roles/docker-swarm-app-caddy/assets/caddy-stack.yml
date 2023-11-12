@@ -2,7 +2,10 @@ version: "3.9"
 
 services:
   caddy:
-    image: caddy:2.7
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: xnok/caddy-docker-auth-portal
     restart: unless-stopped
     ports:
       - "80:80"
@@ -11,10 +14,20 @@ services:
     networks:
       - caddy
     volumes:
-      - ./Caddyfile:{{ caddy_dir }}/Caddyfile
-      - ./site:/srv
+      - "{{ caddy_dir }}/Caddyfile:/etc/caddy/Caddyfile"
       - caddy_data:/data
       - caddy_config:/config
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 200M
 
 volumes:
   caddy_data:
@@ -22,3 +35,4 @@ volumes:
 
 networks:
   caddy:
+    attachable: true

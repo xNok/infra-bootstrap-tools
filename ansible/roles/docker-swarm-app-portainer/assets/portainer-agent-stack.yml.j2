@@ -26,6 +26,9 @@ services:
       - portainer_data:/data
     networks:
       - agent_network
+{% if caddy %}
+      - caddy_caddy
+{% endif %}
     deploy:
       mode: replicated
       replicas: 1
@@ -38,7 +41,7 @@ networks:
     attachable: true
   # caddy network allow gain access via caddy reverse proxy and auth
 {% if caddy %}
-  caddy:
+  caddy_caddy:
     external: true
 {% endif %}
 

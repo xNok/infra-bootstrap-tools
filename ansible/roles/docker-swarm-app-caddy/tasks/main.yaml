@@ -21,6 +21,14 @@
   with_fileglob:
     - "{{ role_path }}/assets/*-stack.yml"
     - "{{ role_path }}/assets/Caddyfile"
+    - "{{ role_path }}/assets/Dockerfile"
+
+###
+# Create Caddy Network
+###
+- name: Create a network
+  docker_network:
+    name: caddy
 
 ###
 # Start Container
