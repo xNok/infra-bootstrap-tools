@@ -2,10 +2,10 @@ version: "3.9"
 
 services:
   caddy:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: xnok/caddy-docker-auth-portal
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: ghcr.io/xnok/infra-bootstrap-tools-caddy
     restart: unless-stopped
     ports:
       - "80:80"
