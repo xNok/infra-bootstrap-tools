@@ -6,6 +6,7 @@ services:
     #   context: .
     #   dockerfile: Dockerfile
     image: ghcr.io/xnok/infra-bootstrap-tools-caddy:main
+    command: ["caddy", "docker-proxy", "--envfile", "/run/secrets/caddy_github_auth"]
     restart: unless-stopped
     ports:
       - "80:80"
@@ -18,6 +19,8 @@ services:
       - "{{ caddy_dir }}/Caddyfile:/etc/caddy/Caddyfile"
       - caddy_data:/data
       - caddy_config:/config
+    secrets:
+    - caddy_github_auth
     deploy:
       placement:
         constraints:
@@ -37,3 +40,7 @@ volumes:
 networks:
   caddy:
     attachable: true
+
+secrets:
+  caddy_github_auth:
+    external: true
