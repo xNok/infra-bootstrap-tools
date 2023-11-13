@@ -5,7 +5,7 @@ services:
     # build:
     #   context: .
     #   dockerfile: Dockerfile
-    image: ghcr.io/xnok/infra-bootstrap-tools-caddy
+    image: ghcr.io/xnok/infra-bootstrap-tools-caddy:main
     restart: unless-stopped
     ports:
       - "80:80"
