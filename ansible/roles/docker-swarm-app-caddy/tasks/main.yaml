@@ -33,10 +33,10 @@
   vars:
     GITHUB_CLIENT_ID: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_ID') }}"
     GITHUB_CLIENT_SECRET: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_SECRET') }}"
-    JWT_SHARED_KEY: "{{ lookup('env', 'CADDY_JWT_SHARED_KEY') }}"
+    JWT_SHARED_KEY: "{{ lookup('env', 'CADDY_JWT_SHARED_KEY') | replace('\n', '\\n') }}"
 
 - name: Create secret for github auth
-  template:
+  docker_secret:
     name: caddy_github_auth
     data: "{{ caddy_dir }}/caddy_github_auth"
     state: present
