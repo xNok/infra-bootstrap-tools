@@ -74,6 +74,18 @@ jobs:
           # config: ${{ secrets.CONFIG }} # ssh_config; optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
 
+      - name: Secrets to file
+        run: |
+          echo $CADDY_GITHUB_AUTH >> src/secrets/caddy_github_auth
+        env:
+          # Feel free to rename this variable, but make sure to update it everywhere. You should paste your entire file in your secrets
+          CADDY_GITHUB_AUTH : ${{secrets.CADDY_GITHUB_AUTH}}
+
       - name: run playbook
         run: |
           ansible-playbook -i inventory ansible/docker-swarm-portainer-caddy.yml
+        env:
+          # This is used by caddy to authenticate users
+          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
+          JWT_SHARED_KEY: ${{ secrets.JWT_SHARED_KEY }}

@@ -20,7 +20,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     secrets:
-    - caddy_github_auth
+      - caddy_github_auth
     deploy:
       placement:
         constraints:
