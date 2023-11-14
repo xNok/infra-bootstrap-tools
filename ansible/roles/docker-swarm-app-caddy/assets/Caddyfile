@@ -48,6 +48,13 @@
 	tls {$HOME}/.local/caddy/server.crt {$HOME}/.local/caddy/server.key
 }
 
+auth.{{ domain }} {
+	import tls_config
+	authenticate with myportal
+}
+
 portainer.{{ domain }} {
+	import tls_config
+	authorize with mypolicy
     reverse_proxy portainer_portainer:9000
 }
