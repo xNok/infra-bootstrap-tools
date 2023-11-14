@@ -86,6 +86,6 @@ jobs:
           ansible-playbook -i inventory ansible/docker-swarm-portainer-caddy.yml
         env:
           # This is used by caddy to authenticate users
-          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
-          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
-          JWT_SHARED_KEY: ${{ secrets.JWT_SHARED_KEY }}
+          CADDY_GITHUB_CLIENT_ID: ${{ secrets.CADDY_GITHUB_CLIENT_ID }}
+          CADDY_GITHUB_CLIENT_SECRET: ${{ secrets.CADDY_GITHUB_CLIENT_SECRET }}
+          CADDY_JWT_SHARED_KEY: ${{ secrets.CADDY_JWT_SHARED_KEY }}

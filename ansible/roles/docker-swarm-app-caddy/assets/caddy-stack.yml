@@ -13,7 +13,7 @@ services:
       - "443:443"
       - "443:443/udp"
     networks:
-      - caddy
+      - caddy_caddy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - "{{ caddy_dir }}/Caddyfile:/etc/caddy/Caddyfile"

@@ -26,18 +26,14 @@
 ###
 # Create Caddy Pre-requisits
 ###
-- name: Create a network
-  docker_network:
-    name: caddy
-
 - name: Create Secret file
   template:
     src: "{{ role_path }}/assets/caddy_github_auth"
     dest: "{{ caddy_dir }}/caddy_github_auth"
   vars:
-    GITHUB_CLIENT_ID: "{{ lookup('env', 'GITHUB_CLIENT_ID' }}"
-    GITHUB_CLIENT_SECRET: "{{ lookup('env', 'GITHUB_CLIENT_SECRET' }}"
-    JWT_SHARED_KEY: "{{ lookup('env', 'JWT_SHARED_KEY' }}"
+    GITHUB_CLIENT_ID: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_ID' }}"
+    GITHUB_CLIENT_SECRET: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_SECRET' }}"
+    JWT_SHARED_KEY: "{{ lookup('env', 'CADDY_JWT_SHARED_KEY' }}"
 
 - name: Create secret for github auth
   template:
