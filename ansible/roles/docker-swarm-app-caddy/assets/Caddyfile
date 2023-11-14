@@ -1,7 +1,7 @@
 {
 	http_port 8080
 	https_port 8443
-	# debug
+	debug
 
 	order authenticate before respond
 	order authorize before basicauth
