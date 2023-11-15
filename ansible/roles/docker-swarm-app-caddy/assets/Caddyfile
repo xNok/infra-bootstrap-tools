@@ -1,60 +1,7 @@
 {
-	http_port 8080
-	https_port 8443
-	debug
-
-	order authenticate before respond
-	order authorize before basicauth
-
-	security {
-		oauth identity provider github {env.GITHUB_CLIENT_ID} {env.GITHUB_CLIENT_SECRET}
-
-		authentication portal myportal {
-			crypto default token lifetime 3600
-			crypto key sign-verify {env.JWT_SHARED_KEY}
-			cookie domain portainer.{{ domain }}
-			enable identity provider github
-
-			ui {
-				links {
-					"My Identity" "/whoami" icon "las la-user"
-				}
-			}
-
-			transform user {
-				match realm github
-				action add role authp/user
-				ui link "Portainer" https://portainer.{{ domain }}/ icon "las la-star"
-			}
-
-			transform user {
-				match realm github
-				match sub github.com/{{ github_org }}
-				action add role authp/admin
-			}
-		}
-
-		authorization policy mypolicy {
-			set auth url https://auth.{{ domain }}:8443/oauth2/github
-			crypto key verify {env.JWT_SHARED_KEY}
-			allow roles authp/admin authp/user
-			validate bearer header
-			inject headers with claims
-		}
-	}
-}
-
-(tls_config) {
-	tls {$HOME}/.local/caddy/server.crt {$HOME}/.local/caddy/server.key
-}
-
-auth.{{ domain }} {
-	import tls_config
-	authenticate with myportal
-}
-
-portainer.{{ domain }} {
-	import tls_config
-	authorize with mypolicy
-    reverse_proxy portainer_portainer:9000
+    # Global options block. Entirely optional, https is on by default
+    # Optional email key for lets encrypt
+    email youremail@domain.com 
+    # Optional staging lets encrypt for testing. Comment out for production.
+    acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
 }

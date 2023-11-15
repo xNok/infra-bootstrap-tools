@@ -34,6 +34,16 @@ services:
           cpus: "0.1"
           memory: 200M
 
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: containous/whoami
+    networks:
+      - caddy
+    deploy:
+      labels:
+        caddy: whoami.nokwebspace.ovh
+        caddy.reverse_proxy: "{{upstreams 80}}"
+
 volumes:
   caddy_data:
   caddy_config:
