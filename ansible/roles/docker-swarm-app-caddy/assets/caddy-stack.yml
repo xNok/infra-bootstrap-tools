@@ -6,8 +6,6 @@ services:
     command:
       - "caddy"
       - "docker-proxy"
-      - "--envfile"
-      - "/run/secrets/caddy_github_auth"
       - "--caddyfile-path"
       - "/etc/caddy/Caddyfile"
     restart: unless-stopped
