@@ -3,11 +3,13 @@ version: "3.9"
 services:
   caddy:
     image: ghcr.io/xnok/infra-bootstrap-tools-caddy:main
-    command: [
-      "caddy", "docker-proxy",
-      "--envfile", "/run/secrets/caddy_github_auth",
-      "--caddyfile-path", "/etc/caddy/Caddyfile" 
-    ]
+    command:
+      - "caddy"
+      - "docker-proxy"
+      - "--envfile"
+      - "/run/secrets/caddy_github_auth"
+      - "--caddyfile-path"
+      - "/etc/caddy/Caddyfile"
     restart: unless-stopped
     ports:
       - "8080:80"
