@@ -24,11 +24,28 @@
     - "{{ role_path }}/assets/Dockerfile"
 
 ###
-# Create Caddy Network
+# Create Caddy Pre-requisits
 ###
-- name: Create a network
-  docker_network:
-    name: caddy
+- name: Create Secret file
+  template:
+    src: "{{ role_path }}/assets/caddy_github_auth"
+    dest: "{{ caddy_dir }}/caddy_github_auth"
+    mode: '0644'
+  vars:
+    github_client_id: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_ID') }}"
+    github_client_secret: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_SECRET') }}"
+    jwt_shared_key: "{{ lookup('env', 'CADDY_JWT_SHARED_KEY') | replace('\n', '\\n') }}"
+
+- name: Create secret for github auth
+  docker_secret:
+    name: caddy_github_auth
+    data: "{{ caddy_dir }}/caddy_github_auth"
+    state: present
+
+- name: Remove secrets file
+  ansible.builtin.file:
+    path: "{{ caddy_dir }}/caddy_github_auth"
+    state: absent
 
 ###
 # Start Container

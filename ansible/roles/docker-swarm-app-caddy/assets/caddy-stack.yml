@@ -2,10 +2,12 @@ version: "3.9"
 
 services:
   caddy:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: xnok/caddy-docker-auth-portal
+    image: ghcr.io/xnok/infra-bootstrap-tools-caddy:main
+    command:
+      - "caddy"
+      - "docker-proxy"
+      - "--caddyfile-path"
+      - "/etc/caddy/Caddyfile"
     restart: unless-stopped
     ports:
       - "80:80"
@@ -14,9 +16,12 @@ services:
     networks:
       - caddy
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - "{{ caddy_dir }}/Caddyfile:/etc/caddy/Caddyfile"
       - caddy_data:/data
       - caddy_config:/config
+    secrets:
+      - caddy_github_auth
     deploy:
       placement:
         constraints:
@@ -29,6 +34,17 @@ services:
           cpus: "0.1"
           memory: 200M
 
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: containous/whoami
+    networks:
+      - caddy
+    deploy:
+      labels:
+        caddy: whoami.nokwebspace.ovh
+        # this include escape for ansible
+        caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
+
 volumes:
   caddy_data:
   caddy_config:
@@ -36,3 +52,7 @@ volumes:
 networks:
   caddy:
     attachable: true
+
+secrets:
+  caddy_github_auth:
+    external: true

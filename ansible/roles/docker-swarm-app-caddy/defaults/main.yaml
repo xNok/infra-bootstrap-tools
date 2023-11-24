@@ -1,2 +1,3 @@
 caddy_dir: /var/data/caddy
 domain: nokwebspace.ovh
+github_org: xnok
