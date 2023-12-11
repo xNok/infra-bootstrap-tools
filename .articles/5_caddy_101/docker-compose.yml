@@ -1,45 +1,31 @@
-version: "3.9"
-
+version: "3.7"
 services:
   caddy:
     build:
       context: .
-      dockerfile: Dockerfile
-    command: ["caddy", "docker-proxy"]
     ports:
-      - "8080:8080"
-      - "8443:8443"
-      - "8443:8443/udp"
+      - 80:80
+      - 443:443
+    environment:
+      - CADDY_INGRESS_NETWORKS=caddy
     networks:
-      - gitpod
+      - caddy
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - /var/run/docker.sock:/var/run/docker.sock
       - caddy_data:/data
-      - caddy_config:/config
-    secrets:
-      - caddy_github_auth
+    restart: unless-stopped
 
-  whoami0:
+  whoami:
     image: containous/whoami
     networks:
       - caddy
-    deploy:
-      labels:
-        caddy: whoami0.example.com
-        caddy.reverse_proxy: "{{upstreams 80}}"
-        caddy.tls: "internal"
-
-volumes:
-  caddy_data:
-  caddy_config:
+    labels:
+      caddy: whoami.example.com
+      caddy.reverse_proxy: "{{upstreams 80}}"
 
 networks:
-  gitpod:
-    driver: bridge
-    # default MTU size in docker-compose is 1500
-    driver_opts:
-      com.docker.network.driver.mtu: 1440
+  caddy:
+    external: true
 
-secrets:
-  caddy_github_auth:
-    file: ./caddy_github_auth.env
+volumes:
+  caddy_data: {}
