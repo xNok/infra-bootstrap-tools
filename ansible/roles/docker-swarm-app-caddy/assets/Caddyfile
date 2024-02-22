@@ -43,11 +43,6 @@
 	}
 }
 
-(tls_config) {
-	tls {$HOME}/.local/caddy/server.crt {$HOME}/.local/caddy/server.key
-}
-
 auth.{{domain}} {
-	import tls_config
 	authenticate with myportal
 }
