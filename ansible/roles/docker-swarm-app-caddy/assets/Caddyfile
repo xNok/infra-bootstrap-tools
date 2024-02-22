@@ -1,6 +1,6 @@
 {
-	http_port 8080
-	https_port 8443
+	http_port 80
+	https_port 443
 	debug
 
 	order authenticate before respond
@@ -22,19 +22,13 @@
 
 			transform user {
 				match realm github
-				action add role authp/user
-				ui link "File Server" https://assetq.myfiosgateway.com:8443/ icon "las la-star"
-			}
-
-			transform user {
-				match realm github
 				match sub github.com/{{github_org}}
 				action add role authp/admin
 			}
 		}
 
 		authorization policy mypolicy {
-			set auth url https://auth.{{domain}}:8443/oauth2/github
+			set auth url https://auth.{{domain}}:443/oauth2/github
 			crypto key verify {env.JWT_SHARED_KEY}
 			allow roles authp/admin authp/user
 			validate bearer header
