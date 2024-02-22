@@ -34,6 +34,12 @@ services:
       replicas: 1
       placement:
         constraints: [node.role == manager]
+{% if caddy %}
+      labels:
+        caddy: portainer.{{domain}}
+        # this include escape for ansible
+        caddy.reverse_proxy: "{{ '{{' }}upstreams 9000{{ '}}' }}"
+{% endif %}
 
 networks:
   agent_network:

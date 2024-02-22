@@ -41,7 +41,7 @@ services:
       - caddy
     deploy:
       labels:
-        caddy: whoami.nokwebspace.ovh
+        caddy: whoami.{{domain}}
         # this include escape for ansible
         caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
 
