@@ -1,6 +1,4 @@
-# docker-entrypoint.sh
-
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
