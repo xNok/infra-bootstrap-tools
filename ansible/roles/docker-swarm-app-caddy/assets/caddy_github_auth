@@ -1,3 +1,0 @@
-GITHUB_CLIENT_ID={{ github_client_id }}
-GITHUB_CLIENT_SECRET={{ github_client_secret }}
-JWT_SHARED_KEY={{ jwt_shared_key }}
