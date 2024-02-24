@@ -50,7 +50,7 @@ services:
         caddy: whoami.{{domain}}
         # this include escape for ansible
         caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
-        caddy.authenticate: with myportal
+        caddy.authorize: with admins_policy 
 
 volumes:
   caddy_data:

@@ -27,12 +27,23 @@
 			}
 		}
 
-		authorization policy mypolicy {
+		authorization policy admins_policy {
 			set auth url https://auth.{{domain}}/oauth2/github
 			crypto key verify {env.JWT_SHARED_KEY}
 			allow roles authp/admin authp/user
 			validate bearer header
 			inject headers with claims
+
+			acl rule {
+				comment allow admin
+				match role authp/admin
+				allow stop log info
+			}
+			acl rule {
+					comment default deny
+					always match role any
+					deny log warn
+			}
 		}
 	}
 }
