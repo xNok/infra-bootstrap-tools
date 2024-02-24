@@ -28,7 +28,7 @@
 		}
 
 		authorization policy mypolicy {
-			set auth url https://auth.{{domain}}:443/oauth2/github
+			set auth url https://auth.{{domain}}/oauth2/github
 			crypto key verify {env.JWT_SHARED_KEY}
 			allow roles authp/admin authp/user
 			validate bearer header
