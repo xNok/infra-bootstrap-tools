@@ -2,6 +2,8 @@
 
 set -e
 
+echo "Preparing env variables"
+
 file_env() {
 	local var="$1"
 	local fileVar="${var}_FILE"
@@ -22,7 +24,7 @@ file_env() {
 	unset "$fileVar"
 }
 
-env | grep "_FILE" | while read -r line ; do
+env | grep "_FILE=/run/secrets" | while read -r line ; do
     echo "Processing ${line%_FILE*}"
     file_env "${line%_FILE*}"
 done
