@@ -39,6 +39,7 @@ services:
         caddy: portainer.{{domain}}
         # this include escape for ansible
         caddy.reverse_proxy: "{{ '{{' }}upstreams 9000{{ '}}' }}"
+        caddy.authorize: with admins_policy
 {% endif %}
 
 networks:
