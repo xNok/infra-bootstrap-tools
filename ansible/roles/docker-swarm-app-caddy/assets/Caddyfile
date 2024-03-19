@@ -39,10 +39,11 @@
 				match role authp/admin
 				allow stop log info
 			}
+			
 			acl rule {
-					comment default deny
-					always match role any
-					deny log warn
+				comment default deny
+				match any
+				deny log warn
 			}
 		}
 	}
