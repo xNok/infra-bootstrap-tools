@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    restart: always
+    ports:
+      - "127.0.0.1:5678:5678"
+    environment:
+      - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+    volumes:
+      - n8n_data:/home/node/.n8n
+    # Docker Stack Config
+    deploy:
+      labels:
+        caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
+        # this include escape for ansible
+        caddy.reverse_proxy: "{{ upstreams 5678 }}"
+        caddy.authorize: with admins_policy
+
+volumes:
+  n8n_data:
+    external: true
