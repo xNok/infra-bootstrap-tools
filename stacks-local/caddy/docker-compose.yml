@@ -1,0 +1,69 @@
+version: "3.9"
+
+services:
+  caddy:
+    image: ghcr.io/xnok/infra-bootstrap-tools-caddy:main
+    command:
+      - "caddy"
+      - "docker-proxy"
+      - "--caddyfile-path"
+      - "/etc/caddy/Caddyfile"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    networks:
+      - caddy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - "{{ caddy_dir }}/Caddyfile:/etc/caddy/Caddyfile"
+      - caddy_data:/data
+      - caddy_config:/config
+    secrets:
+      - caddy_github_client_id
+      - caddy_github_client_secret
+      - caddy_jwt_shared_key
+    environment:
+      GITHUB_CLIENT_ID_FILE: /run/secrets/caddy_github_client_id
+      GITHUB_CLIENT_SECRET_FILE: /run/secrets/caddy_github_client_secret
+      JWT_SHARED_KEY_FILE: /run/secrets/caddy_jwt_shared_key
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 200M
+
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: containous/whoami
+    networks:
+      - caddy
+    deploy:
+      labels:
+        caddy: whoami.{{domain}}
+        # this include escape for ansible
+        caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
+        caddy.authorize: with admins_policy
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  caddy:
+    attachable: true
+
+secrets:
+  caddy_github_client_id:
+    external: true
+  caddy_github_client_secret:
+    external: true
+  caddy_jwt_shared_key:
+    external: true

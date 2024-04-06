@@ -1,9 +1,0 @@
-version: "3.7"
-
-
-services:
-  portainer:
-    deploy:
-      labels:
-        caddy: ${PORTAINER_DOMAIN}
-        caddy.reverse_proxy: "{{upstreams 9000}}"
