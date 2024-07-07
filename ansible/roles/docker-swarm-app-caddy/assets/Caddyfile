@@ -51,4 +51,7 @@
 
 auth.{{domain}} {
 	authenticate with myportal
+	tls {
+		dns digitalocean {env.CADDY_DIGITALOCEAN_API_TOKEN}
+	}
 }
