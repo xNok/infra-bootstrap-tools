@@ -3,17 +3,16 @@
 	https_port 443
 	debug
 
-	order authenticate before respond
-	order authorize before basicauth
-
-	acme_dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
-
+	// acme_dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
 	dynamic_dns {
 		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
 		domains {
 			{{domain}}
 		}
 	}
+
+	order authenticate before respond
+	order authorize before basicauth
 
 	security {
 		oauth identity provider github {env.GITHUB_CLIENT_ID} {env.GITHUB_CLIENT_SECRET}
