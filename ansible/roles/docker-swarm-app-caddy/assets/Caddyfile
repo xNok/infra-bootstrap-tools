@@ -3,14 +3,6 @@
 	https_port 443
 	debug
 
-	// acme_dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
-	dynamic_dns {
-		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
-		domains {
-			{{domain}}
-		}
-	}
-
 	order authenticate before respond
 	order authorize before basicauth
 
