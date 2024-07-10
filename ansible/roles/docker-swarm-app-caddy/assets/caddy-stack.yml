@@ -50,6 +50,7 @@ services:
     deploy:
       labels:
         caddy: whoami.{{domain}}
+        caddy.tls.dns: digitalocean {env.DIGITALOCEAN_API_TOKEN}
         # this include escape for ansible
         caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
         caddy.authorize: with admins_policy
