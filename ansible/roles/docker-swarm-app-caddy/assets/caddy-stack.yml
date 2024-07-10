@@ -70,3 +70,5 @@ secrets:
     external: true
   caddy_jwt_shared_key:
     external: true
+  caddy_digitalocean_api_token:
+    external: true
