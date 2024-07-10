@@ -22,7 +22,7 @@ resource "github_repository_environment" "digitalocean_environment" {
   }
 
   deployment_branch_policy {
-    protected_branches     = true #the main branch protection definition is below
+    protected_branches     = false
     custom_branch_policies = false
   }
 }
