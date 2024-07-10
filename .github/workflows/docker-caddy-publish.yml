@@ -10,8 +10,12 @@ on:
     branches: [ "main" ]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
+    paths:
+      - 'ansible/roles/docker-swarm-app-caddy/assets/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'ansible/roles/docker-swarm-app-caddy/assets/**'
 
 env:
   # Use docker.io for Docker Hub if empty
