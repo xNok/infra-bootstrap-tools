@@ -45,16 +45,9 @@ resource "github_branch_protection" "main" {
 }
 
 /**
- * Github environnement secrets
+ * Github environnement secrets for Ansible
  *
  */
-resource "github_actions_environment_secret" "test_secret" {
-  repository       = data.github_repository.repo.name
-  environment      = github_repository_environment.digitalocean_environment.environment
-  secret_name      = "test_secret_name"
-  plaintext_value  = "%s"
-}
-
 resource "github_actions_environment_secret" "inventory" {
   repository       = data.github_repository.repo.name
   environment      = github_repository_environment.digitalocean_environment.environment
