@@ -21,11 +21,11 @@
   # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
   # I case we have an issue all master are setup as potential controller
   # this role is for the host running ansible to manage the swarm
-  - name: "'docker-swarm-controller'
+  - name: docker-swarm-controller
     when: "'docker-swarm-controller' in roles_with_changes"
   # this role is for creating the swarm and adding host as manager
-  - name: docker-swarm-manager 
-    when: "'docker-swarm-controller' in roles_with_changes"
+  - name: docker-swarm-manager
+    when: "'docker-swarm-manager' in roles_with_changes"
 
 - name: This setup nodes to join the Swarm
   hosts: nodes
