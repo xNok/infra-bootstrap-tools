@@ -1,5 +1,5 @@
 rules:
   indentation:
     spaces: consistent
-    indent-sequences: false
+    indent-sequences: consistent
     check-multi-line-strings: false
