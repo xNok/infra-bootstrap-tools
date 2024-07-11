@@ -34,7 +34,7 @@
 
   - name: Filter folders within the roles directory
     set_fact:
-      roles_with_changes: >- 
+      roles_with_changes: >-
         "{{ changed_folders
         | select('match', '^' + roles_folder + '/')
         | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1')
