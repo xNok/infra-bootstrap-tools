@@ -1,0 +1,28 @@
+- name: This speeds up playbook in PRs
+  hosts: localhost
+  gather_facts: no
+  vars:
+    roles_folder: "ansible/roles"
+
+  tasks:
+    - name: Register current branch
+      ansible.builtin.shell: git rev-parse --abbrev-ref HEAD
+      register: branch
+
+    - debug: msg="{{ branch.stdout }}"
+
+    - name: Register the git diff
+      ansible.builtin.shell: git diff --name-only  main..{{ branch.stdout }} .
+      register: diff
+
+    - debug: msg="{{ diff }}"
+
+    - name: Extract folders from the diff
+      set_fact:
+        changed_folders: "{{ diff.stdout_lines | map('regex_replace', '^(.*/).*$' , '\\1') | unique }}"
+
+    - name: Filter folders within the roles directory
+      set_fact:
+        roles_with_changes: "{{ changed_folders | select('match', '^' + roles_folder + '/') | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1') | unique }}"
+
+    - debug: msg="Folders with changes in roles directory {{ roles_with_changes }}"
