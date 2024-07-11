@@ -1,11 +1,9 @@
 - name: Register current branch
-  ansible.builtin.shell: git rev-parse --abbrev-ref HEAD
+  ansible.builtin.command: git rev-parse --abbrev-ref HEAD
   register: branch
 
-- debug: msg="{{ branch.stdout }}"
-
 - name: Register the git diff
-  ansible.builtin.shell: git diff --name-only {{ default_branch }}..{{ branch.stdout }} .
+  ansible.builtin.command: git diff --name-only {{ default_branch }}..{{ branch.stdout }} .
   when: branch.stdout != default_branch
   register: diff
 
@@ -16,12 +14,19 @@
 
 - name: Extract folders from the diff
   set_fact:
-    changed_folders: "{{ diff.stdout_lines | map('regex_replace', '^(.*/).*$' , '\\1') | unique }}"
+    changed_folders: >- 
+      "{{ diff.stdout_lines 
+      | map('regex_replace', '^(.*/).*$' , '\\1') 
+      | unique }}"
   when: branch.stdout != default_branch
 
 - name: Filter folders within the roles directory
   set_fact:
-    roles_with_changes: "{{ changed_folders | select('match', '^' + roles_folder + '/') | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1') | unique }}"
+    roles_with_changes: >- 
+      "{{ changed_folders 
+      | select('match', '^' + roles_folder + '/') 
+      | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1') 
+      | unique }}"
   when: branch.stdout != default_branch
 
 - name: Set all roles to run if on default branch

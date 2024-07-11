@@ -1,8 +1,9 @@
 - name: Determine affected roles
   hosts: localhost
-  gather_facts: no
+  gather_facts: false
+
   roles:
-    - affected_roles
+  - affected_roles
 
 - name: This is the base requirement for all nodes
   hosts: all
@@ -17,8 +18,8 @@
   roles:
   # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
   # I case we have an issue all master are setup as potential controller
-  - {name: docker-swarm-controller, become: true, when: diff.stdout.find('roles/docker-swarm-controller/') != -1} # this role is for the host running ansible to manage the swarm
-  - {name: docker-swarm-manager, become: true, when: diff.stdout.find('roles/docker-swarm-manager/') != -1}    # this role is for creating the swarm and adding host as manager
+  - {name: docker-swarm-controller, become: true} # this role is for the host running ansible to manage the swarm
+  - {name: docker-swarm-manager, become: true}    # this role is for creating the swarm and adding host as manager
 
 - name: This setup nodes to join the Swarm
   hosts: nodes
