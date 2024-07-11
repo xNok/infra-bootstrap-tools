@@ -1,0 +1,5 @@
+rules:
+  indentation:
+    spaces: consistent
+    indent-sequences: false
+    check-multi-line-strings: false
