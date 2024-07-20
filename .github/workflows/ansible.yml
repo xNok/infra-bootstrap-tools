@@ -79,6 +79,7 @@ jobs:
         run: |
           ansible-playbook -i inventory ansible/docker-swarm-portainer-caddy.yml
         env:
+          BRANCH_NAME: ${{ github.head_ref }}
           # This is used by caddy to authenticate users
           CADDY_GITHUB_CLIENT_ID: ${{ secrets.CADDY_GITHUB_CLIENT_ID }}
           CADDY_GITHUB_CLIENT_SECRET: ${{ secrets.CADDY_GITHUB_CLIENT_SECRET }}
