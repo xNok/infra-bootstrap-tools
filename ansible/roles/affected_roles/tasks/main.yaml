@@ -10,6 +10,7 @@
 
 - name: Fetch the main and current branches
   ansible.builtin.command: git fetch origin {{ default_branch }}:{{ default_branch }} {{ branch.stdout }}:{{ branch.stdout }}
+  when: branch.stdout != default_branch
   tags:
   - skip_ansible_lint
 

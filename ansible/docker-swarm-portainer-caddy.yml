@@ -10,7 +10,7 @@
   become: true
   roles:
   - name: docker
-    when: "'docker' in roles_with_changes"
+    when: "'docker' in hostvars['localhost']['roles_with_changes']"
 
 - name: This setup the Docker Swarm Manager
   hosts: managers
@@ -22,16 +22,17 @@
   # I case we have an issue all master are setup as potential controller
   # this role is for the host running ansible to manage the swarm
   - name: docker-swarm-controller
-    when: "'docker-swarm-controller' in roles_with_changes"
+    when: "'docker-swarm-controller' in hostvars['localhost']['roles_with_changes']"
   # this role is for creating the swarm and adding host as manager
   - name: docker-swarm-manager
-    when: "'docker-swarm-manager' in roles_with_changes"
+    when: "'docker-swarm-manager' in hostvars['localhost']['roles_with_changes']"
 
 - name: This setup nodes to join the Swarm
   hosts: nodes
 
   roles:
-  - docker-swarm-node # this role is for host to join the swarm
+  - name: docker-swarm-node # this role is for host to join the swarm
+    when: "'docker-swarm-node' in hostvars['localhost']['roles_with_changes']"
 
 - name: This install Caddy and Portainer in the Swarm
   hosts: managers[0] # Only one manager need to be hit
@@ -39,7 +40,7 @@
 
   roles:
   - name: docker-swarm-app-caddy
-    when: "'docker-swarm-app-caddy' in roles_with_changes"
+    when: "'docker-swarm-app-caddy' in hostvars['localhost']['roles_with_changes']"
   - name: docker-swarm-app-portainer
     caddy: true
-    when: "'docker-swarm-app-portainer' in roles_with_changes"
+    when: "'docker-swarm-app-portainer' in hostvars['localhost']['roles_with_changes']"
