@@ -14,7 +14,7 @@
   - skip_ansible_lint
 
 - name: Register the git diff
-  ansible.builtin.command: git diff --name-only origin/{{ default_branch }}..{{ branch.stdout }} .
+  ansible.builtin.command: git diff --name-only origin/{{ default_branch }}..origin/{{ branch.stdout }} .
   when: branch.stdout != default_branch
   register: diff
   tags:
