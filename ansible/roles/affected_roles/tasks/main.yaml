@@ -10,8 +10,6 @@
 
 - name: Fetch the main and current branches
   ansible.builtin.command: git fetch origin {{ default_branch }}:{{ default_branch }} {{ branch.stdout }}:{{ branch.stdout }}
-  args:
-    chdir: '{{ ansible_env.PWD }}'
   tags:
   - skip_ansible_lint
 
