@@ -8,8 +8,10 @@
   tags:
   - skip_ansible_lint
 
-- name: Fetch the main branch
-  ansible.builtin.command: git fetch origin {{ default_branch }}
+- name: Fetch the main and current branches
+  ansible.builtin.command: git fetch origin main:main {{ branch }}:{{ branch }}
+  args:
+    chdir: '{{ ansible_env.PWD }}'
   tags:
   - skip_ansible_lint
 
