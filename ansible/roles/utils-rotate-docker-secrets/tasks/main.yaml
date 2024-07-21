@@ -1,0 +1,37 @@
+---
+- name: Ensure checksum directory exists
+  file:
+    path: "{{ checksum_directory }}"
+    state: directory
+
+- name: Calculate checksums for secrets
+  set_fact:
+    secret_checksums: "{{ secret_checksums | default({}) | combine({item.name: lookup('pipe', 'echo ' + item.value + ' | sha256sum | cut -d\" \" -f1')}) }}"
+  loop: "{{ secrets }}"
+
+- name: Load previous checksums
+  ini_file:
+    path: "{{ checksum_directory }}/secrets.ini"
+    state: present
+  register: previous_checksums
+
+- name: Create new secrets if value has changed
+  docker_secret:
+    name: "{{ item.name }}_{{ secret_checksums[item.name] }}"
+    data: "{{ item.value }}"
+    state: present
+  when: previous_checksums[item.name] != secret_checksums[item.name]
+  loop: "{{ secrets }}"
+  register: new_secrets
+
+- name: Update checksums file
+  ini_file:
+    path: "{{ checksum_directory }}/secrets.ini"
+    section: "{{ item.name }}"
+    option: checksum
+    value: "{{ secret_checksums[item.name] }}"
+  loop: "{{ secrets }}"
+
+- name: Check if Docker Compose update is needed
+  set_fact:
+    update_needed: "{{ new_secrets.results | selectattr('changed', 'equalto', true) | list | length > 0 }}"

@@ -1,0 +1,6 @@
+- name: Optionally, remove old secrets
+  docker_secret:
+    name: "{{ item }}"
+    state: absent
+  loop: "{{ previous_checksums.keys() | difference(secret_checksums.keys()) }}"
+  ignore_errors: true
