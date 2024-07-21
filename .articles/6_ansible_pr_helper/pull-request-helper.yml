@@ -2,7 +2,7 @@
   hosts: localhost
   gather_facts: false
   vars:
-    roles_folder: "ansible/roles"
+    roles_folder: ".articles/6_ansible_pr_helper/roles"
     default_branch: main
 
   tasks:
@@ -51,3 +51,22 @@
   - name: Debug roles_with_changes output
     debug:
       msg: "{{ roles_with_changes }}"
+
+- name: Conditionally run roles based on changes
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Include role1 if it has changes
+      include_role:
+        name: role1
+      when: "'role1' in roles_with_changes"
+
+    - name: Include role2 if it has changes
+      include_role:
+        name: role2
+      when: "'role2' in roles_with_changes"
+
+    - name: Include role3 if it has changes
+      include_role:
+        name: role3
+      when: "'role3' in roles_with_changes"
