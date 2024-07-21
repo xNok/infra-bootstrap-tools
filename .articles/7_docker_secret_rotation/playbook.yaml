@@ -3,6 +3,7 @@
   gather_facts: false
   vars:
     checksum_directory: .
+    docker_compose_path: ./docker-compose.yaml
     secrets:
       - {name: 'test_1', value: "test_1"}
       - {name: 'test_2', value: "test_2"}
@@ -32,28 +33,31 @@
       register: previous_checksums_file
 
     - name: Load previous checksums if file exists
-      ini_file:
-        path: "{{ checksum_directory }}/secrets.ini"
-        state: present
+      set_fact:
+        previous_checksums: "{{ previous_checksums 
+          | default({}) 
+          | combine({ item.name: 
+          lookup('ansible.builtin.ini',
+           'checksum',
+           section=item.name, 
+           file=checksum_directory + '/secrets.ini') }) }}"
+      loop: "{{ secrets }}"
       when: previous_checksums_file.stat.exists
-      register: previous_checksums
+
+    - name: Debug previous_checksums
+      debug:
+        msg: "{{ previous_checksums }}"
 
     - name: Create new secrets if value has changed
       docker_secret:
         name: "{{ item.name }}_{{ secret_checksums[item.name] }}"
         data: "{{ item.value }}"
         state: present
+        labels:
+          managed_by: "rotate_docker_secrets"
+          name: "{{ item.name }}"
       when: (previous_checksums[item.name] is not defined) or (previous_checksums[item.name] != secret_checksums[item.name])
       loop: "{{ secrets }}"
-
-    - name: Create new secrets if value has changed
-      docker_secret:
-        name: "{{ item.name }}_{{ secret_checksums[item.name] }}"
-        data: "{{ item.value }}"
-        state: present
-      when: previous_checksums[item.name] != secret_checksums[item.name]
-      loop: "{{ secrets }}"
-      register: new_secrets
 
     - name: Update checksums file
       ini_file:
@@ -63,13 +67,26 @@
         value: "{{ secret_checksums[item.name] }}"
       loop: "{{ secrets }}"
 
-    - name: Check if Docker Compose update is needed
-      set_fact:
-        update_needed: "{{ new_secrets.results | selectattr('changed', 'equalto', true) | list | length > 0 }}"
+    - name: Replace secret names in Docker Compose file
+      replace:
+        path: "{{ docker_compose_path }}"
+        regexp: "source: {{ item.name }}(_[a-f0-9]{32})?"
+        replace: "source: {{ item.name }}_{{ secret_checksums[item.name] }}"
+      loop: "{{ secrets }}"
 
-    - name: Optionally, remove old secrets
+    - name: List all Docker secrets managed by this role
+      command: docker secret ls --filter label=managed_by=rotate_docker_secrets --format "{{ '{{.Name}}' }}"
+      register: existing_secrets
+
+    - name: Identify secrets to keep
+      set_fact:
+        secrets_to_keep: "{{ secrets_to_keep | default([]) + [item.name + '_' + secret_checksums[item.name]] }}"
+      loop: "{{ secrets }}"
+
+    - name: Remove dangling secrets
       docker_secret:
         name: "{{ item }}"
         state: absent
-      loop: "{{ previous_checksums.keys() | difference(secret_checksums.keys()) }}"
+      when: item not in secrets_to_keep
+      loop: "{{ existing_secrets.stdout_lines }}"
       ignore_errors: true

@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  whoami:
+    image: containous/whoami
+    secrets:
+      - test_1
+      - test_2
+    environment:
+      TEST_1: /run/secrets/test_1
+      TEST_2: /run/secrets/test_2
+
+secrets:
+  test_1:
+    external: true
+  test_2:
+    external: true
