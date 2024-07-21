@@ -12,8 +12,12 @@
     tags:
     - skip_ansible_lint
 
+  - name: Debug branch output
+    debug:
+      msg: "{{ branch.stdout }}"
+
   - name: Register the git diff
-    ansible.builtin.command: git diff --name-only {{ default_branch }}..{{ branch.stdout }} .
+    ansible.builtin.command: git diff --name-only origin/{{ default_branch }}..origin/{{ branch.stdout }} .
     when: branch.stdout != default_branch
     register: diff
     tags:
@@ -26,25 +30,24 @@
 
   - name: Extract folders from the diff
     set_fact:
-      changed_folders: >-
-        "{{ diff.stdout_lines
-        | map('regex_replace', '^(.*/).*$' , '\\1')
+      changed_folders: "{{ diff.stdout_lines 
+        | map('regex_replace', '^(.*/).*$' , '\\1') 
         | unique }}"
-    when: branch.stdout != default_branch
 
   - name: Filter folders within the roles directory
     set_fact:
-      roles_with_changes: >-
-        "{{ changed_folders
-        | select('match', '^' + roles_folder + '/')
-        | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1')
+      roles_with_changes: "{{ changed_folders 
+        | select('match', '^' + roles_folder + '/') 
+        | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1') 
         | unique }}"
-    when: branch.stdout != default_branch
 
   - name: Set all roles to run if on default branch
     set_fact:
-      roles_with_changes: >-
-        "{{ lookup('fileglob', roles_folder + '/*')
-          | map('basename')
-          | list }}"
+      roles_with_changes: "{{ lookup('fileglob', roles_folder + '/*')
+        | map('basename')
+        | list }}"
     when: branch.stdout == default_branch
+
+  - name: Debug roles_with_changes output
+    debug:
+      msg: "{{ roles_with_changes }}"
