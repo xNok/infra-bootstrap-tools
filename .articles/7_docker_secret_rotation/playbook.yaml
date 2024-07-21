@@ -5,7 +5,7 @@
     checksum_directory: .
     docker_compose_path: ./docker-compose.yaml
     secrets:
-      - {name: 'test_1', value: "test_1"}
+      - {name: 'test_1', value: "test_1_3"}
       - {name: 'test_2', value: "test_2"}
 
   tasks:
@@ -75,7 +75,7 @@
       loop: "{{ secrets }}"
 
     - name: List all Docker secrets managed by this role
-      command: docker secret ls --filter label=managed_by=rotate_docker_secrets --format "{{ '{{.Name}}' }}"
+      command: docker secret ls --filter label=managed_by=rotate_docker_secrets --format "{{ '{{ .Name }}' }}"
       register: existing_secrets
 
     - name: Identify secrets to keep

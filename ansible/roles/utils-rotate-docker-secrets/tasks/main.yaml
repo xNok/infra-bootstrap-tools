@@ -13,10 +13,6 @@
       | cut -d\" \" -f1')}) }}"
   loop: "{{ secrets }}"
 
-- name: Debug secret_checksums
-  debug:
-    msg: "{{ secret_checksums }}"
-
 - name: Check if previous checksums file exists
   stat:
     path: "{{ checksum_directory }}/secrets.ini"
@@ -33,10 +29,6 @@
         file=checksum_directory + '/secrets.ini') }) }}"
   loop: "{{ secrets }}"
   when: previous_checksums_file.stat.exists
-
-- name: Debug previous_checksums
-  debug:
-    msg: "{{ previous_checksums }}"
 
 - name: Create new secrets if value has changed
   docker_secret:

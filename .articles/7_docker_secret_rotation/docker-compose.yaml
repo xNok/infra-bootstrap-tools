@@ -4,14 +4,14 @@ services:
   whoami:
     image: containous/whoami
     secrets:
-      - test_1_339fa33420c4b1a642f63055013211a1
+      - test_1_d069ea39bd54e519d6597d602099d22c
       - test_2_f50fdc1335c7ae7a3ca3a992eb53e67f
     environment:
-      TEST_1: /run/secrets/test_1_339fa33420c4b1a642f63055013211a1
+      TEST_1: /run/secrets/test_1_d069ea39bd54e519d6597d602099d22c
       TEST_2: /run/secrets/test_2_f50fdc1335c7ae7a3ca3a992eb53e67f
 
 secrets:
-  test_1_339fa33420c4b1a642f63055013211a1:
+  test_1_d069ea39bd54e519d6597d602099d22c:
     external: true
   test_2_f50fdc1335c7ae7a3ca3a992eb53e67f:
     external: true
