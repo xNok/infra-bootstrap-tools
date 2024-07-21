@@ -21,11 +21,6 @@
   tags:
   - skip_ansible_lint
 
-- name: Debug diff output
-  debug:
-    msg: "{{ diff.stdout_lines }}"
-  when: branch.stdout != default_branch
-
 - name: Extract folders from the diff
   set_fact:
     changed_folders: >-
@@ -50,3 +45,7 @@
         | map('basename')
         | list }}"
   when: branch.stdout == default_branch
+
+- name: Debug roles_with_changes output
+  debug:
+    msg: "{{ roles_with_changes }}"
