@@ -5,10 +5,10 @@
 
 - name: Calculate checksums for secrets
   set_fact:
-    secret_checksums: "{{ secret_checksums 
-      | default({}) 
-      | combine({item.name: lookup('pipe', 'echo ' + item.value + ' 
-      | md5sum 
+    secret_checksums: "{{ secret_checksums
+      | default({})
+      | combine({item.name: lookup('pipe', 'echo ' + item.value + '
+      | md5sum
       | cut -d\" \" -f1')}) }}"
   loop: "{{ secrets }}"
 
@@ -23,12 +23,12 @@
 
 - name: Load previous checksums if file exists
   set_fact:
-    previous_checksums: "{{ previous_checksums 
-      | default({}) 
-      | combine({ item.name: 
+    previous_checksums: "{{ previous_checksums
+      | default({})
+      | combine({ item.name:
       lookup('ansible.builtin.ini',
         'checksum',
-        section=item.name, 
+        section=item.name,
         file=checksum_directory + '/secrets.ini') }) }}"
   loop: "{{ secrets }}"
   when: previous_checksums_file.stat.exists
@@ -54,6 +54,7 @@
     section: "{{ item.name }}"
     option: checksum
     value: "{{ secret_checksums[item.name] }}"
+    mode: '0644'
   loop: "{{ secrets }}"
 
 - name: Replace secret names in Docker Compose file
