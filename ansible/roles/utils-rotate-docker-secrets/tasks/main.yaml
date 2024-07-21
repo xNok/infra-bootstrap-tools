@@ -1,6 +1,7 @@
 - name: Ensure checksum directory exists
   file:
     path: "{{ checksum_directory }}"
+    mode: '0644'
     state: directory
 
 - name: Calculate checksums for secrets
