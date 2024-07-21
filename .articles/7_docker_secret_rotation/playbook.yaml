@@ -70,8 +70,8 @@
     - name: Replace secret names in Docker Compose file
       replace:
         path: "{{ docker_compose_path }}"
-        regexp: "source: {{ item.name }}(_[a-f0-9]{32})?"
-        replace: "source: {{ item.name }}_{{ secret_checksums[item.name] }}"
+        regexp: "{{ item.name }}(_[a-f0-9]{32})?"
+        replace: "{{ item.name }}_{{ secret_checksums[item.name] }}"
       loop: "{{ secrets }}"
 
     - name: List all Docker secrets managed by this role

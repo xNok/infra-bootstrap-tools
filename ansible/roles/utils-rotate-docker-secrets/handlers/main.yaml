@@ -1,6 +1,16 @@
-- name: Optionally, remove old secrets
+- name: List all Docker secrets managed by this role
+  command: docker secret ls --filter label=managed_by=rotate_docker_secrets --format "{{ '{{.Name}}' }}"
+  register: existing_secrets
+
+- name: Identify secrets to keep
+  set_fact:
+    secrets_to_keep: "{{ secrets_to_keep | default([]) + [item.name + '_' + secret_checksums[item.name]] }}"
+  loop: "{{ secrets }}"
+
+- name: Remove dangling secrets
   docker_secret:
     name: "{{ item }}"
     state: absent
-  loop: "{{ previous_checksums.keys() | difference(secret_checksums.keys()) }}"
+  when: item not in secrets_to_keep
+  loop: "{{ existing_secrets.stdout_lines }}"
   ignore_errors: true
