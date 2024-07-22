@@ -29,7 +29,7 @@ services:
       GITHUB_CLIENT_ID_FILE: /run/secrets/caddy_github_client_id
       GITHUB_CLIENT_SECRET_FILE: /run/secrets/caddy_github_client_secret
       JWT_SHARED_KEY_FILE: /run/secrets/caddy_jwt_shared_key
-      DIGITALOCEAN_API_TOKEN: /run/secrets/caddy_jwt_shared_key
+      DIGITALOCEAN_API_TOKEN: /run/secrets/caddy_digitalocean_api_token
     deploy:
       placement:
         constraints:
@@ -68,4 +68,6 @@ secrets:
   caddy_github_client_secret:
     external: true
   caddy_jwt_shared_key:
+    external: true
+  caddy_digitalocean_api_token:
     external: true
