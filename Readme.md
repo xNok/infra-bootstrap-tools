@@ -41,7 +41,7 @@ The article / tutorial are splited into sections.
    * Example code [.articles/1_vagrant_101](.articles/1_vagrant_101)   
 * [X] 🧰 2 [Experimenting on Docker Swarm with Vagrant and Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4?sk=1eac227cf3c9ec5dc5abbf06f38e92c3)
    * Example code [.articles/2_docker_swarm_101](.articles/2_docker_swarm_101)
-* [ ] WIP: 🧰 3: [Automate Infrastructure provisionning with Ansible and Github action]()
+* [ ] WIP: 🧰 3: [Automate Infrastructure provisioning with Ansible and Github action]()
 
 ### Learn about the applications used in this setup
 
@@ -49,15 +49,25 @@ The article / tutorial are splited into sections.
 * [ ] WIP: ☸️ 2: [What is Prometheus and why you might need it.]()
 * [ ] WIP: ☸️ 3: [What is Caddy and why you might need it.]()
 
+### Deep Dives
+
+Below, I've included some explainers on how I solved a specific problem when I encountered it. This should demistify some of the magic happening in this repo.
+
+#### Ansible
+
+* [x] 🏃‍♂️ 1: [Speedup Ansible Playbook Pull-Requests by only running affected roles](https://medium.com/itnext/speedup-ansible-playbook-merge-request-by-only-running-affected-roles-42d9ca3f6433?sk=382b8de777e41deb20f7fefe430b2f26)
+* [ ] WIP 🏃‍♂️ 2: [How to rotate Docker Secrets with Ansible]()
+* [ ] WIP 🏃‍♂️ 3: [How to implement Pull-Request locking for Ansible]()
+
 ## Architecture
 
 ![](./diagrams/startup_infra_for_small_self_hosted_project.png)
 
-## Handy tool chain
+## Handy toolchain
 
-Wanna go fast? Too lazy to setup your local env?
+Do you want to go fast? Too lazy to set up your local environment?
 
-Then use the the tools from a docker container. I included a simple toochain in this repository and usefull alias to use it.
+Then, use the tools from a Docker container. I included a simple Toochain in this repository and a useful alias for it.
 
 Use common infrastructure tools in docker with:
 * [docker_tools_alias.sh](./bin/docker_tools_alias.sh)
