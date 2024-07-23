@@ -1,0 +1,3 @@
+- name: Debug role2
+  debug:
+    msg: "I am role 2"

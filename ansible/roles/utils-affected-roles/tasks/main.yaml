@@ -1,0 +1,48 @@
+- name: Register current branch
+  ansible.builtin.shell: |
+    if [ -z "$BRANCH_NAME" ]; then
+      BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+    fi
+    echo $BRANCH_NAME
+  register: branch
+  tags:
+  - skip_ansible_lint
+
+- name: Fetch the main and current branches
+  ansible.builtin.command: git fetch origin {{ default_branch }}:{{ default_branch }} {{ branch.stdout }}:{{ branch.stdout }}
+  when: branch.stdout != default_branch
+  tags:
+  - skip_ansible_lint
+
+- name: Register the git diff
+  ansible.builtin.command: git diff --name-only origin/{{ default_branch }}..origin/{{ branch.stdout }} .
+  when: branch.stdout != default_branch
+  register: diff
+  tags:
+  - skip_ansible_lint
+
+- name: Extract folders from the diff
+  set_fact:
+    changed_folders: "{{ diff.stdout_lines
+      | map('regex_replace', '^(.*/).*$' , '\\1')
+      | unique }}"
+  when: branch.stdout != default_branch
+
+- name: Filter folders within the roles directory
+  set_fact:
+    roles_with_changes: "{{ changed_folders
+      | select('match', '^' + roles_folder + '/')
+      | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1')
+      | unique }}"
+  when: branch.stdout != default_branch
+
+- name: Set all roles to run if on default branch
+  set_fact:
+    roles_with_changes: "{{ lookup('fileglob', roles_folder + '/*')
+      | map('basename')
+      | list }}"
+  when: branch.stdout == default_branch
+
+- name: Debug roles_with_changes output
+  debug:
+    msg: "{{ roles_with_changes }}"

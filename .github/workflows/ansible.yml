@@ -50,9 +50,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
+          cache: 'pip' # caching pip dependencies
 
       - name: Install dependencies Including Ansible
         run: |
@@ -62,18 +63,26 @@ jobs:
 
       - name: write inventory to file
         env:
-          INVENTORY: ${{ secrets.INVENTORY }}
+          INVENTORY: ${{ secrets.ANSIBLE_INVENTORY }}
         run: 'echo "$INVENTORY" > inventory'
 
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.ANSIBLE_SSH_KEY }}
           name: id_rsa # optional
-          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+          known_hosts: ${{ secrets.ANSIBLE_KNOWN_HOSTS }}
           # config: ${{ secrets.CONFIG }} # ssh_config; optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
 
       - name: run playbook
         run: |
           ansible-playbook -i inventory ansible/docker-swarm-portainer-caddy.yml
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+          # This is used by caddy to authenticate users
+          CADDY_GITHUB_CLIENT_ID: ${{ secrets.CADDY_GITHUB_CLIENT_ID }}
+          CADDY_GITHUB_CLIENT_SECRET: ${{ secrets.CADDY_GITHUB_CLIENT_SECRET }}
+          CADDY_JWT_SHARED_KEY: ${{ secrets.CADDY_JWT_SHARED_KEY }}
+          # This is used by caddy to configure dns records
+          CADDY_DIGITALOCEAN_API_TOKEN: ${{ secrets.CADDY_DIGITALOCEAN_API_TOKEN }}

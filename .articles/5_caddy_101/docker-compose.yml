@@ -1,0 +1,31 @@
+version: "3.7"
+services:
+  caddy:
+    build:
+      context: .
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - CADDY_INGRESS_NETWORKS=caddy
+    networks:
+      - caddy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - caddy_data:/data
+    restart: unless-stopped
+
+  whoami:
+    image: containous/whoami
+    networks:
+      - caddy
+    labels:
+      caddy: whoami.example.com
+      caddy.reverse_proxy: "{{upstreams 80}}"
+
+networks:
+  caddy:
+    external: true
+
+volumes:
+  caddy_data: {}
