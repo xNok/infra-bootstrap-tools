@@ -1,0 +1,31 @@
+name: 'PR Lock'
+description: 'Ensure that only one PR can deploy at a time using a lock file mechanism.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Checkout lock branch
+      run: |
+        git fetch origin lock-branch
+        git checkout lock-branch || git checkout --orphan lock-branch
+
+    - name: Check for lock file
+      id: check-lock
+      run: |
+        if [ -f ".deploy-lock" ]; then
+          echo "Another deployment is in progress. Exiting..."
+          exit 1
+        fi
+
+    - name: Create lock file
+      id: create-lock
+      run: |
+        echo "Creating lock file..."
+        echo "${{ github.event.pull_request.number }}" > .deploy-lock
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add .deploy-lock
+        git commit -m "Lock deployment for PR #${{ github.event.pull_request.number }}"
+        git push origin lock-branch
