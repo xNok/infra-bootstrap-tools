@@ -1,14 +1,16 @@
 - name: This is the base requirement for all nodes
   hosts: all
+  become: true
 
   roles:
-  - {name: docker, become: true}
+  - docker
 
 - name: This setup the Docker Swarm Manager
   hosts: managers
+  become: true
 
   roles:
-  - {name: docker-swarm-manager, become: true}    # this role is for creating the swarm and adding host as manager
+  - docker-swarm-manager # this role is for creating the swarm and adding host as manager
 
 - name: This setup nodes to join the Swarm
   hosts: nodes

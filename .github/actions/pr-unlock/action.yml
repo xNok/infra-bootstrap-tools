@@ -3,16 +3,15 @@ description: 'Remove the deployment lock file after deployment on the main branc
 runs:
   using: 'composite'
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
     - name: Checkout lock branch
+      shell: bash
       run: |
         git fetch origin lock-branch
         git checkout lock-branch || git checkout --orphan lock-branch
 
     - name: Remove lock file
       id: remove-lock
+      shell: bash
       run: |
         if [ -f ".deploy-lock" ]; then
           echo "Removing lock file..."

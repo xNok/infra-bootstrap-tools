@@ -33,8 +33,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Run ansible-lint
-        # replace `main` with any valid ref, or tags like `v6`
-        uses: ansible-community/ansible-lint-action@v6.0.2
+        uses: ansible/ansible-lint@main # or version tag instead of 'main'
         with:
           args: "ansible"
 

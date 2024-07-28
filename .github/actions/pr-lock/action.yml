@@ -3,16 +3,15 @@ description: 'Ensure that only one PR can deploy at a time using a lock file mec
 runs:
   using: 'composite'
   steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-
     - name: Checkout lock branch
+      shell: bash
       run: |
         git fetch origin lock-branch
         git checkout lock-branch || git checkout --orphan lock-branch
 
     - name: Check for lock file
       id: check-lock
+      shell: bash
       run: |
         if [ -f ".deploy-lock" ]; then
           echo "Another deployment is in progress. Exiting..."
@@ -20,6 +19,7 @@ runs:
         fi
 
     - name: Create lock file
+      shell: bash
       id: create-lock
       run: |
         echo "Creating lock file..."
