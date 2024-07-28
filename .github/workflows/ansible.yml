@@ -47,7 +47,12 @@ jobs:
 
     steps:
       - name: PR Lock
+        if: github.event_name == 'pull_request'
         uses: ./.github/actions/pr-lock
+
+      - name: Clear PR Lock
+        if: github.ref == 'refs/heads/main'
+        uses: ./.github/actions/pr-unlock
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
