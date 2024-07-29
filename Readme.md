@@ -13,11 +13,14 @@ Features:
 
 ## Articles and Tutorials
 
-The article / tutorial are splited into sections. 
-* **Introduction** -> What are the tools to use to manager infrastructure. Perfect to learn the basis.
-* **How-tos** -> Good take away fron this project - Answers many questions you could encounter in the future
+The articles/tutorials are divided into sections. 
+* **Introduction** -> What are the tools to manage infrastructure? Perfect to learn the basis.
+* **How-tos** -> Good takeaway from this project - Answers many questions you could encounter in the future
 * **Main quest** -> Deploy the Infrastructure using Ansible, Terraform and Github Action
-* **Deepening Understanding** -> learn more about each applicaton used in this setup (Portainer, Graphana, Caddy, etc.)
+* **Deepening Understanding** -> Learn more about each application used in this setup (Portainer, Graphana, Caddy, etc.)
+
+I used [DigitalOcean](https://digitalocean.pxf.io/q4b2qO) for experiments because it is cheap, but any cloud provider should work, as we are mainly playing with Virtual Machines. You can even get [$200 DigitalOcean free credit](https://digitalocean.pxf.io/q4b2qO) when starting 
+* Don't forget to delete everything after a tutorial if you don't want to add unnecessary costs
 
 ### Tools Introduction
 
