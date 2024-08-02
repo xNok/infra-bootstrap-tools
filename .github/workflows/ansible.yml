@@ -46,17 +46,19 @@ jobs:
     environment: digitalocean
 
     steps:
-      - name: PR Lock
-        if: github.event_name == 'pull_request'
-        uses: ./.github/actions/pr-lock
-
-      - name: Clear PR Lock
-        if: github.ref == 'refs/heads/main'
-        uses: ./.github/actions/pr-unlock
-
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
+      # Lock if this is a PR so two PR cannot deploy at the same time
+      - name: PR Lock
+        if: github.event_name == 'pull_request'
+        uses: .github/actions/pr-lock
+
+      - name: Clear PR Lock
+        if: github.ref == 'refs/heads/main'
+        uses: .github/actions/pr-unlock
+
+      # Setup the environment 
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
