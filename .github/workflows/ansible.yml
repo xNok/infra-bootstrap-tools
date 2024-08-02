@@ -52,11 +52,11 @@ jobs:
       # Lock if this is a PR so two PR cannot deploy at the same time
       - name: PR Lock
         if: github.event_name == 'pull_request'
-        uses: .github/actions/pr-lock
+        uses: ./.github/actions/pr-lock
 
       - name: Clear PR Lock
         if: github.ref == 'refs/heads/main'
-        uses: .github/actions/pr-unlock
+        uses: ./.github/actions/pr-unlock
 
       # Setup the environment 
       - name: Set up Python 3.10
