@@ -6,6 +6,8 @@ runs:
     - name: Create or checkout lock branch
       shell: bash
       run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
         # Fetch the lock-branch if it exists, otherwise handle the failure
         if git fetch origin lock-branch; then
           echo "Lock branch exists. Checking out."
@@ -43,8 +45,6 @@ runs:
       run: |
         echo "Creating lock file..."
         echo "${{ github.event.pull_request.number }}" > .deploy-lock
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
         git add .deploy-lock
         git commit -m "Lock deployment for PR #${{ github.event.pull_request.number }}"
         git push origin lock-branch
