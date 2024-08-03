@@ -6,8 +6,8 @@ runs:
     - name: Checkout lock branch
       shell: bash
       run: |
-        git fetch origin lock-branch || git checkout --orphan lock-branch
-        git checkout lock-branch
+        git fetch origin lock-branch || echo "No remote lock-branch found, creating a new one."
+        git checkout lock-branch || git checkout -b --orphan lock-branch
 
     - name: Check for lock file
       id: check-lock
