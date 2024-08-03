@@ -37,18 +37,12 @@ jobs:
         with:
           args: "ansible"
 
-  run-playbook:
+  lock:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    # The validate Job need to be sucessfull
-    needs: [ validate ]
-    # The deployement environnement thus provides the secrets for that env
-    environment: digitalocean
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
-
       # Lock if this is a PR so two PR cannot deploy at the same time
       - name: PR Lock
         if: github.event_name == 'pull_request'
@@ -57,6 +51,18 @@ jobs:
       - name: Clear PR Lock
         if: github.ref == 'refs/heads/main'
         uses: ./.github/actions/pr-unlock
+
+  run-playbook:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # The validate Job need to be sucessfull
+    needs: [ validate, lock ]
+    # The deployement environnement thus provides the secrets for that env
+    environment: digitalocean
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
 
       # Setup the environment 
       - name: Set up Python 3.12
