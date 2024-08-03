@@ -36,15 +36,9 @@ runs:
             echo "Current PR #${{ github.event.pull_request.number }} already holds the lock. Proceeding with deployment."
           fi
         else
-          echo "No lock file found. Proceeding with deployment."
+          echo "No lock file found. Creating lock file.."
+          echo "${{ github.event.pull_request.number }}" > .deploy-lock
+          git add .deploy-lock
+          git commit -m "Lock deployment for PR #${{ github.event.pull_request.number }}"
+          git push origin lock-branch
         fi
-
-    - name: Create lock file
-      shell: bash
-      id: create-lock
-      run: |
-        echo "Creating lock file..."
-        echo "${{ github.event.pull_request.number }}" > .deploy-lock
-        git add .deploy-lock
-        git commit -m "Lock deployment for PR #${{ github.event.pull_request.number }}"
-        git push origin lock-branch
