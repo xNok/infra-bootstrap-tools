@@ -16,7 +16,6 @@ runs:
           git rm -rf .
           git clean -fdx
           git commit --allow-empty -m "Initialize lock branch"
-          git push origin lock-branch --force
         fi
 
     - name: Check for lock file
