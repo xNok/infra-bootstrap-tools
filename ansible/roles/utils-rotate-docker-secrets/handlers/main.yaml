@@ -1,6 +1,7 @@
 - name: List all Docker secrets managed by this role
   command: docker secret ls --filter label=managed_by=rotate_docker_secrets --format "{{ '{{ .Name }}' }}"
   register: existing_secrets
+  changed_when: false
 
 - name: Identify secrets to keep
   set_fact:
@@ -14,3 +15,4 @@
   when: item not in secrets_to_keep
   loop: "{{ existing_secrets.stdout_lines }}"
   ignore_errors: true
+  register: ignore_errors_register

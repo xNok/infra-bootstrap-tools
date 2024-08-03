@@ -10,10 +10,13 @@
 # GENERAL Setup
 ###
 - name: Install required system packages
-  apt: name={{ item }} state=present update_cache=yes
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
   loop: ['python3-pip', 'virtualenv', 'python3-setuptools']
 
 - name: Install python stuff required
   pip:
-      executable: pip3
-      name: [jsondiff, passlib, docker]
+    executable: pip3
+    name: [jsondiff, passlib, docker]

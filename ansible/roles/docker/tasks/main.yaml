@@ -7,8 +7,10 @@
 # GENERAL Setup
 ###
 - name: Install required system packages
-  become_user: root
-  apt: name={{ item }} state=present update_cache=yes
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
   loop: ['apt-transport-https', 'ca-certificates', 'software-properties-common']
 
 - name: Add Docker GPG apt Key
@@ -22,7 +24,10 @@
     state: present
 
 - name: Update apt and install docker-ce
-  apt: name={{ item }} state=present update_cache=yes
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
   loop: ['docker-ce', 'docker-ce-cli', 'docker-compose', 'containerd.io']
 
 - name: Ensure docker users are added to the docker group.
@@ -43,17 +48,17 @@
 # Pull, start, stop a hello-world container
 ########
 - name: Pull default Docker image for testing
-  docker_image:
+  community.docker.docker_image:
     name: "hello-world"
     source: pull
 
 - name: Create default containers
-  docker_container:
+  community.docker.docker_container:
     name: "hello-world"
     image: "hello-world"
     state: present
 
 - name: Stop a container
-  docker_container:
+  community.docker.docker_container:
     name: "hello-world"
     state: stopped

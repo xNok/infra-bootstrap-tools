@@ -1,0 +1,44 @@
+name: 'PR Lock'
+description: 'Ensure that only one PR can deploy at a time using a lock file mechanism.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Create or checkout lock branch
+      shell: bash
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        # Fetch the lock-branch if it exists, otherwise handle the failure
+        if git fetch origin lock-branch; then
+          echo "Lock branch exists. Checking out."
+          git checkout lock-branch
+        else
+          echo "Lock branch does not exist. Creating a new one."
+          git checkout --orphan lock-branch
+          git rm -rf .
+          git clean -fdx
+          git commit --allow-empty -m "Initialize lock branch"
+        fi
+
+    - name: Check for lock file
+      id: check-lock
+      shell: bash
+      run: |
+        if [ -f ".deploy-lock" ]; then
+          # Read the PR number from the lock file
+          LOCKED_PR=$(cat .deploy-lock)
+
+          # Compare it with the current PR number
+          if [ "$LOCKED_PR" != "${{ github.event.pull_request.number }}" ]; then
+            echo "Another deployment is in progress by PR #$LOCKED_PR. Exiting..."
+            exit 1
+          else
+            echo "Current PR #${{ github.event.pull_request.number }} already holds the lock. Proceeding with deployment."
+          fi
+        else
+          echo "No lock file found. Creating lock file.."
+          echo "${{ github.event.pull_request.number }}" > .deploy-lock
+          git add .deploy-lock
+          git commit -m "Lock deployment for PR #${{ github.event.pull_request.number }}"
+          git push origin lock-branch
+        fi

@@ -15,6 +15,7 @@ on:
       - synchronize
     paths:
       - 'ansible/**'
+      - requirements.txt
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -29,30 +30,45 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run ansible-lint
-        # replace `main` with any valid ref, or tags like `v6`
-        uses: ansible-community/ansible-lint-action@v6.0.2
+        uses: ansible/ansible-lint@v24.7.0 # or version tag instead of 'main'
         with:
           args: "ansible"
+
+  lock:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      # Lock if this is a PR so two PR cannot deploy at the same time
+      - name: PR Lock
+        if: github.event_name == 'pull_request'
+        uses: ./.github/actions/pr-lock
+
+      - name: Clear PR Lock
+        if: github.ref == 'refs/heads/main'
+        uses: ./.github/actions/pr-unlock
 
   run-playbook:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     # The validate Job need to be sucessfull
-    needs: [ validate ]
+    needs: [ validate, lock ]
     # The deployement environnement thus provides the secrets for that env
     environment: digitalocean
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
+      # Setup the environment 
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: "3.12"
           cache: 'pip' # caching pip dependencies
 
       - name: Install dependencies Including Ansible
@@ -60,6 +76,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; fi
+          if [ -f requirements.yml ]; then ansible-galaxy install -r requirements.yml; fi
 
       - name: write inventory to file
         env:

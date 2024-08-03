@@ -22,11 +22,15 @@
   set_fact:
     previous_checksums: "{{ previous_checksums
       | default({})
-      | combine({ item.name:
-      lookup('ansible.builtin.ini',
-        'checksum',
-        section=item.name,
-        file=checksum_directory + '/secrets.ini') }) }}"
+      | combine({
+          item.name: lookup(
+          'ansible.builtin.ini',
+          'checksum',
+          section=item.name,
+          file=checksum_directory + '/secrets.ini'
+          )
+        })
+      }}"
   loop: "{{ secrets }}"
   when: previous_checksums_file.stat.exists
 

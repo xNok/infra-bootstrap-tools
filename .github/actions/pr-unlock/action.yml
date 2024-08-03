@@ -1,0 +1,24 @@
+name: 'PR Lock Remove'
+description: 'Remove the deployment lock file after deployment on the main branch.'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout lock branch
+      shell: bash
+      run: |
+        git fetch origin lock-branch
+        git checkout lock-branch || git checkout --orphan lock-branch
+
+    - name: Remove lock file
+      id: remove-lock
+      shell: bash
+      run: |
+        if [ -f ".deploy-lock" ]; then
+          echo "Removing lock file..."
+          git rm .deploy-lock
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git commit -m "Unlock deployment"
+          git push origin lock-branch
+        else
+          echo "No lock file found."

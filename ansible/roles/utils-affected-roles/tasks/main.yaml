@@ -23,9 +23,11 @@
 
 - name: Extract folders from the diff
   set_fact:
-    changed_folders: "{{ diff.stdout_lines
+    changed_folders: "{{
+      diff.stdout_lines
       | map('regex_replace', '^(.*/).*$' , '\\1')
-      | unique }}"
+      | unique
+      }}"
   when: branch.stdout != default_branch
 
 - name: Filter folders within the roles directory
