@@ -14,6 +14,7 @@ on:
       - ready_for_review
       - synchronize
     paths:
+      - .github/workflows/ansible.yml
       - 'ansible/**'
       - requirements.txt
 
