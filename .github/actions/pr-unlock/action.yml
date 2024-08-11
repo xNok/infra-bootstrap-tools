@@ -22,3 +22,4 @@ runs:
           git push origin lock-branch
         else
           echo "No lock file found."
+        fi
