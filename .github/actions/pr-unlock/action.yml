@@ -1,5 +1,10 @@
 name: 'PR Lock Remove'
 description: 'Remove the deployment lock file after deployment on the main branch.'
+inputs:
+  lock_file_name:
+    description: 'Name of the lock file to use'
+    required: false
+    default: '.deploy-lock'
 runs:
   using: 'composite'
   steps:
@@ -13,9 +18,9 @@ runs:
       id: remove-lock
       shell: bash
       run: |
-        if [ -f ".deploy-lock" ]; then
+        if [ -f "${{ inputs.lock_file_name }}" ]; then
           echo "Removing lock file..."
-          git rm .deploy-lock
+          git rm ${{ inputs.lock_file_name }}
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           git commit -m "Unlock deployment"
