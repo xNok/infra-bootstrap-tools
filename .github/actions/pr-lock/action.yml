@@ -1,7 +1,13 @@
 name: 'PR Lock'
 description: 'Ensure that only one PR can deploy at a time using a lock file mechanism.'
+inputs:
+  lock_file_name:
+    description: 'Name of the lock file to use for the deployment'
+    required: false
+    default: '.deploy-lock'
 runs:
   using: 'composite'
+
   steps:
     - name: Create or checkout lock branch
       shell: bash
@@ -24,9 +30,9 @@ runs:
       id: check-lock
       shell: bash
       run: |
-        if [ -f ".deploy-lock" ]; then
+        if [ -f "${{ inputs.lock_file_name }}" ]; then
           # Read the PR number from the lock file
-          LOCKED_PR=$(cat .deploy-lock)
+          LOCKED_PR=$(cat ${{ inputs.lock_file_name }})
 
           # Compare it with the current PR number
           if [ "$LOCKED_PR" != "${{ github.event.pull_request.number }}" ]; then
@@ -37,8 +43,8 @@ runs:
           fi
         else
           echo "No lock file found. Creating lock file.."
-          echo "${{ github.event.pull_request.number }}" > .deploy-lock
-          git add .deploy-lock
+          echo "${{ github.event.pull_request.number }}" > ${{ inputs.lock_file_name }}
+          git add ${{ inputs.lock_file_name }}
           git commit -m "Lock deployment for PR #${{ github.event.pull_request.number }}"
           git push origin lock-branch
         fi
