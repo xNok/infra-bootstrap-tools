@@ -2,7 +2,7 @@ name: 'PR Lock'
 description: 'Ensure that only one PR can deploy at a time using a lock file mechanism.'
 inputs:
   lock_file_name:
-    description: 'Name of the lock file to use for the deployment'
+    description: 'Name of the lock file to use'
     required: false
     default: '.deploy-lock'
 runs:
