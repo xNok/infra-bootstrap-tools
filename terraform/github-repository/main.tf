@@ -17,18 +17,22 @@ data "terraform_remote_state" "digitalocean" {
 
 locals {
   nodes_ips = concat(
-    data.terraform_remote_state.digitalocean.outputs.nodes_ips
+    data.terraform_remote_state.digitalocean.outputs.nodes_ips,
+    []
   )
 
   managers_ips = concat(
-    data.terraform_remote_state.digitalocean.outputs.managers_ips
+    data.terraform_remote_state.digitalocean.outputs.managers_ips,
+    []
   )
 
-  known_hosts = concat(
-    data.terraform_remote_state.digitalocean.outputs.known_hosts
+  known_hosts = merge(
+    data.terraform_remote_state.digitalocean.outputs.known_hosts,
+    {}
   )
 
-  ssh_key = concat(
-    data.terraform_remote_state.digitalocean.outputs.ssh_key
+  ssh_key = merge(
+    data.terraform_remote_state.digitalocean.outputs.ssh_key,
+    {}
   )
 }
