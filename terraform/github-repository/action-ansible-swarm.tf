@@ -2,9 +2,27 @@
  * Github environnement secrets for Ansible
  *
  */
+
+/*
+* Create one enviriment perCloud provider, that way ansible 
+*/
+resource "github_repository_environment" "docker_swarm" {
+  repository       = data.github_repository.repo.name
+  environment      = "docker_swarm"
+  reviewers {
+    users = [data.github_user.deployement_approver.id]
+    # teams = [] an entire team can be approver
+  }
+
+  deployment_branch_policy {
+    protected_branches     = false
+    custom_branch_policies = false
+  }
+}
+
 resource "github_actions_environment_secret" "ansible_inventory" {
   repository       = data.github_repository.repo.name
-  environment      = github_repository_environment.digitalocean_environment.environment
+  environment      = github_repository_environment.docker_swarm.environment
   secret_name      = "ansible_inventory"
   plaintext_value  = templatefile(
     "${path.module}/templates/ansible_inventory.tpl",
@@ -19,14 +37,14 @@ resource "github_actions_environment_secret" "ansible_inventory" {
 
 resource "github_actions_environment_secret" "ansible_ssh" {
   repository       = data.github_repository.repo.name
-  environment      = github_repository_environment.digitalocean_environment.environment
+  environment      = github_repository_environment.docker_swarm.environment
   secret_name      = "ansible_ssh_key"
-  plaintext_value  = local.ssh_key
+  plaintext_value  = local.ssh_key[0]
 }
 
 resource "github_actions_environment_secret" "ansible_known_hosts" {
   repository       = data.github_repository.repo.name
-  environment      = github_repository_environment.digitalocean_environment.environment
+  environment      = github_repository_environment.docker_swarm.environment
   secret_name      = "ansible_known_hosts"
   plaintext_value  = templatefile(
     "${path.module}/templates/known_hosts.tpl",

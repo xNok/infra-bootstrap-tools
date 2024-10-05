@@ -13,20 +13,6 @@ data "github_user" "deployement_approver" {
   username = var.deployement_approver
 }
 
-resource "github_repository_environment" "digitalocean_environment" {
-  repository       = data.github_repository.repo.name
-  environment      = "digitalocean"
-  reviewers {
-    users = [data.github_user.deployement_approver.id]
-    # teams = [] an entire team can be approver
-  }
-
-  deployment_branch_policy {
-    protected_branches     = false
-    custom_branch_policies = false
-  }
-}
-
 /**
  * Github branch permissions
  *
