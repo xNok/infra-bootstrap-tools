@@ -13,11 +13,6 @@ resource "github_repository_environment" "docker_swarm" {
     users = [data.github_user.deployement_approver.id]
     # teams = [] an entire team can be approver
   }
-
-  deployment_branch_policy {
-    protected_branches     = false
-    custom_branch_policies = false
-  }
 }
 
 resource "github_actions_environment_secret" "docker_swarm_ansible_inventory" {
