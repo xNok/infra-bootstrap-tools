@@ -8,12 +8,9 @@ variable "manager_count" {
   default = 1
 }
 
-variable "repo_name" {
+variable "tf_organization_name" {
   type = string
-  default = "xNok/infra-bootstrap-tools"
+  description = "Your Terraform Cloud organization name"
+  default = "nokwebspace"
 }
 
-variable "deployement_approver" {
-  type = string
-  default = "xNok"
-}
