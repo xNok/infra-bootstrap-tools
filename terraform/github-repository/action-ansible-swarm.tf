@@ -39,7 +39,7 @@ resource "github_actions_environment_secret" "docker_swarm_ansible_ssh" {
   repository       = data.github_repository.repo.name
   environment      = github_repository_environment.docker_swarm.environment
   secret_name      = "ansible_ssh_key"
-  plaintext_value  = local.ssh_key[0]
+  plaintext_value  = local.ssh_key
 }
 
 resource "github_actions_environment_secret" "docker_swarm_ansible_known_hosts" {

@@ -31,8 +31,5 @@ locals {
     {}
   )
 
-  ssh_key = merge(
-    data.terraform_remote_state.digitalocean.outputs.ssh_key,
-    {}
-  )
+  ssh_key = data.terraform_remote_state.digitalocean.outputs.ssh_key
 }
