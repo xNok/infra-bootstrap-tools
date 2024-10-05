@@ -1,11 +1,8 @@
 /**
- * Github environnement secrets for Ansible
+ * Github environnement and secrets for Ansible
  *
  */
 
-/*
-* Create one enviriment perCloud provider, that way ansible 
-*/
 resource "github_repository_environment" "docker_swarm" {
   repository       = data.github_repository.repo.name
   environment      = "docker_swarm"
