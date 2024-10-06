@@ -15,6 +15,8 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
     # Docker Stack Config
+    networks:
+      - caddy_caddy
     deploy:
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
@@ -24,4 +26,8 @@ services:
 
 volumes:
   n8n_data:
+    external: true
+
+networks:
+  caddy_caddy:
     external: true
