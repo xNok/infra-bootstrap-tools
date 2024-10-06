@@ -8,3 +8,6 @@ tasks:
       pip install pre-commit
       pre-commit install --install-hooks
       exit 0
+  - name: Install tools
+    init: |
+      brew install ansible

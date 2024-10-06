@@ -38,9 +38,20 @@
       | unique }}"
   when: branch.stdout != default_branch
 
+- name: List all existing roles
+  find:
+    paths: "{{ roles_folder }}"
+    recurse: false
+    file_type: directory
+  register: found_directories
+  when: branch.stdout == default_branch
+
 - name: Set all roles to run if on default branch
   set_fact:
-    roles_with_changes: "{{ lookup('find', roles_folder, 'type=d', 'depth=1') | map('basename') | list }}"
+    roles_with_changes: "{{ found_directories.files
+      | map(attribute='path')
+      | map('basename')
+      | list }}"
   when: branch.stdout == default_branch
 
 - name: Debug roles_with_changes output

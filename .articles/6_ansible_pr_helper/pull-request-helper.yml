@@ -2,7 +2,7 @@
   hosts: localhost
   gather_facts: false
   vars:
-    roles_folder: ".articles/6_ansible_pr_helper/roles"
+    roles_folder: "{{ playbook_dir }}/roles"
     default_branch: main
 
   tasks:
@@ -29,22 +29,33 @@
     when: branch.stdout != default_branch
 
   - name: Extract folders from the diff
+    when: branch.stdout != default_branch
     set_fact:
       changed_folders: "{{ diff.stdout_lines 
         | map('regex_replace', '^(.*/).*$' , '\\1') 
         | unique }}"
 
   - name: Filter folders within the roles directory
+    when: branch.stdout != default_branch
     set_fact:
-      roles_with_changes: "{{ changed_folders 
-        | select('match', '^' + roles_folder + '/') 
-        | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1') 
-        | unique }}"
+    roles_with_changes: "{{ changed_folders
+      | select('match', '^' + roles_folder + '/')
+      | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1')
+      | unique }}"
+
+  - name: List all existing roles
+    find:
+      paths: "{{ roles_folder }}"
+      recurse: false
+      file_type: directory
+    register: found_directories
+    when: branch.stdout == default_branch
 
   - name: Set all roles to run if on default branch
     set_fact:
-      roles_with_changes: "{{ lookup('fileglob', roles_folder + '/*')
-        | map('basename')
+      roles_with_changes: "{{ found_directories.files 
+        | map(attribute='path') 
+        | map('basename') 
         | list }}"
     when: branch.stdout == default_branch
 
@@ -56,17 +67,17 @@
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Include role1 if it has changes
-      include_role:
-        name: role1
-      when: "'role1' in roles_with_changes"
+  - name: Include role1 if it has changes
+    include_role:
+      name: role1
+    when: "'role1' in roles_with_changes"
 
-    - name: Include role2 if it has changes
-      include_role:
-        name: role2
-      when: "'role2' in roles_with_changes"
+  - name: Include role2 if it has changes
+    include_role:
+      name: role2
+    when: "'role2' in roles_with_changes"
 
-    - name: Include role3 if it has changes
-      include_role:
-        name: role3
-      when: "'role3' in roles_with_changes"
+  - name: Include role3 if it has changes
+    include_role:
+      name: role3
+    when: "'role3' in roles_with_changes"
