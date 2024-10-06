@@ -15,3 +15,21 @@ variable "deployement_approver" {
   description = "Your user, it will de added as the approver for the repository"
   default = "xNok"
 }
+
+variable "CADDY_DIGITALOCEAN_API_TOKEN" {
+  type = string
+  description = "Digital API key that caddy will use to setup DNS records"
+  default = ""
+}
+
+variable "CADDY_GITHUB_CLIENT_ID" {
+  type = string
+  description = "Github App client id that caddy will use for authorization"
+  default = ""
+}
+
+variable "CADDY_GITHUB_CLIENT_SECRET" {
+  type = string
+  description = "Github App client secret that caddy will use for authorization"
+  default = ""
+}
