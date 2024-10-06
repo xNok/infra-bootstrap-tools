@@ -40,9 +40,7 @@
 
 - name: Set all roles to run if on default branch
   set_fact:
-    roles_with_changes: "{{ lookup('fileglob', roles_folder + '/*')
-      | map('basename')
-      | list }}"
+    roles_with_changes: "{{ lookup('find', roles_folder, 'type=d', 'depth=1') | map('basename') | list }}"
   when: branch.stdout == default_branch
 
 - name: Debug roles_with_changes output
