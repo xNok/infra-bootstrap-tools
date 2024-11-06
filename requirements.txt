@@ -1,5 +1,5 @@
 ansible-compat==24.6.1
-ansible-core==2.17.1
+ansible-core==2.17.6
 jsondiff==2.0.0
 passlib==1.7.4
 pyyaml==6.0.1
