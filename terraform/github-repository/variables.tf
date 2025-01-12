@@ -9,7 +9,7 @@ variable "repo_name" {
 }
 
 variable "deployement_approver" {
-  type = list(string)
+  type = set(string)
   description = "Your user, it will de added as the approver for the repository"
   default = []
 }
