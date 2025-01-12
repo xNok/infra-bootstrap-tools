@@ -7,7 +7,7 @@ resource "github_repository_environment" "docker_swarm" {
   repository       = data.github_repository.repo.name
   environment      = "docker_swarm"
   reviewers {
-    users = [data.github_user.deployement_approver.id]
+    users = data.github_user.deployement_approver.*.id
     # teams = [] an entire team can be approver
   }
 }

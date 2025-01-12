@@ -10,7 +10,8 @@ data "github_repository" "repo" {
 }
 
 data "github_user" "deployement_approver" {
-  username = var.deployement_approver
+  for_each = var.deployement_approver
+  username = each.key
 }
 
 /**

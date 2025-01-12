@@ -11,6 +11,4 @@ variable "manager_count" {
 variable "tf_organization_name" {
   type = string
   description = "Your Terraform Cloud organization name"
-  default = "nokwebspace"
 }
-
