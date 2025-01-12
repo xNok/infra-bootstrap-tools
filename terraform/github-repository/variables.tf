@@ -9,9 +9,8 @@ variable "repo_name" {
 }
 
 variable "deployement_approver" {
-  type = set(string)
+  type = string
   description = "Your user, it will de added as the approver for the repository"
-  default = []
 }
 
 variable "CADDY_DIGITALOCEAN_API_TOKEN" {
