@@ -52,3 +52,9 @@
 auth.{{domain}} {
 	authenticate with myportal
 }
+
+(external_dns) {
+	tls {
+		dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
+	}
+}
