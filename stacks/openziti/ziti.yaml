@@ -3,16 +3,9 @@ version: "3.7"
 services:
   ziti-controller:
     image: "${ZITI_IMAGE}:${ZITI_VERSION}"
-    healthcheck:
-      test: curl -m 1 -s -k -f https://${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}:${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}/edge/client/v1/version
-      interval: 1s
-      timeout: 3s
-      retries: 30
-    ports:
-      - ${ZITI_INTERFACE:-0.0.0.0}:${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}:${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}
-      - ${ZITI_INTERFACE:-0.0.0.0}:${ZITI_CTRL_ADVERTISED_PORT:-6262}:${ZITI_CTRL_ADVERTISED_PORT:-6262}
     environment:
-      - ZITI_CTRL_NAME=${ZITI_CTRL_NAME:-ziti-edge-controller}
+      - ZITI_CTRL_NAME=${ZITI_CTRL_NAME:-ziti-controller}
+      - ZITI_CTRL_ADVERTISED_ADDRESS=${ZITI_CTRL_ADVERTISED_ADDRESS:-ziti-controller}
       - ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}
       - ZITI_CTRL_EDGE_ADVERTISED_PORT=${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}
       - ZITI_CTRL_EDGE_IP_OVERRIDE=${ZITI_CTRL_EDGE_IP_OVERRIDE:-127.0.0.1}
@@ -29,12 +22,12 @@ services:
       - ziti-fs:/persistent
     entrypoint:
       - "/var/openziti/scripts/run-controller.sh"
+    deploy:
+      placement:
+        constraints: [node.role == worker]
 
   ziti-controller-init-container:
     image: "${ZITI_IMAGE}:${ZITI_VERSION}"
-    environment:
-      - ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}
-      - ZITI_CTRL_EDGE_ADVERTISED_PORT=${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}
     networks:
       ziti:
     volumes:
@@ -43,12 +36,35 @@ services:
       - "/var/openziti/scripts/run-with-ziti-cli.sh"
     command:
       - "/var/openziti/scripts/access-control.sh"
+    deploy:
+      restart_policy:
+        condition: none
+      placement:
+        constraints: [node.role == worker]
+
+  ziti-console:
+    image: openziti/zac
+    working_dir: /usr/src/app
+    environment:
+      - ZAC_SERVER_CERT_CHAIN=/persistent/pki/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-intermediate/certs/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-server.cert
+      - ZAC_SERVER_KEY=/persistent/pki/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-intermediate/keys/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-server.key
+      - ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}
+      - ZITI_CTRL_EDGE_ADVERTISED_PORT=${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}
+      - ZITI_CTRL_NAME=${ZITI_CTRL_NAME:-ziti-edge-controller}
+      - PORTTLS=8443
+    volumes:
+      - ziti-fs:/persistent
+    networks:
+      - ziti
+    deploy:
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role == worker]
 
   ziti-edge-router:
     image: "${ZITI_IMAGE}:${ZITI_VERSION}"
-    ports:
-      - ${ZITI_INTERFACE:-0.0.0.0}:${ZITI_ROUTER_PORT:-3022}:${ZITI_ROUTER_PORT:-3022}
-      - ${ZITI_INTERFACE:-0.0.0.0}:${ZITI_ROUTER_LISTENER_BIND_PORT:-10080}:${ZITI_ROUTER_LISTENER_BIND_PORT:-10080}
+
     environment:
       - ZITI_CTRL_ADVERTISED_ADDRESS=${ZITI_CTRL_ADVERTISED_ADDRESS:-ziti-controller}
       - ZITI_CTRL_ADVERTISED_PORT=${ZITI_CTRL_ADVERTISED_PORT:-6262}
@@ -65,23 +81,17 @@ services:
       - ziti-fs:/persistent
     entrypoint: /bin/bash
     command: "/var/openziti/scripts/run-router.sh edge"
+    deploy:
+      restart_policy:
+        condition: none
+      placement:
+        constraints: [node.role == worker]
 
-  ziti-console:
-    image: openziti/zac
-    working_dir: /usr/src/app
-    environment:
-      - ZAC_SERVER_CERT_CHAIN=/persistent/pki/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-intermediate/certs/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-server.cert
-      - ZAC_SERVER_KEY=/persistent/pki/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-intermediate/keys/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-server.key
-      - ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}
-      - ZITI_CTRL_EDGE_ADVERTISED_PORT=${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}
-      - ZITI_CTRL_NAME=${ZITI_CTRL_NAME:-ziti-edge-controller}
-      - PORTTLS=8443
-    ports:
-      - ${ZITI_INTERFACE:-0.0.0.0}:8443:8443
-    volumes:
-      - ziti-fs:/persistent
+  web-test:
+    image: openziti/hello-world
+
     networks:
-      - ziti
+      ziti:
 
 networks:
   ziti:
