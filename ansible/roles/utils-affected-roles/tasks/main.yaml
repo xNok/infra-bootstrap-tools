@@ -21,6 +21,10 @@
   tags:
   - skip_ansible_lint
 
+- name: Debug git diff output
+  debug:
+    msg: "{{ diff.stdout_lines }}"
+
 - name: Extract folders from the diff
   set_fact:
     changed_folders: "{{
