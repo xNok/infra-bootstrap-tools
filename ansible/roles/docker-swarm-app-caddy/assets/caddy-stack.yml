@@ -62,7 +62,7 @@ services:
     deploy:
       labels:
         caddy: whoami-dns.{{domain}}
-        caddy.import: external_dns
+        caddy.import: external-dns
         caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
 
 
