@@ -54,18 +54,6 @@ services:
         caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
         caddy.authorize: with admins_policy
 
-  whoami-dns:
-    # A container that exposes an API to show its IP address
-    image: containous/whoami
-    networks:
-      - caddy
-    deploy:
-      labels:
-        caddy: whoami-dns.{{domain}}
-        caddy.import: external-dns
-        caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
-
-
 volumes:
   caddy_data:
   caddy_config:
