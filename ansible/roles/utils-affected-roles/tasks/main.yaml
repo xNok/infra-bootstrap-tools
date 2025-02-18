@@ -34,6 +34,10 @@
       }}"
   when: branch.stdout != default_branch
 
+- name: Debug changed_folders output
+  debug:
+    msg: "{{ changed_folders }}"
+
 - name: Filter folders within the roles directory
   set_fact:
     roles_with_changes: "{{ changed_folders
