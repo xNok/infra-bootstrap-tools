@@ -49,14 +49,14 @@
 	}
 }
 
-// Snippet enable automatic DNS configuration
+# Snippet enable automatic DNS configuration
 (external-dns) {
 	tls {
 		dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
 	}
 }
 
-// Auth endpoint for caddy security
+# Auth endpoint for caddy security
 auth.{{domain}} {
 	import external-dns
 	authenticate with myportal
