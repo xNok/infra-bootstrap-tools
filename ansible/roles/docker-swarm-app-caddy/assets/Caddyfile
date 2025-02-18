@@ -6,6 +6,13 @@
 	order authenticate before respond
 	order authorize before basicauth
 
+	dynamic_dns {
+		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
+		domains {
+			{{domain}}
+		}
+	}
+
 	security {
 		oauth identity provider github {env.GITHUB_CLIENT_ID} {env.GITHUB_CLIENT_SECRET}
 
