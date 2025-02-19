@@ -42,7 +42,7 @@
 - name: Create new configs if value has changed
   docker_config:
     name: "{{ item.name }}_{{ config_checksums[item.name] }}"
-    data: "{{ lookup('file', item.file_path) }}"
+    data_src: "{{ item.file_path }}"
     state: present
     labels:
       managed_by: "rotate_docker_configs"
