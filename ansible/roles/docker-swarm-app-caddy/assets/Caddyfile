@@ -9,7 +9,7 @@
 	dynamic_dns {
 		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
 		domains {
-			{{domain}} @ www
+			{$DOMAIN} @ www
 		}
 		dynamic_domains
 	}
@@ -20,7 +20,7 @@
 		authentication portal myportal {
 			crypto default token lifetime 3600
 			crypto key sign-verify {env.JWT_SHARED_KEY}
-			cookie domain {{domain}}
+			cookie domain {$DOMAIN}
 			enable identity provider github
 			ui {
 				links {
@@ -36,7 +36,7 @@
 		}
 
 		authorization policy admins_policy {
-			set auth url https://auth.{{domain}}/oauth2/github
+			set auth url https://auth.{$DOMAIN}/oauth2/github
 			crypto key verify {env.JWT_SHARED_KEY}
 			allow roles authp/admin authp/user
 			validate bearer header
@@ -58,15 +58,15 @@
 }
 
 # Snippet enable automatic DNS configuration
-(external-dns) {
+(dns-challenge) {
 	tls {
 		dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
 	}
 }
 
 # Auth endpoint for caddy security
-auth.{{domain}} {
-	import external-dns
+auth.{$DOMAIN} {
+	import dns-challenge
 	authenticate with myportal
 }
 

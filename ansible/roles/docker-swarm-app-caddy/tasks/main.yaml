@@ -13,15 +13,19 @@
     state: directory
     mode: '0644'
 
+- name: Define asssets folder
+  set_fact:
+    assets_path: "{{ role_path }}/assets"
+
 - name: Copy Compose file to remote server
   template:
     src: "{{ item }}"
     dest: "{{ caddy_dir }}"
     mode: '0644'
   with_fileglob:
-    - "{{ role_path }}/assets/*-stack.yml"
-    - "{{ role_path }}/assets/Caddyfile"
-    - "{{ role_path }}/assets/Dockerfile"
+    - "{{ assets_path }}/*-stack.yml"
+    - "{{ assets_path }}/Caddyfile"
+    - "{{ assets_path }}/Dockerfile"
 
 ###
 # Create Caddy Pre-requisits
@@ -32,7 +36,7 @@
   vars:
     docker_compose_path: "{{ caddy_dir }}/caddy-stack.yml"
     configs:
-      - {name: 'caddyfile', value: "{{ lookup('ansible.builtin.file', role_path + '/Caddyfile') }}"}
+      - {name: 'global_caddyfile', value: "{{ lookup('ansible.builtin.file', assets_path + '/Caddyfile') }}"}
 
 - name: Manager Caddy Secrets
   include_role:
