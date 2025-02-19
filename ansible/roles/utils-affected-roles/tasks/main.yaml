@@ -21,6 +21,10 @@
   tags:
   - skip_ansible_lint
 
+- name: Debug git diff output
+  debug:
+    msg: "{{ diff.stdout_lines }}"
+
 - name: Extract folders from the diff
   set_fact:
     changed_folders: "{{
@@ -29,6 +33,10 @@
       | unique
       }}"
   when: branch.stdout != default_branch
+
+- name: Debug changed_folders output
+  debug:
+    msg: "{{ changed_folders }}"
 
 - name: Filter folders within the roles directory
   set_fact:
