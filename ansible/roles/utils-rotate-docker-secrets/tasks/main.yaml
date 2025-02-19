@@ -27,7 +27,7 @@
           'ansible.builtin.ini',
           'checksum',
           section=item.name,
-          file=checksum_directory + '/secrets.ini'
+          file=checksum_directory + '/' + checksum_file
           )
         })
       }}"
@@ -47,7 +47,7 @@
 
 - name: Update checksums file
   ini_file:
-    path: ./secrets.ini
+    path: "{{ checksum_directory }}/{{checksum_file}}"
     section: "{{ item.name }}"
     option: checksum
     value: "{{ secret_checksums[item.name] }}"

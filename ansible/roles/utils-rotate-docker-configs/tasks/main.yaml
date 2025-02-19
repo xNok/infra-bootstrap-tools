@@ -32,7 +32,7 @@
           'ansible.builtin.ini',
           'checksum',
           section=item.name,
-          file=checksum_directory + '/{{ checksum_file }}'
+          file=checksum_directory + '/' + checksum_file
           )
         })
       }}"
