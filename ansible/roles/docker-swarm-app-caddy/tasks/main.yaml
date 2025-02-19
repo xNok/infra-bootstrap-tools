@@ -32,7 +32,7 @@
   vars:
     docker_compose_path: "{{ caddy_dir }}/caddy-stack.yml"
     configs:
-      - {name: 'caddyfile', value: "{{ lookup('ansible.builtin.file', caddy_dir + '/Caddyfile') }}"}
+      - {name: 'caddyfile', value: "{{ lookup('ansible.builtin.file', role_path + '/Caddyfile') }}"}
 
 - name: Manager Caddy Secrets
   include_role:
