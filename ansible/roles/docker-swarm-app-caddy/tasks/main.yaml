@@ -26,6 +26,14 @@
 ###
 # Create Caddy Pre-requisits
 ###
+- name: Manager Caddy Configs
+  include_role:
+    name: utils-rotate-docker-configs
+  vars:
+    docker_compose_path: "{{ caddy_dir }}/caddy-stack.yml"
+    configs:
+      - {name: 'caddyfile', value: "{{ lookup('ansible.builtin.file', caddy_dir + '/Caddyfile') }}"}
+
 - name: Manager Caddy Secrets
   include_role:
     name: utils-rotate-docker-secrets
