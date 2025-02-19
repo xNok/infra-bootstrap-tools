@@ -4,13 +4,15 @@
     mode: '0644'
     state: directory
 
-- name: Calculate checksums for configs
+- name: Gather file stats and checksums
+  stat:
+    path: "{{ item.file_path }}"
+  loop: "{{ configs }}"
+  register: file_stats
+
+- name: Create dictionary of checksums
   set_fact:
-    config_checksums: "{{ config_checksums
-      | default({})
-      | combine({item.name: lookup('pipe', 'echo ' + item.value + '
-      | md5sum
-      | cut -d\" \" -f1')}) }}"
+    config_checksums: "{{ config_checksums | default({}) | combine({ item.name: file_stats[item.name].stat.checksum }) }}"
   loop: "{{ configs }}"
 
 - name: Check if previous checksums file exists
@@ -37,7 +39,7 @@
 - name: Create new configs if value has changed
   docker_config:
     name: "{{ item.name }}_{{ config_checksums[item.name] }}"
-    data: "{{ item.value }}"
+    data: "{{ lookup('file', item.file_path) }}"
     state: present
     labels:
       managed_by: "rotate_docker_configs"
