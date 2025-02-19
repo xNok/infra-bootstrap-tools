@@ -7,12 +7,9 @@
 - name: Gather file stats and checksums
   stat:
     path: "{{ item.file_path }}"
+    checksum: md5
   loop: "{{ configs }}"
   register: file_stats
-
-- name: Print file stats
-  ansible.builtin.debug:
-    msg: "{{ file_stats }}"
 
 - name: Create dictionary of checksums
   set_fact:

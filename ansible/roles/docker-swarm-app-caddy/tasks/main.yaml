@@ -36,7 +36,7 @@
   vars:
     docker_compose_path: "{{ caddy_dir }}/caddy-stack.yml"
     configs:
-      - {name: 'global_caddyfile', file_path: "{{ assets_path }}/Caddyfile"}
+      - {name: 'global_caddyfile', file_path: "{{ caddy_dir }}/Caddyfile"}
 
 - name: Manager Caddy Secrets
   include_role:
