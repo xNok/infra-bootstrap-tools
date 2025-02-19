@@ -12,8 +12,10 @@
 
 - name: Create dictionary of checksums
   set_fact:
-    config_checksums: "{{ config_checksums | default({}) | combine({ item.name: file_stats[item.name].stat.checksum }) }}"
+    config_checksums: "{{ config_checksums | default({}) | combine({ item.name: file_stats.results[idx].stat.checksum }) }}"
   loop: "{{ configs }}"
+  loop_control:
+    index_var: idx
 
 - name: Check if previous checksums file exists
   stat:
