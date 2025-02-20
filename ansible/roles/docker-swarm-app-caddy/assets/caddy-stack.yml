@@ -61,7 +61,7 @@ volumes:
   caddy_data:
   caddy_config:
 
-config:
+configs:
   caddy_global_caddyfile:
     external: true
 
