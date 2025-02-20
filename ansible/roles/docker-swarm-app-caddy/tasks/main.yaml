@@ -13,19 +13,31 @@
     state: directory
     mode: '0644'
 
+- name: Define asssets folder
+  set_fact:
+    assets_path: "{{ role_path }}/assets"
+
 - name: Copy Compose file to remote server
   template:
     src: "{{ item }}"
     dest: "{{ caddy_dir }}"
     mode: '0644'
   with_fileglob:
-    - "{{ role_path }}/assets/*-stack.yml"
-    - "{{ role_path }}/assets/Caddyfile"
-    - "{{ role_path }}/assets/Dockerfile"
+    - "{{ assets_path }}/*-stack.yml"
+    - "{{ assets_path }}/Caddyfile"
+    - "{{ assets_path }}/Dockerfile"
 
 ###
 # Create Caddy Pre-requisits
 ###
+- name: Manager Caddy Configs
+  include_role:
+    name: utils-rotate-docker-configs
+  vars:
+    docker_compose_path: "{{ caddy_dir }}/caddy-stack.yml"
+    configs:
+      - {name: 'caddy_global_caddyfile', file_path: "{{ caddy_dir }}/Caddyfile"}
+
 - name: Manager Caddy Secrets
   include_role:
     name: utils-rotate-docker-secrets

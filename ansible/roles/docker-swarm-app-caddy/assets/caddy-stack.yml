@@ -17,15 +17,18 @@ services:
       - caddy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - "{{ caddy_dir }}/Caddyfile:/etc/caddy/Caddyfile"
       - caddy_data:/data
       - caddy_config:/config
+    configs:
+      - source: caddy_global_caddyfile
+        target: "/etc/caddy/Caddyfile"
     secrets:
       - caddy_github_client_id
       - caddy_github_client_secret
       - caddy_jwt_shared_key
       - caddy_digitalocean_api_token
     environment:
+      DOMAIN: "{{ domain }}"
       GITHUB_CLIENT_ID_FILE: /run/secrets/caddy_github_client_id
       GITHUB_CLIENT_SECRET_FILE: /run/secrets/caddy_github_client_secret
       JWT_SHARED_KEY_FILE: /run/secrets/caddy_jwt_shared_key
@@ -57,6 +60,10 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+
+configs:
+  caddy_global_caddyfile:
+    external: true
 
 networks:
   caddy:
