@@ -1,3 +1,1 @@
-checksum_directory: /var/data/ansible
-checksum_file: configs.ini
 docker_compose_path: "{{ undef(hint='You must specify docker-compose file to update') }}"

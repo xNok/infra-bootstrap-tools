@@ -17,9 +17,11 @@ services:
       - caddy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - "{{ caddy_dir }}/Caddyfile:/etc/caddy/Caddyfile"
       - caddy_data:/data
       - caddy_config:/config
+    configs:
+      - source: global_caddyfile
+        target: "/etc/caddy/Caddyfile"
     secrets:
       - caddy_github_client_id
       - caddy_github_client_secret
