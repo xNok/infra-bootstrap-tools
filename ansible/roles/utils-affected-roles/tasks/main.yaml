@@ -24,6 +24,7 @@
 - name: Debug git diff output
   debug:
     msg: "{{ diff.stdout_lines }}"
+  when: branch.stdout != default_branch
 
 - name: Extract folders from the diff
   set_fact:
@@ -33,10 +34,6 @@
       | unique
       }}"
   when: branch.stdout != default_branch
-
-- name: Debug changed_folders output
-  debug:
-    msg: "{{ changed_folders }}"
 
 - name: Filter folders within the roles directory
   set_fact:
