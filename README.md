@@ -59,8 +59,8 @@ Below, I've included some explainers on how I solved a specific problem when I e
 #### Ansible
 
 * [x] 🏃‍♂️ 1: [Speedup Ansible Playbook Pull-Requests by only running affected roles](https://medium.com/itnext/speedup-ansible-playbook-merge-request-by-only-running-affected-roles-42d9ca3f6433?sk=382b8de777e41deb20f7fefe430b2f26)
-* [ ] WIP 🏃‍♂️ 2: [How to rotate Docker Secrets with Ansible]()
-* [ ] WIP 🏃‍♂️ 3: [How to implement Pull-Request locking for Ansible]()
+* [x] 🏃‍♂️ 2: [How to rotate Docker Secrets with Ansible](https://medium.com/itnext/rotating-docker-swarm-secrets-with-ansible-cbaddfdd8ee9?sk=886dae52f1570c251a6a664d5ee2c5fe)
+* [x] 🏃‍♂️ 3: [How to implement Pull-Request locking for Ansible](https://medium.com/itnext/safe-infrastructure-as-code-github-actions-workflow-with-a-pr-lock-27bef636f852?sk=a6615ca085348aa2543a68f9c7a41077)
 
 ## Architecture
 

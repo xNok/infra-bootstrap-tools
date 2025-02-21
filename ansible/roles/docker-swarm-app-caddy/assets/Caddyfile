@@ -6,13 +6,21 @@
 	order authenticate before respond
 	order authorize before basicauth
 
+	dynamic_dns {
+		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
+		domains {
+			{$DOMAIN} @ www
+		}
+		dynamic_domains
+	}
+
 	security {
 		oauth identity provider github {env.GITHUB_CLIENT_ID} {env.GITHUB_CLIENT_SECRET}
 
 		authentication portal myportal {
 			crypto default token lifetime 3600
 			crypto key sign-verify {env.JWT_SHARED_KEY}
-			cookie domain {{domain}}
+			cookie domain {$DOMAIN}
 			enable identity provider github
 			ui {
 				links {
@@ -28,7 +36,7 @@
 		}
 
 		authorization policy admins_policy {
-			set auth url https://auth.{{domain}}/oauth2/github
+			set auth url https://auth.{$DOMAIN}/oauth2/github
 			crypto key verify {env.JWT_SHARED_KEY}
 			allow roles authp/admin authp/user
 			validate bearer header
@@ -49,12 +57,17 @@
 	}
 }
 
-auth.{{domain}} {
-	authenticate with myportal
-}
-
-(external_dns) {
+# Snippet enable automatic DNS configuration
+(dns-challenge) {
 	tls {
 		dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
 	}
 }
+
+# Auth endpoint for caddy security
+auth.{$DOMAIN} {
+	import dns-challenge
+	authenticate with myportal
+}
+
+

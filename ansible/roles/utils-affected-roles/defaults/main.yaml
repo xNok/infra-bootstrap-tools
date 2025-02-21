@@ -1,3 +1,3 @@
 # Default variables for affected_roles role
 default_branch: "main"
-roles_folder: "{{ playbook_dir }}/roles"
+roles_folder: "ansible/roles"
