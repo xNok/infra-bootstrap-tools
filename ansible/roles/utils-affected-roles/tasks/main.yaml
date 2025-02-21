@@ -45,7 +45,7 @@
 
 - name: List all existing roles
   find:
-    paths: "{{ roles_folder }}"
+    paths: "{{ lookup('env', 'PWD') }}/{{ roles_folder }}"
     recurse: false
     file_type: directory
   register: found_directories
