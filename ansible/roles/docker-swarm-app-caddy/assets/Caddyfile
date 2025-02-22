@@ -1,7 +1,8 @@
 {
 	http_port 80
 	https_port 443
-	debug
+
+        acme_dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
 
 	order authenticate before respond
 	order authorize before basicauth
@@ -57,16 +58,8 @@
 	}
 }
 
-# Snippet enable automatic DNS configuration
-(dns-challenge) {
-	tls {
-		dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
-	}
-}
-
 # Auth endpoint for caddy security
 auth.{$DOMAIN} {
-	import dns-challenge
 	authenticate with myportal
 }
 
