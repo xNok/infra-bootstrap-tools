@@ -2,7 +2,7 @@
 	http_port 80
 	https_port 443
 
-        acme_dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
+    acme_dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
 
 	order authenticate before respond
 	order authorize before basicauth
