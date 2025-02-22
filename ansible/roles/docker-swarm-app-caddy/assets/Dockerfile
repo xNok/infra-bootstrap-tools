@@ -5,7 +5,7 @@ RUN xcaddy build \
     --with github.com/lucaslorentz/caddy-docker-proxy/v2 \
     --with github.com/greenpau/caddy-security \
     --with github.com/greenpau/caddy-trace \
-    --with github.com/caddy-dns/digitalocean \
+    --with github.com/xnok/caddy-dns-digitalocean \
     --with github.com/mholt/caddy-dynamicdns
 
 FROM caddy:${CADDY_VERSION}-alpine

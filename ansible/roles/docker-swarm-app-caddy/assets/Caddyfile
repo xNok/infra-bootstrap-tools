@@ -10,6 +10,9 @@
 
 	dynamic_dns {
 		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
+		domains {
+			{$DOMAIN} @ www
+		}
 		dynamic_domains
 	}
 
