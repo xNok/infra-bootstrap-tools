@@ -8,7 +8,7 @@
 	order authorize before basicauth
 
 	dynamic_dns {
-		provider digitalocean {$DIGITALOCEAN_API_TOKEN}
+		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
 		domains {
 			{$DOMAIN} @ www
 		}
