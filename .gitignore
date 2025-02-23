@@ -8,3 +8,5 @@ users.json
 .aws
 .ssh
 venv/
+
+website/public

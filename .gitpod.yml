@@ -11,3 +11,7 @@ tasks:
   - name: Install tools
     init: |
       brew install ansible
+  - name: Install Hugo
+    init: |
+      git -c url.https://github.com/.insteadOf=git@github.com: submodule update --init --remote --recursive
+      brew install hugo

@@ -1,0 +1,51 @@
+theme: e25dx
+
+enableGitInfo: true
+defaultContentLanguage: en
+
+languages:
+  en:
+    weight: 1
+    languageName: English
+    languageCode: en-US
+    contentDir: content/en
+    title: Infra Bootstrap Tools
+    params:
+      description: IaC configurations to boostrap and manage a small self-hosted project or homelab
+
+# To omit the Google Analytics script, put a ~ in place of the G-XXXXXXXXXX below.
+services:
+  googleAnalytics:
+    ID: G-XXXXXXXXXX
+
+markup:
+  highlight:
+    noClasses: false
+  goldmark:
+    renderer:
+      unsafe: true
+    parser:
+      attribute:
+        block: true
+        title: true
+
+params:
+  project:
+    # To omit the startYear, put a ~ in its place.
+    startYear: 2022
+    presentYear: 2025
+    github:
+      repo: xNok/infra-bootstrap-tools
+    themeColor:
+      light: '#ffffff'
+      dark: '#101010'
+
+  author:
+    name: xNok
+    url: https://github.com/username/xNok
+
+  home:
+    heading: Learn
+    headingSegment2: Infrastructure-as-Code
+    description: For Small self-hosted project or Homelab
+    getStartedPath: /docs
