@@ -1,0 +1,3 @@
+[submodule "website/themes/e25dx"]
+	path = website/themes/e25dx
+	url = https://github.com/xNok/E25DX
