@@ -1,5 +1,6 @@
 theme: e25dx
 relativeURLs: true
+baseURL: '/'
 enableGitInfo: true
 defaultContentLanguage: en
 
