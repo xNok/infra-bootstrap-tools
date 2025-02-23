@@ -1,5 +1,5 @@
 theme: e25dx
-
+relativeURLs: true
 enableGitInfo: true
 defaultContentLanguage: en
 
