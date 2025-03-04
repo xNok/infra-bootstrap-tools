@@ -20,6 +20,15 @@
     alias: rclone
     state: present
 
+- name: Creates directory rclone
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0644'
+    loop:
+    - '/var/lib/docker-plugins/rclone/config'
+    - '/var/lib/docker-plugins/rclone/cache'
+
 ########
 # Testing Setup
 # Create a test volume
