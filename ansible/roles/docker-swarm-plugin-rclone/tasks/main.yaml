@@ -18,7 +18,7 @@
   community.docker.docker_plugin:
     plugin_name: rclone/docker-volume-rclone
     alias: rclone
-    state: present
+    state: enable
 
 - name: Creates directory rclone
   file:
