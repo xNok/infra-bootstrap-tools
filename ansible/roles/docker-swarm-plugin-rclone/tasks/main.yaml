@@ -25,9 +25,9 @@
     path: "{{ item }}"
     state: directory
     mode: '0644'
-    loop:
-    - '/var/lib/docker-plugins/rclone/config'
-    - '/var/lib/docker-plugins/rclone/cache'
+  loop:
+  - '/var/lib/docker-plugins/rclone/config'
+  - '/var/lib/docker-plugins/rclone/cache'
 
 ########
 # Testing Setup
