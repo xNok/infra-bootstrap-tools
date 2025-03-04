@@ -35,7 +35,7 @@
 ########
 - name: Create a volume using rclone
   community.docker.docker_volume:
-    name: firstr_clone_volume
+    name: first_rclone_volume
     driver: rclone
     driver_options:
       type: s3
