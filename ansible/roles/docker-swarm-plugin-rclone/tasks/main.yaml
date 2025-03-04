@@ -17,6 +17,7 @@
 - name: Install rclone plugin
   community.docker.docker_plugin:
     plugin_name: rclone/docker-volume-rclone
+    alias: rclone
     state: present
 
 ########
