@@ -39,7 +39,7 @@
     driver: rclone
     driver_options:
       type: s3
-      provider: DigitalOcean
-      endpoint: "{{s3_endpoint}}"
-      access_key_id: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_ACCESS_KEY_ID') }}"
-      secret_access_key: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_SECRET_ACCESS_KEY') }}"
+      s3-provider: DigitalOcean
+      s3-endpoint: "{{s3_endpoint}}"
+      s3-access_key_id: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_ACCESS_KEY_ID') }}"
+      s3-secret_access_key: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_SECRET_ACCESS_KEY') }}"
