@@ -1,0 +1,45 @@
+#################################################
+# OR INFRA Role: Docker Swarm Plugins Rclone
+# Source:
+#    https://rclone.org/docker/
+#################################################
+
+###
+# GENERAL Setup
+###
+- name: Install required system packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop: ['fuse']
+
+- name: Install rclone plugin
+  community.docker.docker_plugin:
+    plugin_name: rclone/docker-volume-rclone
+    alias: rclone
+    state: enable
+
+- name: Creates directory rclone
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0644'
+  loop:
+  - '/var/lib/docker-plugins/rclone/config'
+  - '/var/lib/docker-plugins/rclone/cache'
+
+########
+# Testing Setup
+# Create a test volume
+########
+- name: Create a volume using rclone
+  community.docker.docker_volume:
+    name: first_rclone_volume
+    driver: rclone
+    driver_options:
+      type: s3
+      s3-provider: DigitalOcean
+      s3-endpoint: "{{s3_endpoint}}"
+      s3-access_key_id: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_ACCESS_KEY_ID') }}"
+      s3-secret_access_key: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_SECRET_ACCESS_KEY') }}"
