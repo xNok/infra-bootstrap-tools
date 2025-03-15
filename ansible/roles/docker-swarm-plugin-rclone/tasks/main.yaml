@@ -7,6 +7,10 @@
 ###
 # GENERAL Setup
 ###
+- name: Define asssets folder
+  set_fact:
+    assets_path: "{{ role_path }}/assets"
+
 - name: Install required system packages
   apt:
     name: "{{ item }}"
@@ -29,6 +33,14 @@
   - '/var/lib/docker-plugins/rclone/config'
   - '/var/lib/docker-plugins/rclone/cache'
 
+- name: Copy Config file(s) to remote server
+  template:
+    src: "{{ item }}"
+    dest: '/var/lib/docker-plugins/rclone/config'
+    mode: '0640'
+  with_fileglob:
+  - "{{ assets_path }}/rclone.conf"
+
 ########
 # Testing Setup
 # Create a test volume
@@ -38,8 +50,4 @@
     name: first_rclone_volume
     driver: rclone
     driver_options:
-      type: s3
-      s3-provider: DigitalOcean
-      s3-endpoint: "{{s3_endpoint}}"
-      s3-access_key_id: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_ACCESS_KEY_ID') }}"
-      s3-secret_access_key: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_SECRET_ACCESS_KEY') }}"
+      remote: 'space:test-folder'
