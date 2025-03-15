@@ -50,4 +50,4 @@
     name: first_rclone_volume
     driver: rclone
     driver_options:
-      remote: 'space:test-folder'
+      remote: 'spaces:test-folder'
