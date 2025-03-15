@@ -37,7 +37,7 @@
   template:
     src: "{{ item }}"
     dest: '/var/lib/docker-plugins/rclone/config'
-    mode: '0640'
+    mode: '0644'
   with_fileglob:
   - "{{ assets_path }}/rclone.conf"
 
