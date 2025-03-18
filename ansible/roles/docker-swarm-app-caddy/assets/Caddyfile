@@ -8,6 +8,7 @@
 	order authenticate before respond
 	order authorize before basicauth
 
+	# Dynamic dns handles setting up dns records automatically
 	dynamic_dns {
 		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
 		domains {
@@ -16,6 +17,7 @@
 		dynamic_domains
 	}
 
+	# Security tackles authentication and authorization
 	security {
 		oauth identity provider github {env.GITHUB_CLIENT_ID} {env.GITHUB_CLIENT_SECRET}
 
@@ -59,7 +61,7 @@
 	}
 }
 
-# Auth endpoint for caddy security
+# Auth endpoint for Caddy Security
 auth.{$DOMAIN} {
 	authenticate with myportal
 }
