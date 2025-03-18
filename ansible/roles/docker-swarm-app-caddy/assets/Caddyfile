@@ -3,7 +3,7 @@
 	https_port 443
 
     email {$EMAIL}
-    dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
+    acme_dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
 	
 	order authenticate before respond
 	order authorize before basicauth
