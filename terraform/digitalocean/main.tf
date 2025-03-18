@@ -34,7 +34,9 @@ resource "digitalocean_droplet" "managers" {
   image  = "ubuntu-20-04-x64"
   name   = "manager${count.index}"
   region = "lon1"
-  size   = "s-1vcpu-1gb"
+  size   = var.manager_size
+
+  monitoring = true
 
   ssh_keys = [digitalocean_ssh_key.infra.id]
 }
@@ -45,7 +47,9 @@ resource "digitalocean_droplet" "nodes" {
   image  = "ubuntu-20-04-x64"
   name   = "node${count.index}"
   region = "lon1"
-  size   = "s-1vcpu-1gb"
+  size   = var.worker_size
+
+  monitoring = true
 
   ssh_keys = [digitalocean_ssh_key.infra.id]
 }
