@@ -21,8 +21,11 @@ services:
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
         # Default route
-        caddy.reverse_proxy: "{{ upstreams 5678 }}"
-        caddy.authorize: with admins_policy
+        caddy.0_route: /test
+        caddy.0_route.reverse_proxy: "{{ upstreams 5678 }}"
+        caddy.1_route: "*"
+        caddy.1_route.reverse_proxy: "{{ upstreams 5678 }}"
+        caddy.1_route.authorize: with admins_policy
 
 volumes:
   n8n_data:
