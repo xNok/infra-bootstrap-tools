@@ -22,21 +22,13 @@ jobs:
 
     - name: Get changed files
       id: changed-files
-      uses: tj-actions/changed-files@v41 # Or a newer version
+      uses: tj-actions/changed-files@v46
       with:
         files: |
           **/*.tf
-
-    - name: List affected Terraform directories
-      id: list_dirs
-      run: |
-        changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
-        if [[ -z "$changed_files" ]]; then
-          echo "::set-output name=dirs::[]" # No changed files, empty array
-          exit 0
-        fi
-        dirs=$(echo "$changed_files" | jq -Rs 'split("\n")[:-1] | map(select(length > 0)) | map(split("/") | .[:-1] | join("/")) | unique')
-        echo "dirs=$dirs" >> $GITHUB_OUTPUT
+        dir_names: "true"
+        json: "true"
+        dir_names_max_depth: 2
 
   terraform:
     name: "Terraform Plan"
@@ -44,7 +36,7 @@ jobs:
     needs: get_directories
     strategy:
       matrix:
-        environment: ${{ fromJson(needs.get_directories.outputs.directories) }}
+        environment: ${{ fromJson(needs.get_directories.outputs.all_changed_files) }}
     permissions:
       # so GitHub can check out this repo using the default github.token
       contents: read
