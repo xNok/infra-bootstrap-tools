@@ -19,10 +19,23 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    - name: List Terraform directories
+
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v41 # Or a newer version
+      with:
+        files: |
+          **/*.tf
+
+    - name: List affected Terraform directories
       id: list_dirs
       run: |
-        dirs=$(find . -maxdepth 1 -type d -name "*" -not -path ".git" -not -path "." | jq -R -s -c '[split("\n")[:-1]]')
+        changed_files="${{ steps.changed-files.outputs.all_changed_files }}"
+        if [[ -z "$changed_files" ]]; then
+          echo "::set-output name=dirs::[]" # No changed files, empty array
+          exit 0
+        fi
+        dirs=$(echo "$changed_files" | jq -Rs 'split("\n")[:-1] | map(select(length > 0)) | map(split("/") | .[:-1] | join("/")) | unique')
         echo "dirs=$dirs" >> $GITHUB_OUTPUT
 
   terraform:
