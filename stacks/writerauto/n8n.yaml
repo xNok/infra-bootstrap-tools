@@ -20,12 +20,12 @@ services:
     deploy:
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
-        # Routes for webhook do not need oauth
-        caddy.route_0: /rest/oauth2-credential/callback
-        caddy.route_0.reverse_proxy: "{{ upstreams 5678 }}"
         # Default route
-        caddy.route_1.reverse_proxy: "{{ upstreams 5678 }}"
-        caddy.route_1.authorize: with admins_policy
+        caddy.0_route: /test
+        caddy.0_route.reverse_proxy: "{{ upstreams 5678 }}"
+        caddy.1_route: "*"
+        caddy.1_route.reverse_proxy: "{{ upstreams 5678 }}"
+        caddy.1_route.authorize: with admins_policy
 
 volumes:
   n8n_data:
