@@ -24,8 +24,6 @@ jobs:
       id: changed-files
       uses: tj-actions/changed-files@v46
       with:
-        files: |
-          **/*.tf
         dir_names: "true"
         json: "true"
         dir_names_max_depth: 2
