@@ -9,7 +9,7 @@ jobs:
   get_directories:
     runs-on: ubuntu-latest
     outputs:
-      directories: ${{ steps.changed-files.outputs.any_modified  }}
+      directories: ${{ steps.changed-files.outputs.all_changed_files  }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -25,6 +25,9 @@ jobs:
         files: |
           **/*.tf
           *.tf
+
+    - name: List all changed files
+      run: echo '${{ steps.changed-files.outputs.all_changed_files }}'
 
   validate:
     name: "Terraform Plan"
