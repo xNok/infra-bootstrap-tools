@@ -157,7 +157,7 @@ jobs:
 
     - name: Generate Artifact Name
       id: artifact_name
-      run: echo "artifact_name=$(echo ${{ matrix.environment }} | tr '/' '-')" >> $GITHUB_OUTPUT
+      run: echo "artifact_name=$(echo ${{ matrix.workspace }} | tr '/' '-')" >> $GITHUB_OUTPUT
 
     - name: Download Plan Artifact
       uses: actions/download-artifact@v4
