@@ -9,7 +9,7 @@ jobs:
   get_directories:
     runs-on: ubuntu-latest
     outputs:
-      directories: ${{ steps.changed-files.outputs.all_changed_files }}
+      directories: ${{ steps.changed-files.outputs.any_modified  }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -18,7 +18,12 @@ jobs:
       id: changed-files
       uses: tj-actions/changed-files@v46
       with:
-        matrix: true
+        dir_names: true
+        json: true
+        escape_json: false
+        files: |
+          **/*.tf
+          *.tf
 
   terraform:
     name: "Terraform Plan"
