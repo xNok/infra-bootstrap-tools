@@ -35,7 +35,7 @@ jobs:
     needs: get_directories
     strategy:
       matrix:
-        environment:  ${{ fromJSON(needs.get_directories.outputs.matrix) }}
+        workspaces:  ${{ fromJSON(needs.get_directories.outputs.directories) }}
     permissions:
       # so GitHub can check out this repo using the default github.token
       contents: read
@@ -48,12 +48,12 @@ jobs:
       id: fmt
       run: terraform fmt -check
       continue-on-error: true
-      working-directory: ${{ matrix.environment }}
+      working-directory: ${{ matrix.workspaces }}
 
     - name: Terraform Init
       id: init
       run: terraform init -input=false
-      working-directory: ${{ matrix.environment }}
+      working-directory: ${{ matrix.workspaces }}
 
     - name: Terraform Validate
       id: validate
@@ -64,7 +64,7 @@ jobs:
       id: plan
       run: terraform plan -no-color -input=false
       continue-on-error: true
-      working-directory: ${{ matrix.environment }}
+      working-directory: ${{ matrix.workspaces }}
 
     - uses: actions/github-script@v7
       if: github.event_name == 'pull_request'
