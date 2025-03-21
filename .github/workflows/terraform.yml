@@ -33,6 +33,7 @@ jobs:
     name: "Terraform Plan"
     runs-on: ubuntu-latest
     needs: get_directories
+    if: ${{ fromJson(needs.get_directories.outputs.directories) != '[]' }}
     strategy:
       matrix:
         workspaces:  ${{ fromJSON(needs.get_directories.outputs.directories) }}
@@ -62,9 +63,15 @@ jobs:
 
     - name: Terraform Plan
       id: plan
-      run: terraform plan -no-color -input=false
+      run: terraform plan -no-color -input=false -out=tfplan
       continue-on-error: true
       working-directory: ${{ matrix.workspaces }}
+
+    - name: Upload Plan Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: tfplan-${{ matrix.environment }}
+        path: ${{ matrix.environment }}/tfplan
 
     - uses: actions/github-script@v7
       if: github.event_name == 'pull_request'
@@ -80,11 +87,12 @@ jobs:
             issue_number: context.issue.number,
           })
           const botComment = comments.find(comment => {
-            return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style')
+            return comment.user.type === 'Bot' && comment.body.includes('Terraform ${{ matrix.workspaces }}')
           })
 
           // 2. Prepare format of the comment
-          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          const output = `Terraform ${{ matrix.workspaces }}}\`
+          #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
           #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
           <details><summary>Validation Output</summary>
@@ -123,3 +131,36 @@ jobs:
               body: output
             })
           }
+
+  terraform_apply:
+    runs-on: ubuntu-latest
+    needs: terraform_plan
+    strategy:
+      matrix:
+        environment: ${{ fromJson(needs.get_directories.outputs.directories) }}
+    name: Terraform Apply ${{ matrix.environment }}
+    if: ${{ fromJson(needs.get_directories.outputs.directories) != '[]' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ${{ matrix.environment }}
+
+    - name: Download Plan Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: tfplan-${{ matrix.environment }}
+        path: ${{ matrix.environment }}
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ${{ matrix.environment }}
+
+    - name: Terraform Apply
+      run: terraform apply tfplan
+      working-directory: ${{ matrix.environment }}
