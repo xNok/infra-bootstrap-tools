@@ -15,7 +15,7 @@ jobs:
   get_directories:
     runs-on: ubuntu-latest
     outputs:
-      directories: ${{ steps.list_dirs.outputs.dirs }}
+      directories: ${{ steps.changed-files.outputs.all_changed_files }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
     needs: get_directories
     strategy:
       matrix:
-        environment: ${{ fromJson(needs.get_directories.outputs.all_changed_files) }}
+        environment: ${{ fromJson(needs.get_directories.outputs.directories) }}
     permissions:
       # so GitHub can check out this repo using the default github.token
       contents: read
