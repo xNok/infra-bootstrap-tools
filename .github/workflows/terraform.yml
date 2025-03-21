@@ -36,7 +36,7 @@ jobs:
     if: ${{ fromJson(needs.get_directories.outputs.directories) != '[]' }}
     strategy:
       matrix:
-        workspaces:  ${{ fromJSON(needs.get_directories.outputs.directories) }}
+        workspaces: ${{ fromJSON(needs.get_directories.outputs.directories) }}
     permissions:
       # so GitHub can check out this repo using the default github.token
       contents: read
@@ -137,7 +137,7 @@ jobs:
     needs: validate
     strategy:
       matrix:
-        environment: ${{ fromJson(needs.get_directories.outputs.directories) }}
+        workspaces: ${{ fromJSON(needs.get_directories.outputs.directories) }}
     name: Terraform Apply ${{ matrix.environment }}
     if: ${{ fromJson(needs.get_directories.outputs.directories) != '[]' }}
     steps:
@@ -149,18 +149,18 @@ jobs:
 
     - name: Terraform Init
       run: terraform init
-      working-directory: ${{ matrix.environment }}
+      working-directory: ${{ workspaces.environment }}
 
     - name: Download Plan Artifact
       uses: actions/download-artifact@v4
       with:
         name: tfplan-${{ matrix.environment }}
-        path: ${{ matrix.environment }}
+        path: ${{ workspaces.environment }}
 
     - name: Terraform Init
       run: terraform init
-      working-directory: ${{ matrix.environment }}
+      working-directory: ${{ workspaces.environment }}
 
     - name: Terraform Apply
       run: terraform apply tfplan
-      working-directory: ${{ matrix.environment }}
+      working-directory: ${{ workspaces.environment }}
