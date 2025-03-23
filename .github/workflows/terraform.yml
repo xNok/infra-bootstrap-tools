@@ -69,6 +69,13 @@ jobs:
       run: terraform validate -no-color
       working-directory: ${{ matrix.workspace }}
 
+    - name: Load secret
+      uses: 1password/load-secrets-action@v2
+      with:
+        service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+      env:
+        DIGITALOCEAN_ACCESS_TOKEN: op://infra-bootstrap-tools/DIGITALOCEAN_ACCESS_TOKEN/secret
+
     - name: Terraform Plan
       id: plan
       run: terraform plan -no-color -input=false -out=tfplan
