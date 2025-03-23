@@ -73,8 +73,10 @@ jobs:
     - name: Load secret
       uses: 1password/load-secrets-action@v2
       with:
-        service-account-token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+        # Export loaded secrets as environment variables
+        export-env: true
       env:
+        OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
         DIGITALOCEAN_ACCESS_TOKEN: op://infra-bootstrap-tools/DIGITALOCEAN_ACCESS_TOKEN/secret
 
     - name: Terraform Plan
