@@ -5,6 +5,10 @@ on:
     paths:
     - '**/*.tf' #trigger when terraform files are changed.
 
+env:
+  AWS_ACCESS_KEY_ID: "${{ secrets.TF_AWS_ACCESS_KEY_ID }}"
+  AWS_SECRET_ACCESS_KEY: "${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
