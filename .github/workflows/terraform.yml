@@ -139,6 +139,7 @@ jobs:
   terraform_apply:
     runs-on: ubuntu-latest
     needs: [validate, get_directories]
+    environment: terraform
     strategy:
       matrix:
         workspace: ${{ fromJSON(needs.get_directories.outputs.directories) }}
