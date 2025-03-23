@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     endpoints = {
-      s3 = "https://infra-bootstrap-tools-terrafrom.nyc3.digitaloceanspaces.com"
+      s3 = "https://nyc3.digitaloceanspaces.com"
     }
 
     bucket = "infra-bootstrap-tools-terrafrom"
