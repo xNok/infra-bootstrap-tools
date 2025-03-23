@@ -95,11 +95,11 @@ jobs:
             issue_number: context.issue.number,
           })
           const botComment = comments.find(comment => {
-            return comment.user.type === 'Bot' && comment.body.includes('Terraform ${{ matrix.workspace }}')
+            return comment.user.type === 'Bot' && comment.body.includes('Terraform \`${{ matrix.workspace }}\`')
           })
 
           // 2. Prepare format of the comment
-          const output = `Terraform ${{ matrix.workspace }}}\`
+          const output = `### Terraform \`${{ matrix.workspace }}\`
           #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
           #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
