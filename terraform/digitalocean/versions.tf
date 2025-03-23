@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~>1.9"
+  required_version = "~> 1.11"
 
   required_providers {
 
@@ -31,6 +31,7 @@ provider "sshclient" {
 provider "digitalocean" {
   # Configuration options
 }
+
 provider "github" {
   # Configuration options
 }
