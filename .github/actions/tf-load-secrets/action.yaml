@@ -1,0 +1,25 @@
+name: 'Terraform Load Secrets'
+description: 'Terraform Workflow will need secrets to Cloud Providers we delegate the task to keep the configuration clean'
+inputs:
+  credential_provider:
+    description: 'Who provides credential'
+    required: true
+    default: 'github'
+runs:
+  using: "composite"
+  steps:
+    - name: Load secret from GitHub
+      if: ${{ inputs.credential_provider }} == "github"
+      run: |
+        echo "DIGITALOCEAN_ACCESS_TOKEN=${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: Load secret from 1password
+      if: ${{ inputs.credential_provider }} == "1password"
+      uses: 1password/load-secrets-action@v2
+      with:
+        # Export loaded secrets as environment variables
+        export-env: true
+      env:
+        OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+        DIGITALOCEAN_ACCESS_TOKEN: op://infra-bootstrap-tools/DIGITALOCEAN_ACCESS_TOKEN/credential
