@@ -5,6 +5,10 @@ on:
     paths:
     - '**/*.tf' #trigger when terraform files are changed.
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   get_directories:
     runs-on: ubuntu-latest
