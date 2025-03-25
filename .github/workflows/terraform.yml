@@ -63,7 +63,7 @@ jobs:
         DIGITALOCEAN_ACCESS_TOKEN: op://infra-bootstrap-tools/DIGITALOCEAN_ACCESS_TOKEN/credential
 
     - name: Terraform Plan Action
-      uses: './github/actions/tf-plan'
+      uses: './.github/actions/tf-plan'
       with:
         mocule_path: ${{ matrix.workspace }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -91,6 +91,6 @@ jobs:
         DIGITALOCEAN_ACCESS_TOKEN: op://infra-bootstrap-tools/DIGITALOCEAN_ACCESS_TOKEN/credential
 
     - name: Terraform Apply Action
-      uses: './github/actions/tf-apply'
+      uses: './.github/actions/tf-apply'
       with:
         mocule_path: ${{ matrix.workspace }}
