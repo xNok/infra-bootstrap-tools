@@ -17,6 +17,8 @@ Github Action has several option we can leverage to build the Terraform worflow 
 * [Dispatched workflows](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/manually-running-a-workflow#running-a-workflow-using-the-rest-api)
 * [Composite Actions](https://docs.github.com/en/actions/sharing-automations/creating-actions/creating-a-composite-action)
 
-You can't use secrets in Composite workflow directly so while it seems nice in terms of building a liabrary of automation, it's becomes much more verbose to configure. I want to find a leaner way to manager secret in a project that should not assume what stack people choose.
+* You can't use secrets in Composite workflow directly so while it seems nice in terms of building a liabrary of automation, it's becomes much more verbose to configure. I want to find a leaner way to manager secret in a project that should not assume what stack people choose.
 
-Composite action can still be used to make the workflow smaller and easier to read, and potentially reusable.
+* Composite action can still be used to make the workflow smaller and easier to read, and potentially reusable. 
+
+* Terraform plan are a security hazard when it comes to securtiy, creating or manipulating secret need to be avoided at all cost event if it seems convenient to have a all in one condiguration.
