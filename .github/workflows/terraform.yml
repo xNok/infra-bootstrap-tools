@@ -50,104 +50,28 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-    - uses: actions/checkout@v4
-    - uses: hashicorp/setup-terraform@v3
-
-    - name: Terraform fmt
-      id: fmt
-      run: terraform fmt -check
-      continue-on-error: true
-      working-directory: ${{ matrix.workspace }}
-
-    - name: Terraform Init
-      id: init
-      run: terraform init -input=false
-      working-directory: ${{ matrix.workspace }}
-
-    - name: Terraform Validate
-      id: validate
-      run: terraform validate -no-color
-      working-directory: ${{ matrix.workspace }}
-
-    - name: Load Secrets
-      uses: ./.github/actions/tf-load-secrets
-      with:
-        credential_provider: "1password"
-
-    - name: Terraform Plan
-      id: plan
-      run: terraform plan -no-color -input=false -out=tfplan
-      continue-on-error: true
-      working-directory: ${{ matrix.workspace }}
-
-    - name: Generate Artifact Name
-      id: artifact_name
-      run: echo "artifact_name=$(echo ${{ matrix.workspace }} | tr '/' '-')" >> $GITHUB_OUTPUT
-
-    - name: Upload Plan Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: tfplan-${{ steps.artifact_name.outputs.artifact_name }}
-        path: ${{ matrix.workspace }}/tfplan
-
-    - uses: actions/github-script@v7
-      if: github.event_name == 'pull_request'
+    - name: Load secret from GitHub
+      if: ${{ inputs.credential_provider }} == "github"
+      run: |
+        echo "DIGITALOCEAN_ACCESS_TOKEN=${DIGITALOCEAN_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      shell: bash
       env:
-        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+    - name: Load secret from 1password
+      if: ${{ inputs.credential_provider }} == "1password"
+      uses: 1password/load-secrets-action@v2
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          // 1. Retrieve existing bot comments for the PR
-          const { data: comments } = await github.rest.issues.listComments({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-          })
-          const botComment = comments.find(comment => {
-            return comment.user.type === 'Bot' && comment.body.includes('Terraform \`${{ matrix.workspace }}\`')
-          })
+        # Export loaded secrets as environment variables
+        export-env: true
+      env:
+        OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+        DIGITALOCEAN_ACCESS_TOKEN: op://infra-bootstrap-tools/DIGITALOCEAN_ACCESS_TOKEN/credential
 
-          // 2. Prepare format of the comment
-          const output = `### Terraform \`${{ matrix.workspace }}\`
-          #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-          <details><summary>Validation Output</summary>
-
-          \`\`\`\n
-          ${{ steps.validate.outputs.stdout }}
-          \`\`\`
-
-          </details>
-
-          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-
-          <details><summary>Show Plan</summary>
-
-          \`\`\`\n
-          ${process.env.PLAN}
-          \`\`\`
-
-          </details>
-
-          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-
-          // 3. If we have a comment, update it, otherwise create a new one
-          if (botComment) {
-            github.rest.issues.updateComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: botComment.id,
-              body: output
-            })
-          } else {
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-          }
+    - name: Terraform Plan Action
+      uses: './github/actions/tf-plan'
+      with:
+        mocule_path: ${{ matrix.workspace }}
 
   terraform_apply:
     runs-on: ubuntu-latest
@@ -156,33 +80,28 @@ jobs:
     strategy:
       matrix:
         workspace: ${{ fromJSON(needs.get_directories.outputs.directories) }}
-    name: Terraform Apply ${{ matrix.environment }}
+    name: Terraform Apply ${{ matrix.workspace }}
     if: ${{ fromJson(needs.get_directories.outputs.directories) != '[]' }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - name: Load secret from GitHub
+      if: ${{ inputs.credential_provider }} == "github"
+      run: |
+        echo "DIGITALOCEAN_ACCESS_TOKEN=${DIGITALOCEAN_ACCESS_TOKEN}" >> "$GITHUB_ENV"
+      shell: bash
+      env:
+        DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-
-    - name: Terraform Init
-      run: terraform init
-      working-directory: ${{ matrix.workspace }}
-
-    - name: Generate Artifact Name
-      id: artifact_name
-      run: echo "artifact_name=$(echo ${{ matrix.workspace }} | tr '/' '-')" >> $GITHUB_OUTPUT
-
-    - name: Download Plan Artifact
-      uses: actions/download-artifact@v4
+    - name: Load secret from 1password
+      if: ${{ inputs.credential_provider }} == "1password"
+      uses: 1password/load-secrets-action@v2
       with:
-        name: tfplan-${{ steps.artifact_name.outputs.artifact_name }}
-        path: ${{ matrix.workspace }}
+        # Export loaded secrets as environment variables
+        export-env: true
+      env:
+        OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+        DIGITALOCEAN_ACCESS_TOKEN: op://infra-bootstrap-tools/DIGITALOCEAN_ACCESS_TOKEN/credential
 
-    - name: Terraform Init
-      run: terraform init
-      working-directory: ${{ matrix.workspace }}
-
-    - name: Terraform Apply
-      run: terraform apply tfplan
-      working-directory: ${{ matrix.workspace }}
+    - name: Terraform Apply Action
+      uses: './github/actions/tf-apply'
+      with:
+        mocule_path: ${{ matrix.workspace }}

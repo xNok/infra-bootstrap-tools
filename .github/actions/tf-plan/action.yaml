@@ -1,0 +1,112 @@
+name: 'Terraform Plan'
+description: 'Terraform Workflow will validate and plan a given module '
+inputs:
+  mocule_path:
+    description: 'Name of the Terraform workspace to execute'
+    required: true
+    default: 'terraform'
+  github-token:
+    description: 'Token used to pose a comment for this resulting terraform plan'
+    required: true
+runs:
+  using: "composite"
+
+  steps:
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform fmt
+      id: fmt
+      shell: bash
+      run: terraform fmt -check
+      continue-on-error: true
+      working-directory: ${{ inputs.mocule_path }}
+
+    - name: Terraform Init
+      id: init
+      shell: bash
+      run: terraform init -input=false
+      working-directory: ${{ inputs.mocule_path }}
+
+    - name: Terraform Validate
+      id: validate
+      shell: bash
+      run: terraform validate -no-color
+      working-directory: ${{ inputs.mocule_path }}
+
+    - name: Terraform Plan
+      id: plan
+      shell: bash
+      run: terraform plan -no-color -input=false -out=tfplan
+      continue-on-error: true
+      working-directory: ${{ inputs.mocule_path }}
+
+    - name: Generate Artifact Name
+      id: artifact_name
+      shell: bash
+      run: echo "artifact_name=$(echo ${{ inputs.mocule_path }} | tr '/' '-')" >> $GITHUB_OUTPUT
+
+    - name: Upload Plan Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: tfplan-${{ steps.artifact_name.outputs.artifact_name }}
+        path: ${{ inputs.mocule_path }}/tfplan
+
+    - uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          // 1. Retrieve existing bot comments for the PR
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          })
+          const botComment = comments.find(comment => {
+            return comment.user.type === 'Bot' && comment.body.includes('Terraform \`${{ inputs.mocule_path }}\`')
+          })
+
+          // 2. Prepare format of the comment
+          const output = `### Terraform \`${{ inputs.mocule_path }}\`
+          #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+          <details><summary>Validation Output</summary>
+
+          \`\`\`\n
+          ${{ steps.validate.outputs.stdout }}
+          \`\`\`
+
+          </details>
+
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+          <details><summary>Show Plan</summary>
+
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+
+          </details>
+
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+          // 3. If we have a comment, update it, otherwise create a new one
+          if (botComment) {
+            github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: output
+            })
+          } else {
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+          }

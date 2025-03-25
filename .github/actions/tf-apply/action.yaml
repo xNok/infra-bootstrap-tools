@@ -1,0 +1,42 @@
+name: 'Terraform Apply'
+description: 'Terraform Workflow will apply a given module given an existing plan'
+inputs:
+  mocule_path:
+    description: 'Name of the Terraform workspace to execute'
+    required: true
+    default: 'terraform'
+runs:
+  using: "composite"
+
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      shell: bash
+      run: terraform init
+      working-directory: ${{ inputs.mocule_path }}
+
+    - name: Generate Artifact Name
+      id: artifact_name
+      shell: bash
+      run: echo "artifact_name=$(echo ${{ inputs.mocule_path }} | tr '/' '-')" >> $GITHUB_OUTPUT
+
+    - name: Download Plan Artifact
+      uses: actions/download-artifact@v4
+      shell: bash
+      with:
+        name: tfplan-${{ steps.artifact_name.outputs.artifact_name }}
+        path: ${{ inputs.mocule_path }}
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ${{ inputs.mocule_path }}
+
+    - name: Terraform Apply
+      shell: bash
+      run: terraform apply tfplan
+      working-directory: ${{ inputs.mocule_path }}
