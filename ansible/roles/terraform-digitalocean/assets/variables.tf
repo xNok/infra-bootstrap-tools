@@ -1,3 +1,9 @@
+variable "project_name" {
+  type = string
+  default = "infra-bootstrap-tools"
+  description = "DigitalOcean Project holding all the resource"
+}
+
 variable "worker_count" {
   type = number
   default = 0
