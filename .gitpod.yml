@@ -11,6 +11,9 @@ tasks:
   - name: Install tools
     init: |
       brew install ansible
+  - name: Install Boilerplate
+    init: |
+      go install github.com/gruntwork-io/boilerplate@v0.6.0
   - name: Install Hugo
     init: |
       git -c url.https://github.com/.insteadOf=git@github.com: submodule update --init --remote --recursive
