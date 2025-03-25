@@ -10,7 +10,9 @@ tasks:
       exit 0
   - name: Install tools
     init: |
-      brew install ansible
+      if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; fi
+      if [ -f requirements.yml ]; then ansible-galaxy install -r requirements.yml; fi
   - name: Install Boilerplate
     init: |
       go install github.com/gruntwork-io/boilerplate@v0.6.0

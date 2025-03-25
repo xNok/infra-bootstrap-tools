@@ -1,0 +1,7 @@
+- name: This is a hello-world example
+  hosts: localhost
+  gather_facts: true
+  become: true
+
+  roles:
+  - terraform-digitalocean

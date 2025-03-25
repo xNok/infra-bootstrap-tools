@@ -5,3 +5,6 @@ gen_diagrams:
 
 tools:
 	. ./bin/docker_tools_alias.sh
+
+test-play-terraform:
+	ansible-playbook -i inventory ansible/terraform.yml --check
