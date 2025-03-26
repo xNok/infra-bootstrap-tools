@@ -3,5 +3,11 @@
   gather_facts: true
   become: true
 
+  environment:
+    DIGITALOCEAN_ACCESS_TOKEN: "{{
+      lookup('community.general.onepassword', 'DIGITALOCEAN_ACCESS_TOKEN',
+      vault='infra-bootstrap-tools', field='credential')
+      }}"
+
   roles:
   - terraform-digitalocean

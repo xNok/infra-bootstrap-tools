@@ -2,9 +2,8 @@
 # OR INFRA Role: terraform-digitalocean
 #################################################
 ---
-
 - name: Provision DigitalOcean Infra
   community.general.terraform:
     project_path: '{{ role_path }}/assets'
-    state: present
+    state: absent
     force_init: true

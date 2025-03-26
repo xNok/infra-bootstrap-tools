@@ -9,6 +9,6 @@ users.json
 .ssh
 .ansible
 venv/
-terraform.tfstate
+terraform.tfstate*
 
 website/public
