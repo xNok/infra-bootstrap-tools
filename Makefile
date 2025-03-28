@@ -5,3 +5,9 @@ gen_diagrams:
 
 tools:
 	. ./bin/docker_tools_alias.sh
+
+up:
+	ansible-playbook -i ansible/inventory ansible/terraform.yml
+
+down:
+	ansible-playbook -i ansible/inventory ansible/terraform.yml -e terraform_destroy=true
