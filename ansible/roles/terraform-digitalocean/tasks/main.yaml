@@ -38,5 +38,4 @@
   loop: "{{ terraform_result.outputs.known_hosts.value | dict2items }}"
 
 - name: Refresh Ansible Inventory
-  when: not terraform_destroy | bool
   ansible.builtin.meta: refresh_inventory
