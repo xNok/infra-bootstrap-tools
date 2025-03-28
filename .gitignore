@@ -12,3 +12,7 @@ venv/
 terraform.tfstate*
 
 website/public
+
+# copied files
+ansible/roles/terraform-*/terraform/backend.tf
+ansible/inventory/*

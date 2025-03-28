@@ -1,11 +1,21 @@
-- name: This is a hello-world example
+- name: This si an example fo using Terraform with Ansible
   hosts: localhost
   gather_facts: true
   become: true
 
+  # I am using onepassword to fetch required env variable, feel free to use any method you like
   environment:
     DIGITALOCEAN_ACCESS_TOKEN: "{{
       lookup('community.general.onepassword', 'DIGITALOCEAN_ACCESS_TOKEN',
+      vault='infra-bootstrap-tools', field='credential')
+      }}"
+    # use for terraform backend storage
+    AWS_ACCESS_KEY_ID: "{{
+      lookup('community.general.onepassword', 'TF_S3_BACKEND',
+      vault='infra-bootstrap-tools', field='username')
+      }}"
+    AWS_SECRET_ACCESS_KEY: "{{
+      lookup('community.general.onepassword', 'TF_S3_BACKEND',
       vault='infra-bootstrap-tools', field='credential')
       }}"
 
