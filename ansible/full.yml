@@ -1,0 +1,49 @@
+- name: Provision infrastructure and Setup execution local environment
+  hosts: localhost
+  gather_facts: true
+
+  environment:
+    # Used to provision DigitalOcean infrastructure
+    TF_VAR_public_key_openssh: "{{ TF_VAR_public_key_openssh }}"
+    DIGITALOCEAN_ACCESS_TOKEN: "{{ DIGITALOCEAN_ACCESS_TOKEN }}"
+    # Used for terraform backend storage
+    AWS_ACCESS_KEY_ID: "{{ AWS_ACCESS_KEY_ID }}"
+    AWS_SECRET_ACCESS_KEY: "{{ AWS_SECRET_ACCESS_KEY }}"
+
+  roles:
+  - terraform-digitalocean
+  - role: utils-affected-roles
+    always_run_all_roles: true
+
+# SWARM Managers
+- name: This setup the Docker Swarm Manager
+  hosts: managers
+  gather_facts: true
+  become: true
+
+  roles:
+  # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
+  # I case we have an issue all master are setup as potential controller
+  # this role is for the host running ansible to manage the swarm
+  - role: docker-swarm-controller
+    when: "'docker-swarm-controller' in hostvars['localhost']['roles_with_changes']"
+  # this role is for creating the swarm and adding host as manager
+  - role: docker-swarm-manager
+    when: "'docker-swarm-manager' in hostvars['localhost']['roles_with_changes']"
+
+# SWARM Nodes
+- name: This setup nodes to join the Swarm
+  hosts: nodes
+
+  roles:
+  - role: docker-swarm-node # this role is for host to join the swarm
+    when: "'docker-swarm-node' in hostvars['localhost']['roles_with_changes']"
+
+# PLUGINS
+- name: This installs docker plugins on all hosts
+  hosts: all
+  become: true
+
+  roles:
+  - role: docker-swarm-plugin-rclone
+    when: "'docker-swarm-plugin-rclone' in hostvars['localhost']['roles_with_changes']"

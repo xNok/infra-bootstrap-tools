@@ -7,7 +7,7 @@ tools:
 	. ./bin/docker_tools_alias.sh
 
 up:
-	ansible-playbook -i ansible/inventory ansible/terraform.yml
+	ansible-playbook -i ansible/inventory ansible/full.yml
 
 down:
-	ansible-playbook -i ansible/inventory ansible/terraform.yml -e terraform_destroy=true
+	ansible-playbook -i ansible/inventory ansible/full.yml -e terraform_destroy=true

@@ -1,0 +1,19 @@
+# SSH Key to Add to newly created DigitalOcean droplet
+tf_var_public_key_openssh: "{{
+  lookup('community.general.onepassword', 'SSH Key',
+  vault='infra-bootstrap-tools', field='public key')
+  }}"
+# Used to provison DigitalOcean infrastructure
+digitalocean_access_token: "{{
+  lookup('community.general.onepassword', 'DIGITALOCEAN_ACCESS_TOKEN',
+  vault='infra-bootstrap-tools', field='credential')
+  }}"
+# Used for terraform backend storage
+aws_access_key_id: "{{
+  lookup('community.general.onepassword', 'TF_S3_BACKEND',
+  vault='infra-bootstrap-tools', field='username')
+  }}"
+aws_secret_access_key: "{{
+  lookup('community.general.onepassword', 'TF_S3_BACKEND',
+  vault='infra-bootstrap-tools', field='credential')
+  }}"
