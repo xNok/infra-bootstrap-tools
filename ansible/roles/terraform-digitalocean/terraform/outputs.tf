@@ -9,8 +9,3 @@ output "nodes_ips" {
 output "known_hosts" {
   value = local.known_hosts
 }
-
-output "ssh_key" {
-  sensitive = true
-  value = tls_private_key.ssh.private_key_pem
-}

@@ -26,3 +26,8 @@ variable "manager_size" {
   description = "DigitalOcean droplet size"
 }
 
+variable "public_key_openssh" {
+  type = string
+  description = "SSh public key to be added to all the droplets"
+}
+

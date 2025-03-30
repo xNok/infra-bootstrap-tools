@@ -15,16 +15,10 @@ resource "digitalocean_project" "infra-bootstrap-tools" {
   )
 }
 
-# Generate a new SSH key
-resource "tls_private_key" "ssh" {
-  algorithm = "RSA"
-  rsa_bits  = "4096"
-}
-
-# Reguster the new SSH key to digitalocean
+# Register the new SSH key to digitalocean
 resource "digitalocean_ssh_key" "infra" {
   name       = "${var.project_name}-digitalocean"
-  public_key = tls_private_key.ssh.public_key_openssh
+  public_key = var.public_key_openssh
 }
 
 resource "digitalocean_droplet" "managers" {
