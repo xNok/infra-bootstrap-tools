@@ -4,11 +4,11 @@
 
   environment:
     # Used to provision DigitalOcean infrastructure
-    TF_VAR_public_key_openssh: "{{ TF_VAR_public_key_openssh }}"
-    DIGITALOCEAN_ACCESS_TOKEN: "{{ DIGITALOCEAN_ACCESS_TOKEN }}"
+    TF_VAR_public_key_openssh: "{{ tf_var_public_key_openssh }}"
+    DIGITALOCEAN_ACCESS_TOKEN: "{{ tf_digitalocean_access_token }}"
     # Used for terraform backend storage
-    AWS_ACCESS_KEY_ID: "{{ AWS_ACCESS_KEY_ID }}"
-    AWS_SECRET_ACCESS_KEY: "{{ AWS_SECRET_ACCESS_KEY }}"
+    AWS_ACCESS_KEY_ID: "{{ tf_aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ tf_aws_secret_access_key }}"
 
   roles:
   - terraform-digitalocean
