@@ -1,0 +1,6 @@
+{
+    name: "ibt"
+    description: "A package that bootstraps your infra"
+    type: "module"
+    license: "MIT"
+}
