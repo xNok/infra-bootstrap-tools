@@ -1,11 +1,21 @@
-- name: Determine affected roles
+- name: Provision infrastructure and Setup execution local environment
   hosts: localhost
-  gather_facts: false
+  gather_facts: true
+
+  environment:
+    # Used to provision DigitalOcean infrastructure
+    TF_VAR_public_key_openssh: "{{ tf_var_public_key_openssh }}"
+    DIGITALOCEAN_ACCESS_TOKEN: "{{ tf_digitalocean_access_token }}"
+    # Used for terraform backend storage
+    AWS_ACCESS_KEY_ID: "{{ tf_aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ tf_aws_secret_access_key }}"
 
   roles:
-  - utils-affected-roles
+  - terraform-digitalocean
+  - role: utils-affected-roles
+    always_run_all_roles: true
 
-# SWARM
+# SWARM Managers
 - name: This setup the Docker Swarm Manager
   hosts: managers
   gather_facts: true
@@ -21,6 +31,7 @@
   - role: docker-swarm-manager
     when: "'docker-swarm-manager' in hostvars['localhost']['roles_with_changes']"
 
+# SWARM Nodes
 - name: This setup nodes to join the Swarm
   hosts: nodes
 
@@ -36,15 +47,3 @@
   roles:
   - role: docker-swarm-plugin-rclone
     when: "'docker-swarm-plugin-rclone' in hostvars['localhost']['roles_with_changes']"
-
-# APPS
-- name: This install Caddy and Portainer in the Swarm
-  hosts: managers[0] # Only one manager need to be hit
-  become: true
-
-  roles:
-  - role: docker-swarm-app-caddy
-    when: "'docker-swarm-app-caddy' in hostvars['localhost']['roles_with_changes']"
-  - role: docker-swarm-app-portainer
-    caddy: true
-    when: "'docker-swarm-app-portainer' in hostvars['localhost']['roles_with_changes']"

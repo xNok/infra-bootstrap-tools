@@ -18,12 +18,6 @@
     update_cache: true
   loop: ['fuse']
 
-- name: Install rclone plugin
-  community.docker.docker_plugin:
-    plugin_name: rclone/docker-volume-rclone
-    alias: rclone
-    state: enable
-
 - name: Creates directory rclone
   file:
     path: "{{ item }}"
@@ -40,6 +34,12 @@
     mode: '0644'
   with_fileglob:
   - "{{ assets_path }}/rclone.conf"
+
+- name: Install rclone plugin
+  community.docker.docker_plugin:
+    plugin_name: rclone/docker-volume-rclone
+    alias: rclone
+    state: enable
 
 ########
 # Testing Setup
