@@ -73,7 +73,7 @@ Do you want to go fast? Too lazy to set up your local environment?
 Then, use the tools from a Docker container. I included a simple Toochain in this repository and a useful alias for it.
 
 Use common infrastructure tools in docker with:
-* [docker_tools_alias.sh](./bin/docker_tools_alias.sh)
+* [docker_tools_alias.sh](bin/bash/docker_tools_alias.sh)
 
 ```
 source ./bin/docker_tools_alias.sh

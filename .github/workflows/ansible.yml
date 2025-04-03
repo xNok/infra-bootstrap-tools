@@ -96,7 +96,7 @@ jobs:
 
       - name: run playbook
         run: |
-          ansible-playbook -i inventory ansible/docker-swarm-portainer-caddy.yml
+          ansible-playbook -i inventory ansible/docker-swarm-portainer-caddy-openziti.yml
         env:
           BRANCH_NAME: ${{ github.head_ref }}
           # This is used by caddy to authenticate users
@@ -105,3 +105,6 @@ jobs:
           CADDY_JWT_SHARED_KEY: ${{ secrets.CADDY_JWT_SHARED_KEY }}
           # This is used by caddy to configure dns records
           CADDY_DIGITALOCEAN_API_TOKEN: ${{ secrets.CADDY_DIGITALOCEAN_API_TOKEN }}
+          # This is used by rclone to create volumes sync with do space
+          RCLONE_DIGITALOCEAN_ACCESS_KEY_ID: ${{ secrets.RCLONE_DIGITALOCEAN_ACCESS_KEY_ID }}
+          RCLONE_DIGITALOCEAN_SECRET_ACCESS_KEY: ${{ secrets.RCLONE_DIGITALOCEAN_SECRET_ACCESS_KEY }}
