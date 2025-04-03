@@ -1,33 +1,6 @@
-
 tasks:
-  - name: Install pre-commit hooks
+  - name: Setup Environment
     init: |
-      pip install pre-commit
-      pre-commit install --install-hooks
-      exit 0
-  - name: Install tools
-    init: |
-      if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; fi
-      if [ -f requirements.yml ]; then ansible-galaxy install -r requirements.yml; fi
-  - name: Install 1password ClI
-    init: |
-      curl -sS https://downloads.1password.com/linux/keys/1password.asc | \
-        sudo gpg --dearmor --output /usr/share/keyrings/1password-archive-keyring.gpg && \
-        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/1password-archive-keyring.gpg] https://downloads.1password.com/linux/debian/$(dpkg --print-architecture) stable main" | \
-        sudo tee /etc/apt/sources.list.d/1password.list && \
-        sudo mkdir -p /etc/debsig/policies/AC2D62742012EA22/ && \
-        curl -sS https://downloads.1password.com/linux/debian/debsig/1password.pol | \
-        sudo tee /etc/debsig/policies/AC2D62742012EA22/1password.pol && \
-        sudo mkdir -p /usr/share/debsig/keyrings/AC2D62742012EA22 && \
-        curl -sS https://downloads.1password.com/linux/keys/1password.asc | \
-        sudo gpg --dearmor --output /usr/share/debsig/keyrings/AC2D62742012EA22/debsig.gpg && \
-        sudo apt update && sudo apt install 1password-cli
-  - name: Install Boilerplate
-    init: |
-      go install github.com/gruntwork-io/boilerplate@v0.6.0
-  - name: Install Hugo
-    init: |
-      git -c url.https://github.com/.insteadOf=git@github.com: submodule update --init --remote --recursive
-      brew install hugo
-    command: cd website && hugo server -D -F --baseURL $(gp url 1313) --liveReloadPort=443 --appendPort=false --bind=0.0.0.0
+      ./bin/bash/setup.sh pre-commit ansible 1password-cli boilerplate hugo
+    command: |
+      cd website && hugo server -D -F --baseURL $(gp url 1313) --liveReloadPort=443 --appendPort=false --bind=0.0.0.0
