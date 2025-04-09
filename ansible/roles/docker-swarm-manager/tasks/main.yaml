@@ -34,10 +34,3 @@
     advertise_addr: "{{ ansible_host }}"
     remote_addrs: "{{ groups[swarm_managers_inventory_group_name] | map('extract', hostvars, ['ansible_host']) | join(',') }}"
   when: inventory_hostname != groups[swarm_managers_inventory_group_name] # exclude the first manager
-
-###
-# NETWORK Setup
-###
-# - name: Create or Update public network
-#   docker_compose:
-#     project_src: "{{ docker_swarm_dir }}"
