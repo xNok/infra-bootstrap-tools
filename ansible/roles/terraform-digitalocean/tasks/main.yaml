@@ -29,6 +29,12 @@
     nodes: "{{ terraform_result.outputs.nodes_ips.value }}"
     managers: "{{ terraform_result.outputs.managers_ips.value }}"
 
+- name: Delete Ansible Inventory on Destroy
+  when: terraform_destroy | bool
+  ansible.builtin.file:
+    path: "{{ terraform_inventory_path }}/digitalocean"
+    state: 'absent'
+
 - name: Make sure known_hosts exists
   when: not terraform_destroy | bool
   ansible.builtin.file:

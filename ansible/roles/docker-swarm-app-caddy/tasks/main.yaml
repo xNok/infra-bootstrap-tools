@@ -44,10 +44,10 @@
   vars:
     docker_compose_path: "{{ caddy_dir }}/caddy-stack.yml"
     secrets:
-      - {name: 'caddy_github_client_id', value: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_ID') }}"}
-      - {name: 'caddy_github_client_secret', value: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_SECRET') }}"}
-      - {name: 'caddy_jwt_shared_key', value: "{{ lookup('env', 'CADDY_JWT_SHARED_KEY') | replace('\n', '\\n') }}"}
-      - {name: 'caddy_digitalocean_api_token', value: "{{ lookup('env', 'CADDY_DIGITALOCEAN_API_TOKEN') }}"}
+      - {name: 'caddy_github_client_id', value: "{{ caddy_github_client_id }}"}
+      - {name: 'caddy_github_client_secret', value: "{{ caddy_github_client_secret }}"}
+      - {name: 'caddy_jwt_shared_key', value: "{{ caddy_jwt_shared_key }}"}
+      - {name: 'caddy_digitalocean_api_token', value: "{{ caddy_digitalocean_api_token }}"}
 
 ###
 # Start Container

@@ -1,0 +1,19 @@
+#################################################
+# OR INFRA Role: utils-ssh-add
+#################################################
+---
+
+- name: Add private key SSH Agent
+  when: private_key_openssh is defined
+  ansible.builtin.copy:
+    dest: "{{ lookup('env', 'HOME') }}/.ssh/private_key_openssh"
+    content: "{{ private_key_openssh }}"
+    mode: '0600'
+
+- name: Evaluating the authentication agent & adding the key...
+  when: private_key_openssh is defined
+  shell: |
+    eval "$(ssh-agent)"
+    ssh-add "{{ lookup('env', 'HOME') }}/.ssh/private_key_openssh"
+  register: ssh_add
+  changed_when: ssh_add.rc != 0

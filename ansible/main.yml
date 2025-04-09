@@ -11,6 +11,7 @@
     AWS_SECRET_ACCESS_KEY: "{{ tf_aws_secret_access_key }}"
 
   roles:
+  - utils-ssh-add
   - terraform-digitalocean
   - role: utils-affected-roles
     always_run_all_roles: true
@@ -47,3 +48,15 @@
   roles:
   - role: docker-swarm-plugin-rclone
     when: "'docker-swarm-plugin-rclone' in hostvars['localhost']['roles_with_changes']"
+
+# APPS
+- name: This install Caddy and Portainer in the Swarm
+  hosts: managers[0] # Only one manager need to be hit
+  become: true
+
+  roles:
+  - role: docker-swarm-app-caddy
+    when: "'docker-swarm-app-caddy' in hostvars['localhost']['roles_with_changes']"
+  - role: docker-swarm-app-portainer
+    caddy: true
+    when: "'docker-swarm-app-portainer' in hostvars['localhost']['roles_with_changes']"

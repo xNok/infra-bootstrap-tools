@@ -1,6 +1,11 @@
+# SSH key to be added to ssh agent
+private_key_openssh: "{{
+  lookup('community.general.onepassword_ssh_key', 'Ansible SSH Key',
+  vault='infra-bootstrap-tools', ssh_format=true)
+  }}"
 # SSH Key to Add to newly created DigitalOcean droplet
 tf_var_public_key_openssh: "{{
-  lookup('community.general.onepassword', 'SSH Key',
+  lookup('community.general.onepassword', 'Ansible SSH Key',
   vault='infra-bootstrap-tools', field='public key')
   }}"
 # Used to provison DigitalOcean infrastructure

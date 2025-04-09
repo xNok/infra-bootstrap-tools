@@ -2,3 +2,8 @@ caddy_dir: /var/data/caddy
 email: nokwebspace@gmail.com
 domain: nokwebspace.ovh
 github_org: xNok
+
+caddy_github_client_id: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_ID') }}"
+caddy_github_client_secret: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_SECRET') }}"
+caddy_jwt_shared_key: "{{ lookup('env', 'CADDY_JWT_SHARED_KEY') | replace('\n', '\\n') }}"
+caddy_digitalocean_api_token: "{{ lookup('env', 'CADDY_DIGITALOCEAN_API_TOKEN') }}"
