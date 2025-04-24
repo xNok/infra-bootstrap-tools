@@ -64,9 +64,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      - name: Install 1Password CLI
-        uses: 1password/install-cli-action@v1
-
       # Setup the environment 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -76,10 +73,7 @@ jobs:
 
       - name: Install dependencies Including Ansible
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; fi
-          if [ -f requirements.yml ]; then ansible-galaxy install -r requirements.yml; fi
+          ./bin/bash/setup.sh ansible 1password-cli
 
       - name: write extra inventory to file
         if: ${{ env.INVENTORY != '' }}
@@ -92,3 +86,4 @@ jobs:
           ansible-playbook -i inventory ansible/main.yml
         env:
           BRANCH_NAME: ${{ github.head_ref }}
+          INVENTOP_SERVICE_ACCOUNT_TOKENORY: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}

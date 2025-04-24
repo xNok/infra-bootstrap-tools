@@ -11,6 +11,7 @@ install_pre_commit() {
 # Function to install ansible from requirements files
 install_ansible() {
   echo "Installing ansible from requirements files..."
+  python -m pip install --upgrade pip
   if [ -f requirements.txt ]; then
     echo "Installing from requirements.txt"
     pip install -r requirements.txt
