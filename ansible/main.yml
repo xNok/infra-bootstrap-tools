@@ -12,15 +12,21 @@
 
   roles:
   - utils-ssh-add
-  - terraform-digitalocean
+  - role: diodonfrost.terraform
+    become: true
+  - role: terraform-digitalocean
   - role: utils-affected-roles
-    always_run_all_roles: true
 
 # SWARM Managers
 - name: This setup the Docker Swarm Manager
   hosts: managers
   gather_facts: true
   become: true
+  vars:
+    ansible_ssh_common_args: "-o 'IdentityAgent={{ hostvars['localhost']['ssh_auth_sock'] }}'"
+  environment:
+    SSH_AGENT_PID: "{{ hostvars['localhost']['ssh_agent_pid'] }}"
+    SSH_AUTH_SOCK: "{{ hostvars['localhost']['ssh_auth_sock'] }}"
 
   roles:
   # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
