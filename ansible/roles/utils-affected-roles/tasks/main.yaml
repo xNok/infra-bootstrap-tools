@@ -8,15 +8,21 @@
   tags:
   - skip_ansible_lint
 
+- name: Set always_run_all_roles to true if on default branch
+  # Command line variables have the highest precedence of all variable types
+  set_fact:
+    always_run_all_roles: true
+  when: branch.stdout == default_branch
+
 - name: Fetch the main and current branches
   ansible.builtin.command: git fetch origin {{ default_branch }}:{{ default_branch }} {{ branch.stdout }}:{{ branch.stdout }}
-  when: branch.stdout != default_branch
+  when: not always_run_all_roles
   tags:
   - skip_ansible_lint
 
 - name: Register the git diff
   ansible.builtin.command: git diff --name-only origin/{{ default_branch }}..origin/{{ branch.stdout }} .
-  when: branch.stdout != default_branch
+  when: not always_run_all_roles
   register: diff
   tags:
   - skip_ansible_lint
@@ -24,7 +30,7 @@
 - name: Debug git diff output
   debug:
     msg: "{{ diff.stdout_lines }}"
-  when: branch.stdout != default_branch
+  when: not always_run_all_roles
 
 - name: Extract folders from the diff
   set_fact:
@@ -33,7 +39,7 @@
       | map('regex_replace', '^(.*/).*$' , '\\1')
       | unique
       }}"
-  when: branch.stdout != default_branch
+  when: not always_run_all_roles
 
 - name: Filter folders within the roles directory
   set_fact:
@@ -41,7 +47,7 @@
       | select('match', '^' + roles_folder + '/')
       | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1')
       | unique }}"
-  when: branch.stdout != default_branch
+  when: not always_run_all_roles
 
 - name: List all existing roles
   find:
@@ -49,7 +55,7 @@
     recurse: false
     file_type: directory
   register: found_directories
-  when: branch.stdout == default_branch
+  when: always_run_all_roles
 
 - name: Set all roles to run if on default branch
   set_fact:
@@ -57,7 +63,7 @@
       | map(attribute='path')
       | map('basename')
       | list }}"
-  when: branch.stdout == default_branch
+  when: always_run_all_roles
 
 - name: Debug roles_with_changes output
   debug:

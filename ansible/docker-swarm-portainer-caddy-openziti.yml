@@ -5,15 +5,6 @@
   roles:
   - utils-affected-roles
 
-# BASE
-- name: This is the base requirement for all nodes
-  hosts: all
-  become: true
-
-  roles:
-  - role: docker
-    when: "'docker' in hostvars['localhost']['roles_with_changes']"
-
 # SWARM
 - name: This setup the Docker Swarm Manager
   hosts: managers

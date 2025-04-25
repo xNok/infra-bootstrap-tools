@@ -6,10 +6,11 @@
 version: 2
 updates:
   - package-ecosystem: "terraform"
-    directory: "/terraform"
+    directory: "terraform"
     schedule:
       interval: "weekly"
+
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directory: ".github"
     schedule:
       interval: "weekly"

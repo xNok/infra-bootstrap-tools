@@ -1,4 +1,6 @@
-
+locals {
+  project_name = "infra-bootstrap-tools"
+}
 /**
  * # DigitalOcean Project
  *
@@ -6,7 +8,7 @@
  * (like Droplets, Spaces, and load balancers) into groups.
  */
 resource "digitalocean_project" "infra-bootstrap-tools" {
-  name        = "infra-bootstrap-tools"
+  name        = local.project_name
   description = "Startup infra for small self-hosted project"
   purpose     = "IoT"
   environment = "Development"
@@ -24,7 +26,7 @@ resource "tls_private_key" "ssh" {
 
 # Reguster the new SSH key to digitalocean
 resource "digitalocean_ssh_key" "infra" {
-  name       = "infra-bootstrap-tools-digitalocean"
+  name       = "${local.project_name}-digitalocean"
   public_key = tls_private_key.ssh.public_key_openssh
 }
 
