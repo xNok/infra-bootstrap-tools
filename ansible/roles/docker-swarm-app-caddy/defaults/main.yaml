@@ -1,9 +1,20 @@
+# host config path
 caddy_dir: /var/data/caddy
+
+# Assets configurations
+caddy_assets_path: "{{ role_path }}/assets"
+
+# Configuration for let's encrypt
 email: nokwebspace@gmail.com
 domain: nokwebspace.ovh
-github_org: xNok
 
+# Configurations for caddy security
+# ref: https://github.com/greenpau/caddy-security
+github_org: xNok
 caddy_github_client_id: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_ID') }}"
 caddy_github_client_secret: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_SECRET') }}"
 caddy_jwt_shared_key: "{{ lookup('env', 'CADDY_JWT_SHARED_KEY') | replace('\n', '\\n') }}"
+
+# Configuration for dynamic dns
+# ref: https://github.com/mholt/caddy-dynamicdns
 caddy_digitalocean_api_token: "{{ lookup('env', 'CADDY_DIGITALOCEAN_API_TOKEN') }}"
