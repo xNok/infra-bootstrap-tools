@@ -83,7 +83,7 @@ jobs:
 
       - name: run playbook
         run: |
-          ansible-playbook -i inventory ansible/main.yml
+          ansible-playbook -i ansible/inventory ansible/main.yml
         env:
           BRANCH_NAME: ${{ github.head_ref }}
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
