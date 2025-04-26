@@ -1,0 +1,5 @@
+{
+    "name": "ansible-role-utils-affected-roles",
+    "private": true,
+    "version": "0.0.1"
+}

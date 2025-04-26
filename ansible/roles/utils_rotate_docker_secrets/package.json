@@ -1,0 +1,5 @@
+{
+    "name": "ansible-role-utils-rotate-docker-secrets",
+    "private": true,
+    "version": "0.0.1"
+}
