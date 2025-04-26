@@ -11,18 +11,18 @@ on:
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
     paths:
-      - 'ansible/roles/docker-swarm-app-caddy/assets/**'
+      - 'ansible/roles/docker_swarm_app_caddy/assets/**'
   pull_request:
     branches: [ "main" ]
     paths:
-      - 'ansible/roles/docker-swarm-app-caddy/assets/**'
+      - 'ansible/roles/docker_swarm_app_caddy/assets/**'
 
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}-caddy
-  CONTEXT: ./ansible/roles/docker-swarm-app-caddy/assets
+  CONTEXT: ./ansible/roles/docker_swarm_app_caddyy/assets
 
 
 jobs:
