@@ -1,0 +1,5 @@
+{
+    "name": "ansible-role-docker-swarm-manager",
+    "private": true,
+    "version": "0.0.1"
+}
