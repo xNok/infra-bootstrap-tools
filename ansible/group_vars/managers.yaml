@@ -1,16 +1,16 @@
-caddy_github_client_id: "{{
+docker_swarm_app_caddy_github_client_id: "{{
   lookup('community.general.onepassword', 'CADDY_GITHUB_APP',
   vault='infra-bootstrap-tools', field='username')
   }}"
-caddy_github_client_secret: "{{
+docker_swarm_app_caddy_github_client_secret: "{{
   lookup('community.general.onepassword', 'CADDY_GITHUB_APP',
   vault='infra-bootstrap-tools', field='credential')
   }}"
-caddy_jwt_shared_key: "{{
+docker_swarm_app_caddy_jwt_shared_key: "{{
   lookup('community.general.onepassword', 'CADDY_JWT_SHARED_KEY',
   vault='infra-bootstrap-tools', field='password')
   }}"
-caddy_digitalocean_api_token: "{{
+docker_swarm_app_caddy_digitalocean_api_token: "{{
   lookup('community.general.onepassword', 'CADDY_DIGITALOCEAN_API_TOKEN',
   vault='infra-bootstrap-tools', field='credential')
   }}"

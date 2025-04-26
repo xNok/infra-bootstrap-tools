@@ -1,0 +1,23 @@
+#################################################
+# OR INFRA Role: Docker Swarm Node
+# Source:
+#    https://github.com/arillso/ansible.traefik
+#    https://geek-cookbook.funkypenguin.co.nz/ha-docker-swarm/traefik/
+#################################################
+
+###
+# GENERAL Setup
+###
+- name: Get join-token for worker nodes
+  set_fact:
+    join_token_worker: "{{ hostvars[groups[docker_swarm_node_manager_inventory_group_name][0]].result.swarm_facts.JoinTokens.Worker }}"
+
+###
+# Add Nodes
+###
+- name: Add nodes
+  docker_swarm:
+    state: join
+    advertise_addr: "{{ ansible_host }}"
+    join_token: "{{ join_token_worker }}"
+    remote_addrs: "{{ groups[docker_swarm_node_manager_inventory_group_name] | map('extract', hostvars, ['ansible_host']) | join(',') }}"

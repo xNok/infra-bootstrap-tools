@@ -1,4 +1,0 @@
-# Default variables for affected_roles role
-always_run_all_roles: false
-default_branch: "main"
-roles_folder: "ansible/roles"

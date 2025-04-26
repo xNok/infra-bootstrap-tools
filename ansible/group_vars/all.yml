@@ -1,9 +1,9 @@
 # Used by the Rclone docker plugin to sync volumes to DigitalOcean
-rclone_digitalocean_access_key_id: "{{
+docker_swarm_plugin_rclone_digitalocean_access_key_id: "{{
   lookup('community.general.onepassword', 'RCLONE_DIGITALOCEAN',
   vault='infra-bootstrap-tools', field='username')
   }}"
-rclone_digitalocean_secret_access_key: "{{
+docker_swarm_plugin_rclone_digitalocean_secret_access_key: "{{
   lookup('community.general.onepassword', 'RCLONE_DIGITALOCEAN',
   vault='infra-bootstrap-tools', field='credential')
   }}"

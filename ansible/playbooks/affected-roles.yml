@@ -1,0 +1,6 @@
+- name: Determine affected roles
+  hosts: localhost
+  gather_facts: false
+
+  roles:
+  - utils_affected_roles

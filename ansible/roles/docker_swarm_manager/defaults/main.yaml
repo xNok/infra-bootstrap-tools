@@ -1,0 +1,2 @@
+# in order to use docker_swarm_facts we know which group to use as managers
+docker_swarm_manager_inventory_group_name: 'managers'

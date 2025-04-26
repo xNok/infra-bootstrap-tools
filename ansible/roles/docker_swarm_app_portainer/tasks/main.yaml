@@ -1,0 +1,31 @@
+#################################################
+# OR INFRA Role: Portainer
+# Source: https://docs.portainer.io/v/ce-2.9/start/install/server/swarm/linux
+#################################################
+---
+###
+# GENERAL Setup
+###
+- name: Creates directory portainer
+  file:
+    path: "{{ docker_swarm_app_portainer_host_dir }}"
+    state: directory
+    mode: '0644'
+
+- name: Copy Compose file to remote server
+  template:
+    src: "{{ item }}"
+    dest: "{{ docker_swarm_app_portainer_host_dir }}/{{ item | basename | regex_replace('\\.j2$', '') }}"
+    mode: '0644'
+  with_fileglob:
+    - "{{ docker_swarm_app_portainer_assets_path }}/*-stack.yml.j2"
+
+###
+# Start Container
+###
+- name: Start portainer Stack
+  docker_stack:
+    state: present
+    name: portainer
+    compose:
+      - "{{ docker_swarm_app_portainer_host_dir }}/portainer-agent-stack.yml"

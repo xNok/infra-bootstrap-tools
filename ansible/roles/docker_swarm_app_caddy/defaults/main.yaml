@@ -1,0 +1,20 @@
+# host config path
+docker_swarm_app_caddy_host_dir: /var/data/caddy
+
+# Assets configurations
+docker_swarm_app_caddy_assets_path: "{{ role_path }}/assets"
+
+# Configuration for let's encrypt
+docker_swarm_app_caddy_tls_email: nokwebspace@gmail.com
+docker_swarm_app_caddy_tls_domain: nokwebspace.ovh
+
+# Configurations for caddy security
+# ref: https://github.com/greenpau/caddy-security
+docker_swarm_app_caddy_github_org: xNok
+docker_swarm_app_caddy_github_client_id: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_ID') }}"
+docker_swarm_app_caddy_github_client_secret: "{{ lookup('env', 'CADDY_GITHUB_CLIENT_SECRET') }}"
+docker_swarm_app_caddy_jwt_shared_key: "{{ lookup('env', 'CADDY_JWT_SHARED_KEY') | replace('\n', '\\n') }}"
+
+# Configuration for dynamic dns
+# ref: https://github.com/mholt/caddy-dynamicdns
+docker_swarm_app_caddy_digitalocean_api_token: "{{ lookup('env', 'CADDY_DIGITALOCEAN_API_TOKEN') }}"

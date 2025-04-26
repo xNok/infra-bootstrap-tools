@@ -1,0 +1,49 @@
+#################################################
+# OR INFRA Role: Docker Swarm Plugins Rclone
+# Source:
+#    https://rclone.org/docker/
+#################################################
+
+###
+# GENERAL Setup
+###
+- name: Install required system packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop: ['fuse']
+
+- name: Creates directory rclone
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0644'
+  loop:
+  - '/var/lib/docker-plugins/rclone/config'
+  - '/var/lib/docker-plugins/rclone/cache'
+
+- name: Copy Config file(s) to remote server
+  template:
+    src: "{{ item }}"
+    dest: '/var/lib/docker-plugins/rclone/config'
+    mode: '0644'
+  with_fileglob:
+  - "{{ docker_swarm_plugin_rclone_assets_path }}/rclone.conf"
+
+- name: Install rclone plugin
+  community.docker.docker_plugin:
+    plugin_name: rclone/docker-volume-rclone
+    alias: rclone
+    state: enable
+
+########
+# Testing Setup
+# Create a test volume
+########
+- name: Create a volume using rclone
+  community.docker.docker_volume:
+    name: first_rclone_volume
+    driver: rclone
+    driver_options:
+      remote: 'spaces:test-folder'
