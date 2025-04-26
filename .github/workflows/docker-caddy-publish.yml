@@ -22,7 +22,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}-caddy
-  CONTEXT: ./ansible/roles/docker_swarm_app_caddyy/assets
+  CONTEXT: ./ansible/roles/docker_swarm_app_caddy/assets
 
 
 jobs:
