@@ -10,7 +10,6 @@ license:
 tags:
     - infrastructure
     - docker
-    - docker-swarm
     - terraform
     - digitalocean
 repository: "https://github.com/xNok/infra-bootstrap-tools"
