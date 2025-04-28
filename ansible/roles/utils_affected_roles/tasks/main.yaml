@@ -8,10 +8,10 @@
   tags:
   - skip_ansible_lint
 
-- name: Set always_run_all_roles to true if on default branch
+- name: Set utils_affected_roles_default_branch to true if on default branch
   # Command line variables have the highest precedence of all variable types
   set_fact:
-    always_run_all_roles: true
+    utils_affected_roles_default_branch: true
   when: branch.stdout == utils_affected_roles_default_branch
 
 - name: Fetch the main and current branches
@@ -19,13 +19,13 @@
     git fetch origin
      {{ utils_affected_roles_default_branch }}:{{ utils_affected_roles_default_branch }}
      {{ branch.stdout }}:{{ branch.stdout }}
-  when: not always_run_all_roles
+  when: not utils_affected_roles_default_branch
   tags:
   - skip_ansible_lint
 
 - name: Register the git diff
   ansible.builtin.command: git diff --name-only origin/{{ utils_affected_roles_default_branch }}..origin/{{ branch.stdout }} .
-  when: not always_run_all_roles
+  when: not utils_affected_roles_default_branch
   register: diff
   tags:
   - skip_ansible_lint
@@ -42,7 +42,7 @@
       | map('regex_replace', '^(.*/).*$' , '\\1')
       | unique
       }}"
-  when: not always_run_all_roles
+  when: not utils_affected_roles_default_branch
 
 - name: Filter folders within the roles directory
   set_fact:

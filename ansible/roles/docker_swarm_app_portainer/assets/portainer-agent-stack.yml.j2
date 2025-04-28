@@ -16,7 +16,7 @@ services:
   portainer:
     image: portainer/portainer-ce:2.27.1
     command: -H tcp://tasks.agent:9001 --tlsskipverify
-{% if not caddy %}
+{% if not docker_swarm_app_portainer_caddy %}
     ports:
       - "9443:9443"
       - "9000:9000"
@@ -26,7 +26,7 @@ services:
       - portainer_data:/data
     networks:
       - agent_network
-{% if caddy %}
+{% if docker_swarm_app_portainer_caddy %}
       - caddy_caddy
 {% endif %}
     deploy:
@@ -34,9 +34,9 @@ services:
       replicas: 1
       placement:
         constraints: [node.role == manager]
-{% if caddy %}
+{% if docker_swarm_app_portainer_caddy %}
       labels:
-        caddy: portainer.{{domain}}
+        caddy: portainer.{{docker_swarm_app_caddy_tls_domain}}
         # this include escape for ansible
         caddy.reverse_proxy: "{{ '{{' }}upstreams 9000{{ '}}' }}"
         caddy.authorize: with admins_policy
@@ -47,7 +47,7 @@ networks:
     driver: overlay
     attachable: true
   # caddy network allow gain access via caddy reverse proxy and auth
-{% if caddy %}
+{% if docker_swarm_app_portainer_caddy %}
   caddy_caddy:
     external: true
 {% endif %}

@@ -34,7 +34,7 @@
 
 			transform user {
 				match realm github
-				match sub github.com/{{github_org}}
+				match sub github.com/{env.GITHUB_ORG}
 				action add role authp/admin
 			}
 		}

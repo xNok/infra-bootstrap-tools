@@ -30,10 +30,10 @@
     ssh_agent_pid: "{{ env_vars_stdout.stdout | from_json | json_query('SSH_AGENT_PID') }}"
     ssh_auth_sock: "{{ env_vars_stdout.stdout | from_json | json_query('SSH_AUTH_SOCK') }}"
 
-- name: Add to ssh-agent {{ansible_ssh_private_key_file}}
+- name: Add to ssh-agent {{ utils_ssh_add_ansible_ssh_private_key_file }}
   environment:
     SSH_AGENT_PID: "{{ ssh_agent_pid }}"
     SSH_AUTH_SOCK: "{{ ssh_auth_sock }}"
-  command: ssh-add {{ ansible_ssh_private_key_file }}
+  command: ssh-add {{ utils_ssh_add_ansible_ssh_private_key_file }}
   register: ssh_add
   changed_when: ssh_add.rc != 0

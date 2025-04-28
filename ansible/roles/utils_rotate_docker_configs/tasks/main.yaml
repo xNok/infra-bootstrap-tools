@@ -20,7 +20,7 @@
     labels:
       managed_by: "rotate_docker_configs"
       name: "{{ item.name }}"
-  loop: "{{ conutils_rotate_docker_configs_configsfigs }}"
+  loop: "{{ utils_rotate_docker_configs_configs }}"
 
 - name: Replace config names in Docker Compose file
   replace:

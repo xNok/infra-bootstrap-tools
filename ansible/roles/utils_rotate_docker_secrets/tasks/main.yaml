@@ -6,6 +6,7 @@
       | md5sum
       | cut -d\" \" -f1')}) }}"
   loop: "{{ utils_rotate_docker_secrets_secrets }}"
+  no_log: true
 
 - name: Create new secrets if value has changed
   docker_secret:
@@ -17,6 +18,7 @@
       name: "{{ item.name }}"
   when: (previous_checksums[item.name] is not defined) or (previous_checksums[item.name] != secret_checksums[item.name])
   loop: "{{ utils_rotate_docker_secrets_secrets }}"
+  no_log: true
 
 - name: Replace secret names in Docker Compose file
   replace:
@@ -24,3 +26,4 @@
     regexp: "{{ item.name }}(_[a-f0-9]{32})?"
     replace: "{{ item.name }}_{{ secret_checksums[item.name] }}"
   loop: "{{ utils_rotate_docker_secrets_secrets }}"
+  no_log: true
