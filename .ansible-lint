@@ -6,15 +6,16 @@
 exclude_paths:
   - .cache/ # implicit unless exclude_paths is defined in config
   - .github/
-  - ansible_legacy/
+  - .ansible/
+
 
 # This makes linter to fully ignore rules/tags listed below
 skip_list:
   - 'fqcn-builtins'
   - 'fqcn'
-  - 'role-name'
 
 # List of additional kind:pattern to be added at the top of the default
 # match list, first match determines the file kind.
 kinds:
-  - playbook: "./ansible/plays/*.{yml,yaml}"
+  - playbook: "./ansible/playbooks/*.{yml,yaml}"
+  - role: "./ansible/roles/*.{yml,yaml}"

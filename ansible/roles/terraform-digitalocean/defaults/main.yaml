@@ -1,5 +1,0 @@
-terraform_backend_config: "{{ role_path }}/assets/backend.tf"
-terraform_destroy: false
-terraform_inventory_path: "{{ playbook_dir }}/inventory"
-terraform_inventory_prefix: do-swarm
-terraform_inventory_user: root

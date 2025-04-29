@@ -1,0 +1,3 @@
+docker_swarm_app_portainer_assets_path: "{{ role_path }}/assets"
+docker_swarm_app_portainer_host_dir: /var/data/portainer
+docker_swarm_app_portainer_caddy: false

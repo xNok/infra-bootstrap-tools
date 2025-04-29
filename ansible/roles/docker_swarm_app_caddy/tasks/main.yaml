@@ -1,0 +1,56 @@
+#################################################
+# OR INFRA Role: Caddy
+# Source: https://caddyserver.com/docs/running#docker-compose
+# Auth Portal: https://authp.github.io/docs/authenticate/auth-portal
+#################################################
+---
+###
+# GENERAL Setup
+###
+- name: Creates directory caddy
+  file:
+    path: "{{ docker_swarm_app_caddy_host_dir }}"
+    state: directory
+    mode: '0644'
+
+- name: Copy Compose file to remote server
+  template:
+    src: "{{ item }}"
+    dest: "{{ docker_swarm_app_caddy_host_dir }}"
+    mode: '0644'
+  with_fileglob:
+    - "{{ docker_swarm_app_caddy_assets_path }}/*-stack.yml"
+    - "{{ docker_swarm_app_caddy_assets_path }}/Caddyfile"
+    - "{{ docker_swarm_app_caddy_assets_path }}/Dockerfile"
+
+###
+# Create Caddy Pre-requisits
+###
+- name: Manager Caddy Configs
+  include_role:
+    name: utils_rotate_docker_configs
+  vars:
+    utils_rotate_docker_configs_docker_compose_path: "{{ docker_swarm_app_caddy_host_dir }}/caddy-stack.yml"
+    utils_rotate_docker_configs_configs:
+      - {name: 'caddy_global_caddyfile', file_path: "{{ docker_swarm_app_caddy_host_dir }}/Caddyfile"}
+
+- name: Manager Caddy Secrets
+  include_role:
+    name: utils_rotate_docker_secrets
+  vars:
+    utils_rotate_docker_secrets_docker_compose_path: "{{ docker_swarm_app_caddy_host_dir }}/caddy-stack.yml"
+    utils_rotate_docker_secrets_secrets:
+      - {name: 'caddy_github_client_id', value: "{{ docker_swarm_app_caddy_github_client_id }}"}
+      - {name: 'caddy_github_client_secret', value: "{{ docker_swarm_app_caddy_github_client_secret }}"}
+      - {name: 'caddy_jwt_shared_key', value: "{{ docker_swarm_app_caddy_jwt_shared_key }}"}
+      - {name: 'caddy_digitalocean_api_token', value: "{{ docker_swarm_app_caddy_digitalocean_api_token }}"}
+
+###
+# Start Container
+###
+- name: Start caddy Stack
+  docker_stack:
+    state: present
+    name: caddy
+    compose:
+      - "{{ docker_swarm_app_caddy_host_dir }}/caddy-stack.yml"

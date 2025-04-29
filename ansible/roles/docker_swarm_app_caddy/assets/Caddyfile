@@ -1,0 +1,69 @@
+{
+	http_port 80
+	https_port 443
+
+    email {$EMAIL}
+    acme_dns digitalocean {env.DIGITALOCEAN_API_TOKEN}
+	
+	order authenticate before respond
+	order authorize before basicauth
+
+	# Dynamic dns handles setting up dns records automatically
+	dynamic_dns {
+		provider digitalocean {env.DIGITALOCEAN_API_TOKEN}
+		domains {
+			{$DOMAIN} @ www
+		}
+		dynamic_domains
+	}
+
+	# Security tackles authentication and authorization
+	security {
+		oauth identity provider github {env.GITHUB_CLIENT_ID} {env.GITHUB_CLIENT_SECRET}
+
+		authentication portal myportal {
+			crypto default token lifetime 3600
+			crypto key sign-verify {env.JWT_SHARED_KEY}
+			cookie domain {$DOMAIN}
+			enable identity provider github
+			ui {
+				links {
+					"My Identity" "/whoami" icon "las la-user"
+				}
+			}
+
+			transform user {
+				match realm github
+				match sub github.com/{env.GITHUB_ORG}
+				action add role authp/admin
+			}
+		}
+
+		authorization policy admins_policy {
+			set auth url https://auth.{$DOMAIN}/oauth2/github
+			crypto key verify {env.JWT_SHARED_KEY}
+			allow roles authp/admin authp/user
+			validate bearer header
+			inject headers with claims
+
+			acl rule {
+				comment allow admin
+				match role authp/admin
+				allow stop log info
+			}
+			
+			acl rule {
+				comment default deny
+				match any
+				deny log warn
+			}
+		}
+	}
+}
+
+# Auth endpoint for Caddy Security
+auth.{$DOMAIN} {
+	authenticate with myportal
+}
+
+

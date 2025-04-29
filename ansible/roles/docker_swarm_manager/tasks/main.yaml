@@ -1,0 +1,31 @@
+#################################################
+# OR INFRA Role: Docker Swarm Manager
+# Source:
+#    https://github.com/arillso/ansible.traefik
+#    https://geek-cookbook.funkypenguin.co.nz/ha-docker-swarm/traefik/
+#################################################
+---
+###
+# SWARM Setup
+###
+- name: Init a new swarm with default parameters
+  docker_swarm:
+    state: present
+    advertise_addr: "{{ ansible_host }}"
+  register: result
+  when: inventory_hostname == groups[docker_swarm_manager_inventory_group_name][0] # only on the first manager
+
+###
+# Manager Setup
+###
+- name: Get join-token for manager nodes
+  set_fact:
+    join_token_manager: "{{ hostvars[groups[docker_swarm_manager_inventory_group_name][0]].result.swarm_facts.JoinTokens.Manager }}"
+
+- name: Join other managers
+  docker_swarm:
+    state: join
+    join_token: "{{ join_token_manager }}"
+    advertise_addr: "{{ ansible_host }}"
+    remote_addrs: "{{ groups[docker_swarm_manager_inventory_group_name] | map('extract', hostvars, ['ansible_host']) | join(',') }}"
+  when: inventory_hostname != groups[docker_swarm_manager_inventory_group_name] # exclude the first manager

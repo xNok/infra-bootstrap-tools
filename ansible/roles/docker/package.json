@@ -1,0 +1,5 @@
+{
+    "name": "ansible-role-docker",
+    "private": true,
+    "version": "0.0.1"
+}

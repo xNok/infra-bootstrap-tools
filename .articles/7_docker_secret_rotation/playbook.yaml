@@ -22,6 +22,7 @@
           | md5sum 
           | cut -d\" \" -f1')}) }}"
       loop: "{{ secrets }}"
+      no_log: True
 
     - name: Debug secret_checksums
       debug:
@@ -58,6 +59,7 @@
           name: "{{ item.name }}"
       when: (previous_checksums[item.name] is not defined) or (previous_checksums[item.name] != secret_checksums[item.name])
       loop: "{{ secrets }}"
+      no_log: True
 
     - name: Update checksums file
       ini_file:
@@ -73,6 +75,7 @@
         regexp: "{{ item.name }}(_[a-f0-9]{32})?"
         replace: "{{ item.name }}_{{ secret_checksums[item.name] }}"
       loop: "{{ secrets }}"
+      no_log: True
 
     - name: List all Docker secrets managed by this role
       command: docker secret ls --filter label=managed_by=rotate_docker_secrets --format "{{ '{{ .Name }}' }}"

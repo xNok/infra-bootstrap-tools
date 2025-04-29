@@ -1,0 +1,73 @@
+- name: Register current branch
+  ansible.builtin.shell: |
+    if [ -z "$BRANCH_NAME" ]; then
+      BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+    fi
+    echo $BRANCH_NAME
+  register: branch
+  tags:
+  - skip_ansible_lint
+
+- name: Set utils_affected_roles_default_branch to true if on default branch
+  # Command line variables have the highest precedence of all variable types
+  set_fact:
+    utils_affected_roles_default_branch: true
+  when: branch.stdout == utils_affected_roles_default_branch
+
+- name: Fetch the main and current branches
+  ansible.builtin.command:
+    git fetch origin
+     {{ utils_affected_roles_default_branch }}:{{ utils_affected_roles_default_branch }}
+     {{ branch.stdout }}:{{ branch.stdout }}
+  when: not utils_affected_roles_default_branch
+  tags:
+  - skip_ansible_lint
+
+- name: Register the git diff
+  ansible.builtin.command: git diff --name-only origin/{{ utils_affected_roles_default_branch }}..origin/{{ branch.stdout }} .
+  when: not utils_affected_roles_default_branch
+  register: diff
+  tags:
+  - skip_ansible_lint
+
+- name: Debug git diff output
+  debug:
+    msg: "{{ diff.stdout_lines }}"
+  when: not utils_affected_roles_always_run_all_roles
+
+- name: Extract folders from the diff
+  set_fact:
+    changed_folders: "{{
+      diff.stdout_lines
+      | map('regex_replace', '^(.*/).*$' , '\\1')
+      | unique
+      }}"
+  when: not utils_affected_roles_default_branch
+
+- name: Filter folders within the roles directory
+  set_fact:
+    roles_with_changes: "{{ changed_folders
+      | select('match', '^' + utils_affected_roles_roles_folder + '/')
+      | map('regex_replace', '^' + utils_affected_roles_roles_folder + '/([^/]+)/.*$', '\\1')
+      | unique }}"
+  when: not utils_affected_roles_always_run_all_roles
+
+- name: List all existing roles
+  find:
+    paths: "{{ lookup('env', 'PWD') }}/{{ utils_affected_roles_roles_folder }}"
+    recurse: false
+    file_type: directory
+  register: found_directories
+  when: utils_affected_roles_always_run_all_roles
+
+- name: Set all roles to run if on default branch
+  set_fact:
+    roles_with_changes: "{{ found_directories.files
+      | map(attribute='path')
+      | map('basename')
+      | list }}"
+  when: utils_affected_roles_always_run_all_roles
+
+- name: Debug roles_with_changes output
+  debug:
+    msg: "{{ roles_with_changes }}"

@@ -1,0 +1,4 @@
+docker_swarm_plugin_rclone_assets_path: "{{ role_path }}/assets"
+docker_swarm_plugin_rclone_digitalocean_access_key_id: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_ACCESS_KEY_ID') }}"
+docker_swarm_plugin_rclone_digitalocean_secret_access_key: "{{ lookup('env', 'RCLONE_DIGITALOCEAN_SECRET_ACCESS_KEY') }}"
+docker_swarm_plugin_rclone_digitalocean_s3_enspoint: nyc3.digitaloceanspaces.com

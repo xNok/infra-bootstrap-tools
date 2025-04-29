@@ -1,0 +1,4 @@
+[nodes]
+
+[managers]
+do-swarm-manager-0 ansible_host=206.189.19.92 ansible_user=root

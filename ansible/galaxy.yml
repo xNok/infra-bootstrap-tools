@@ -1,0 +1,15 @@
+namespace: "xnok"
+name: "infra_bootstrap_tools"
+description: "IaC configurations to boostrap and manage a small self-hosted project or homelab"
+version: "1.0.0"
+readme: "README.md"
+authors:
+    - "xNok"
+license:
+    - "MIT"
+tags:
+    - infrastructure
+    - docker
+    - terraform
+    - digitalocean
+repository: "https://github.com/xNok/infra-bootstrap-tools"

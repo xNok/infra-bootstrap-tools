@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  caddy:
+    image: ghcr.io/xnok/infra-bootstrap-tools-caddy:main
+    command:
+      - "caddy"
+      - "docker-proxy"
+      - "--caddyfile-path"
+      - "/etc/caddy/Caddyfile"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    networks:
+      - caddy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - caddy_data:/data
+      - caddy_config:/config
+    configs:
+      - source: caddy_global_caddyfile
+        target: "/etc/caddy/Caddyfile"
+    secrets:
+      - caddy_github_client_id
+      - caddy_github_client_secret
+      - caddy_jwt_shared_key
+      - caddy_digitalocean_api_token
+    environment:
+      DOMAIN: "{{ docker_swarm_app_caddy_tls_domain }}"
+      EMAIL: "{{ docker_swarm_app_caddy_tls_email }}"
+      GITHUB_ORG: "{{ docker_swarm_app_caddy_github_org }}"
+      GITHUB_CLIENT_ID_FILE: /run/secrets/caddy_github_client_id
+      GITHUB_CLIENT_SECRET_FILE: /run/secrets/caddy_github_client_secret
+      JWT_SHARED_KEY_FILE: /run/secrets/caddy_jwt_shared_key
+      DIGITALOCEAN_API_TOKEN_FILE: /run/secrets/caddy_digitalocean_api_token
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      restart_policy:
+        condition: any
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 200M
+
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: containous/whoami
+    networks:
+      - caddy
+    deploy:
+      labels:
+        caddy: whoami.{{docker_swarm_app_caddy_tls_domain}}
+        # this include escape for ansible
+        caddy.reverse_proxy: "{{ '{{' }}upstreams 80{{ '}}' }}"
+        caddy.authorize: with admins_policy
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+configs:
+  caddy_global_caddyfile:
+    external: true
+
+networks:
+  caddy:
+    attachable: true
+
+secrets:
+  caddy_github_client_id:
+    external: true
+  caddy_github_client_secret:
+    external: true
+  caddy_jwt_shared_key:
+    external: true
+  caddy_digitalocean_api_token:
+    external: true
