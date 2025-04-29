@@ -41,6 +41,13 @@
 # SWARM Nodes
 - name: This setup nodes to join the Swarm
   hosts: nodes
+  gather_facts: true
+  become: true
+  vars:
+    ansible_ssh_common_args: "-o 'IdentityAgent={{ hostvars['localhost']['ssh_auth_sock'] }}'"
+  environment:
+    SSH_AGENT_PID: "{{ hostvars['localhost']['ssh_agent_pid'] }}"
+    SSH_AUTH_SOCK: "{{ hostvars['localhost']['ssh_auth_sock'] }}"
 
   roles:
   - role: docker_swarm_node # this role is for host to join the swarm
