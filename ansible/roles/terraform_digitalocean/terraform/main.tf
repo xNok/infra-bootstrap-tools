@@ -24,7 +24,7 @@ resource "digitalocean_ssh_key" "infra" {
 resource "digitalocean_droplet" "managers" {
   count = var.manager_count
 
-  image  = "ubuntu-20-04-x64"
+  image  = "ubuntu-24-04-x64"
   name   = "manager${count.index}"
   region = "lon1"
   size   = var.manager_size

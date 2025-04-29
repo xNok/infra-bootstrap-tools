@@ -1,6 +1,6 @@
 #################################################
 # OR INFRA Role: Docker Swarm Controller
-# Machines reunning ansible need some special python package
+# Machines running ansible need some special python package
 # Source:
 #    https://github.com/arillso/ansible.traefik
 #    https://geek-cookbook.funkypenguin.co.nz/ha-docker-swarm/traefik/
@@ -14,9 +14,4 @@
     name: "{{ item }}"
     state: present
     update_cache: true
-  loop: ['python3-pip', 'virtualenv', 'python3-setuptools']
-
-- name: Install python stuff required
-  pip:
-    executable: pip3
-    name: [jsondiff, passlib, docker]
+  loop: ['pipx', 'python3-setuptools', 'python3-jsondiff', 'python3-passlib', 'python3-docker']
