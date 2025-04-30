@@ -17,3 +17,4 @@ website/public
 ansible/roles/terraform-*/terraform/backend.tf
 ansible/inventory/*
 !ansible/inventory/.gitkeep
+ansible/playbooks/inventory/*
