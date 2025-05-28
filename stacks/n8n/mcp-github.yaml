@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mcp-server:
+    # IMPORTANT: Replace 'your-organization/mcp-github-server:latest'
+    # with the actual Docker image for your MCP server.
+    image: mcp/github:latest
+    container_name: mcp_github_server_v1 # Renamed to avoid conflict if old one exists
+    restart: unless-stopped
+    secrets:
+      - github_pat_secret
+    networks:
+      - n8n_default
+    # The entrypoint is set to /bin/sh to execute the command using a shell.
+    entrypoint: ["/bin/sh", "-c"]
+    # The command will first export the secret's content as an environment variable,
+    # then execute the original server command.
+    # Note the use of '$$' for variable expansion within the command string,
+    # as Docker Compose uses '$' for its own variable interpolation.
+    command: |
+      export GITHUB_PERSONAL_ACCESS_TOKEN=$$(cat /run/secrets/github_pat_secret)
+      echo "MCP Server: GITHUB_PERSONAL_ACCESS_TOKEN is set."
+      exec ./github-mcp-server stdio
+
+# Define the external network created by your n8n stack
+# (Docker Compose typically names it <projectname>_default)
+networks:
+  n8n_default:
+    external: true
+
+# Define the secret
+secrets:
+  github_pat_secret:
+    # Make sure you have created this Docker secret beforehand
+    # e.g., echo "your_actual_github_token" | docker secret create github_pat_secret -
+    external: true
