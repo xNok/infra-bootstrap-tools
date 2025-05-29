@@ -15,7 +15,7 @@ services:
     # Note the use of '$$' for variable expansion within the command string,
     # as Docker Compose uses '$' for its own variable interpolation.
     command: |
-      export GITHUB_PERSONAL_ACCESS_TOKEN=$$(cat /run/secrets/github_pat_secret)
+      export GITHUB_PERSONAL_ACCESS_TOKEN=$$(cat /run/secrets/mcp_github_pat_secret)
       echo "MCP Server: GITHUB_PERSONAL_ACCESS_TOKEN is set."
       exec ./github-mcp-server stdio
 
