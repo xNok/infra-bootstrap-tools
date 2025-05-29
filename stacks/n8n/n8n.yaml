@@ -34,3 +34,6 @@ volumes:
 networks:
   caddy_caddy:
     external: true
+  n8n:
+    attachable: true
+
