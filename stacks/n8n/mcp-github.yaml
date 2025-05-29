@@ -2,8 +2,6 @@ version: '3.8'
 
 services:
   mcp-server:
-    # IMPORTANT: Replace 'your-organization/mcp-github-server:latest'
-    # with the actual Docker image for your MCP server.
     image: mcp/github:latest
     restart: unless-stopped
     secrets:
