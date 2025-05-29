@@ -17,6 +17,7 @@ services:
     # Docker Stack Config
     networks:
       - caddy_caddy
+      - n8n
     deploy:
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
