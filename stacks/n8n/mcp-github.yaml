@@ -7,7 +7,7 @@ services:
     secrets:
       - mcp_github_pat_secret
     networks:
-      - n8n_default
+      - n8n_n8n
     # The entrypoint is set to /bin/sh to execute the command using a shell.
     entrypoint: ["/bin/sh", "-c"]
     # The command will first export the secret's content as an environment variable,
@@ -20,9 +20,8 @@ services:
       exec ./github-mcp-server stdio
 
 # Define the external network created by your n8n stack
-# (Docker Compose typically names it <projectname>_default)
 networks:
-  n8n_default:
+  n8n_n8n:
     external: true
 
 # Define the secret
