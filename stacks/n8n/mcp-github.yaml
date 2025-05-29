@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mcp-server:
-    image: mcp/github:latest
+    image: ghcr.io/github/github-mcp-server
     restart: unless-stopped
     secrets:
       - mcp_github_pat_secret
