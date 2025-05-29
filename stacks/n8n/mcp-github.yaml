@@ -5,10 +5,9 @@ services:
     # IMPORTANT: Replace 'your-organization/mcp-github-server:latest'
     # with the actual Docker image for your MCP server.
     image: mcp/github:latest
-    container_name: mcp_github_server_v1 # Renamed to avoid conflict if old one exists
     restart: unless-stopped
     secrets:
-      - github_pat_secret
+      - mcp_github_pat_secret
     networks:
       - n8n_default
     # The entrypoint is set to /bin/sh to execute the command using a shell.
@@ -30,7 +29,7 @@ networks:
 
 # Define the secret
 secrets:
-  github_pat_secret:
+  mcp_github_pat_secret:
     # Make sure you have created this Docker secret beforehand
     # e.g., echo "your_actual_github_token" | docker secret create github_pat_secret -
     external: true
