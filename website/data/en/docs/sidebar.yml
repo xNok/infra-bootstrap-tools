@@ -1,8 +1,10 @@
 - title: Documentation
   pages:
     - title: Overview
+    - title: 🚀 Getting Started: Deploy Your Infrastructure
 
 - title: Tools Introduction
   pages:
+    - title: Understanding Ansible Concepts
     - title: Caddy
     - title: Portainer
