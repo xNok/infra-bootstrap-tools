@@ -8,16 +8,40 @@ Features:
 * docker-swarm
 * Caddy
 * Portainer
-* Prometheus 
-* Graphana
+
+## 🚀 Quick Start
+
+Got your [prerequisites](./website/content/en/docs/gs1.getting_started.md#prerequisites) and [secrets configured](./website/content/en/docs/gs1.getting_started.md#configuration-secrets-management)?
+
+Deploy your entire infrastructure with a single command:
+
+```bash
+make up
+```
+
+This command will:
+*   Provision infrastructure on DigitalOcean using Terraform.
+*   Install Docker on all hosts.
+*   Initialize a Docker Swarm cluster.
+*   Deploy Caddy and Portainer applications.
+
+To tear down the infrastructure:
+
+```bash
+make down
+```
+
+For a detailed step-by-step guide, including prerequisites and secret management options, please refer to our **[Full Getting Started Guide](./website/content/en/docs/gs1.getting_started.md)**.
+
+To understand the underlying Ansible concepts, check out **[Understanding Ansible Concepts](./website/content/en/docs/b1.ansible_concepts.md)**.
 
 ## Articles and Tutorials
 
 The articles/tutorials are divided into sections. 
 * **Introduction** -> What are the tools to manage infrastructure? Perfect to learn the basis.
 * **How-tos** -> Good takeaway from this project - Answers many questions you could encounter in the future
-* **Main quest** -> Deploy the Infrastructure using Ansible, Terraform and Github Action
 * **Deepening Understanding** -> Learn more about each application used in this setup (Portainer, Graphana, Caddy, etc.)
+* **Local Experimentation & Advanced Topics**: Deeper dives into specific setups and components.
 
 I used [DigitalOcean](https://digitalocean.pxf.io/q4b2qO) for experiments because it is cheap, but any cloud provider should work, as we are mainly playing with Virtual Machines. You can even get [$200 DigitalOcean free credit](https://digitalocean.pxf.io/q4b2qO) when starting 
 * Don't forget to delete everything after a tutorial if you don't want to add unnecessary costs
@@ -38,19 +62,22 @@ I used [DigitalOcean](https://digitalocean.pxf.io/q4b2qO) for experiments becaus
 * [x] 🗺️ [How to create Ansible Inventory with Terraform?](https://faun.pub/how-to-create-ansible-inventory-with-terraform-a32fcbe11be6?sk=da18fba15ee996e4c3b92782229654ee)
 * [x] 👩 [How to run an Ansible playbook using GitHub Action?](https://faun.pub/how-to-run-an-ansible-playbook-using-github-action-42430dec944?sk=7796e8bd44f6b8c394b80507b8ff3e87)
 
-### Main Quest - Put it all together
+### Local Experimentation & Advanced Topics
+
+These articles cover setting up local test environments and exploring specific components in more detail. They are excellent for understanding the individual parts before or alongside deploying the full cloud infrastructure.
 
 * [X] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
    * Example code [.articles/1_vagrant_101](.articles/1_vagrant_101)   
 * [X] 🧰 2 [Experimenting on Docker Swarm with Vagrant and Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4?sk=1eac227cf3c9ec5dc5abbf06f38e92c3)
    * Example code [.articles/2_docker_swarm_101](.articles/2_docker_swarm_101)
-* [ ] WIP: 🧰 3: [Automate Infrastructure provisioning with Ansible and Github action]()
+* [ ] WIP: 🧰 3: [Automate Infrastructure provisioning with Ansible and Github action]() (This might be more of an advanced topic now, focusing on CI/CD aspects beyond the basic `make up`)
+
 
 ### Learn about the applications used in this setup
 
-* [ ] WIP: ☸️ 1: [What is Portainer and why you might need it.]()
+* [ ] WIP: ☸️ 1: [What is Portainer and why you might need it.]() (Covered by [Portainer Management UI](./website/content/en/docs/a2.portainer.md))
 * [ ] WIP: ☸️ 2: [What is Prometheus and why you might need it.]()
-* [ ] WIP: ☸️ 3: [What is Caddy and why you might need it.]()
+* [ ] WIP: ☸️ 3: [What is Caddy and why you might need it.]() (Covered by [Caddy Web Server](./website/content/en/docs/a1.caddy.md))
 
 ### Deep Dives
 
