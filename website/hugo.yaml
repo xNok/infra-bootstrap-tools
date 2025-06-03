@@ -17,7 +17,7 @@ languages:
 # To omit the Google Analytics script, put a ~ in place of the G-XXXXXXXXXX below.
 services:
   googleAnalytics:
-    ID: G-XXXXXXXXXX
+    ID: G-1368982DJ1
 
 markup:
   highlight:
