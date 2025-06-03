@@ -1,6 +1,6 @@
 ---
 title: "🚀 Getting Started: Deploy Your Infrastructure"
-weight: 1 # gs for Getting Started, 1 for first page
+slug: getting-started-deploy-your-infrastructure
 ---
 
 This guide walks you through deploying a single-node (expandable) infrastructure on DigitalOcean using the `infra-bootstrap-tools`.
