@@ -8,8 +8,6 @@ Features:
 * docker-swarm
 * Caddy
 * Portainer
-* Prometheus 
-* Graphana
 
 ## 🚀 Quick Start
 

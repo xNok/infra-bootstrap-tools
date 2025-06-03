@@ -4,6 +4,7 @@ weight: 1 # gs for Getting Started, 1 for first page
 ---
 
 This guide walks you through deploying a single-node (expandable) infrastructure on DigitalOcean using the `infra-bootstrap-tools`.
+
 We'll use the `make up` target for deployment and `make down` for destruction.
 
 #### Prerequisites
@@ -14,7 +15,7 @@ Before you begin, ensure you have the following tools and accounts:
 *   **Terraform:** [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 *   **DigitalOcean Account:** You'll need an account to provision resources.
 *   **Secret Management Tool:** You'll need a way to provide sensitive data to Ansible.
-    *   **Recommended by Author:** 1Password & 1Password CLI (`op`). [Set up 1Password CLI](https://developer.1password.com/docs/cli/get-started/). The examples in this guide use 1Password.
+    *   **Recommended (That's what I use):** 1Password & 1Password CLI (`op`). [Set up 1Password CLI](https://developer.1password.com/docs/cli/get-started/). The examples in this guide use 1Password.
     *   **Alternatives:** Ansible Vault, environment variables, direct input in variable files (not recommended for sensitive data in Git), or other Ansible lookup plugins.
 
 #### Configuration - Secrets Management
@@ -32,7 +33,7 @@ The key Ansible variable files involved are:
 *   `ansible/playbooks/group_vars/managers.yaml`: Defines where to find Caddy secrets.
     *   Look for variables like `CADDY_GITHUB_APP_CLIENT_ID` and `CADDY_GITHUB_APP_CLIENT_SECRET`.
 
-**Note:** Refer to these files for the exact secret names and paths expected if you use 1Password. **Do not commit actual secret values to the repository.** The examples in the variable files often use the `op://` URI scheme for 1Password. If you're not using 1Password, you'll need to adjust the variable definitions in `ansible/playbooks/host_vars/localhost.yml`, `ansible/playbooks/group_vars/all.yml`, and `ansible/playbooks/group_vars/managers.yaml` to use your chosen method (e.g., `{{ ansible_vault_var }}`, `{{ lookup('env', 'MY_SECRET') }}`, or direct value).
+**Note:** Refer to the role documentation if you need a better indication of all the available configurations. I have yet to write/generate a reference for those.
 
 #### Deployment Steps
 
@@ -51,11 +52,9 @@ The key Ansible variable files involved are:
     make up
     ```
 
-4.  **Accessing Services (Optional but Recommended):**
-    After the deployment, you can verify its success:
-    *   Check the DigitalOcean console for your new Droplet.
-    *   Access the Portainer UI: The IP address of your server will be output by Terraform during the `make up` process. Portainer typically runs on port `9443` (e.g., `https://<server_ip>:9443`). You might need to accept a self-signed certificate.
-    *   Caddy will also be running, serving any configured sites. Check Ansible logs for details on deployed services.
+4.  **Accessing Services:**
+   * Your caddy security portal should be accessible at `https://auth.[YOUR_DOMAIN]/portal`, from there you should have a link to access Portainer, which is waiting for you to set up your admin account. (**Note**: you need to be quick, otherwise Portainer will lock itself, and you will need to restart the Portainer container)
+    
 
 #### Managing the Infrastructure
 
