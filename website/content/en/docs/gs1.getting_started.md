@@ -18,6 +18,22 @@ Before you begin, ensure you have the following tools and accounts:
     *   **Recommended (That's what I use):** 1Password & 1Password CLI (`op`). [Set up 1Password CLI](https://developer.1password.com/docs/cli/get-started/). The examples in this guide use 1Password.
     *   **Alternatives:** Ansible Vault, environment variables, direct input in variable files (not recommended for sensitive data in Git), or other Ansible lookup plugins.
 
+##### Development Environment Setup
+
+While not strictly required for deploying the infrastructure, if you plan to contribute to this project or customize it extensively, setting up a consistent development environment is recommended.
+
+*   **Using the Setup Script**: This project includes a helper script to install common tools used for development, such as `pre-commit` for linting, `ansible`, `hugo` for the documentation site, etc. You can find this script at `./bin/bash/setup.sh`. To install specific tools, run:
+    ```bash
+    ./bin/bash/setup.sh <tool_name_1> <tool_name_2>
+    ```
+    For example, to install `pre-commit` and `hugo`:
+    ```bash
+    ./bin/bash/setup.sh pre-commit hugo
+    ```
+    Run the script without arguments or with an invalid tool name to see the list of available tools.
+
+*   **Using Gitpod**: For a cloud-based, pre-configured development environment, you can use Gitpod. This is the quickest way to get started without installing anything on your local machine. Look for the "Open in Gitpod" button in the main `README.md` of the project.
+
 #### Configuration - Secrets Management
 
 Sensitive information, such as API keys and tokens, is required to provision and configure the infrastructure. This project requires sensitive information like API keys. The author prefers using 1Password for managing these, and the examples show this method. However, you can adapt this to your preferred secret management tool (e.g., Ansible Vault, environment variables, or other lookup plugins).

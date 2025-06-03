@@ -8,3 +8,14 @@
     - title: "Understanding Ansible Concepts"
     - title: Caddy
     - title: Portainer
+
+- title: Tools Showcase
+  pages:
+    - title: Pre-commit
+      path: tools/pre-commit.md # Assuming files will be in content/en/docs/tools/
+    - title: 1Password CLI
+      path: tools/1password-cli.md
+    - title: Boilerplate
+      path: tools/boilerplate.md
+    - title: Hugo
+      path: tools/hugo.md
