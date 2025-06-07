@@ -9,6 +9,32 @@ Features:
 * Caddy
 * Portainer
 
+## Development Environment Setup
+
+This project provides a script to help you set up your local development environment. Additionally, a Gitpod configuration is available for a cloud-based, ready-to-use environment.
+
+### Local Setup Script
+
+The `./bin/bash/setup.sh` script can install the following tools:
+
+*   **pre-commit**: For running linters and formatters automatically before committing code.
+*   **Ansible**: For infrastructure automation.
+*   **1Password CLI**: For managing secrets.
+*   **Boilerplate**: For generating boilerplate code.
+*   **Hugo**: For building and serving the documentation website.
+
+To use the script, run it with the names of the tools you want to install. For example, to install pre-commit and Ansible:
+
+```bash
+./bin/bash/setup.sh pre-commit ansible
+```
+
+### Gitpod
+
+Alternatively, you can use Gitpod to get a pre-configured development environment in your browser. Click the button below to get started:
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
+
 ## 🚀 Quick Start
 
 Got your [prerequisites](./website/content/en/docs/gs1.getting_started.md#prerequisites) and [secrets configured](./website/content/en/docs/gs1.getting_started.md#configuration-secrets-management)?
@@ -114,6 +140,15 @@ use dpk for packer in docker
 use dtf for terraform in docker
 use dbash for bash in docker
 ```
+
+## Tools Showcase
+
+This project leverages several tools to streamline development and improve code quality. Here's a brief overview of some of them:
+
+*   **Pre-commit**: We use pre-commit hooks to automate linting, formatting, and other checks before code is committed. This helps maintain code consistency and catch errors early. Configuration can be found in `.pre-commit-config.yaml`.
+*   **1Password CLI**: For securely managing sensitive information like API keys and passwords, the 1Password CLI can be integrated into your workflow. The setup script provides an option to install it.
+*   **Boilerplate**: [Gruntwork Boilerplate](https://github.com/gruntwork-io/boilerplate) is used to generate répétitive code structures, ensuring consistency and saving time. You can find boilerplate templates in the `.boilerplates` directory.
+*   **Hugo**: The project documentation website (what you're likely reading if you're on the website!) is built using [Hugo](https://gohugo.io/), a fast and flexible static site generator. The website content is in the `website/` directory.
 
 ## Scale Up
 
