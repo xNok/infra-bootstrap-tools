@@ -1,10 +1,15 @@
 - title: Documentation
   pages:
     - title: Overview
-    - title: "🚀 Getting Started: Deploy Your Infrastructure"
+    - title: "🚀 Getting Started"
+
+- title: Infrastructure Management
+  pages:
+    - title: "Understanding Ansible Concepts"
+    - title: "Spinning up infrastructure with Ansible and Terraform"
+    - title: "Docker Swarm Setup"
 
 - title: Tools Introduction
   pages:
-    - title: "Understanding Ansible Concepts"
     - title: Caddy
     - title: Portainer
