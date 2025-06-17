@@ -3,11 +3,9 @@ title: "Pre-commit"
 weight: 1
 ---
 
-## Pre-commit
-
 Pre-commit is a framework for managing and maintaining multi-language pre-commit hooks. It allows you to run checks on your code before you commit it, helping to enforce code style, prevent common mistakes, and ensure code quality.
 
-### Usage in this Project
+## Usage in this Project
 
 This project uses pre-commit hooks to automate tasks like:
 

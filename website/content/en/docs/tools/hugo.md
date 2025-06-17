@@ -3,11 +3,9 @@ title: "Hugo"
 weight: 4
 ---
 
-## Hugo
-
 [Hugo](https://gohugo.io/) is a fast and flexible static site generator written in Go. It takes content written in Markdown and uses templates to generate a complete HTML website.
 
-### Usage in this Project
+## Usage in this Project
 
 The documentation website for this project (the site you might be viewing this on if you're reading it online) is built using Hugo.
 
