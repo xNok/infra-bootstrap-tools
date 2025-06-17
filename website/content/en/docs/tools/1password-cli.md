@@ -1,6 +1,6 @@
 ---
 title: "1Password CLI"
-weight: 2 # Second item in Tools Showcase
+weight: 2
 ---
 
 ## 1Password CLI

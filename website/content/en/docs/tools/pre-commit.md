@@ -1,6 +1,6 @@
 ---
 title: "Pre-commit"
-weight: 1 # First item in Tools Showcase
+weight: 1
 ---
 
 ## Pre-commit

@@ -1,6 +1,6 @@
 ---
 title: "Hugo"
-weight: 4 # Fourth item in Tools Showcase
+weight: 4
 ---
 
 ## Hugo

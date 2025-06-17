@@ -1,6 +1,7 @@
 ---
 title: "Boilerplate (Gruntwork)"
-weight: 3 # Third item in Tools Showcase
+slug: boilerplate
+weight: 3
 ---
 
 ## Boilerplate (Gruntwork)
