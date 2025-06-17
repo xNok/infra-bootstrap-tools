@@ -17,11 +17,11 @@ To help you understand the different parts of this project, the documentation is
 
 ### Core Concepts & Components
 
-*   **[Understanding Ansible Concepts](../b1.ansible_concepts.md)**: Learn about the fundamental Ansible concepts (Playbooks, Roles, Tasks, etc.) used in this project.
-*   **[Terraform for DigitalOcean (`terraform_digitalocean` role)](../b2.terraform_digitalocean.md)**: How infrastructure is provisioned on DigitalOcean using Terraform and Ansible.
-*   **[Docker Swarm Setup Roles](../b3.docker_swarm.md)**: Details on the Ansible roles that configure the Docker Swarm cluster.
+*   **[Understanding Ansible Concepts]({{< relref "./b1.ansible_concepts.md" >}})**: Learn about the fundamental Ansible concepts (Playbooks, Roles, Tasks, etc.) used in this project.
+*   **[Spinning up infrastructure with Ansible and Terraform]({{< relref "./b2.terraform_ansible.md>}})**: How infrastructure is provisioned on DigitalOcean using Terraform and Ansible combined.
+*   **[Docker Swarm Setup Roles]({{< relref "./b3.docker_swarm.md>}})**: Details on the Ansible roles that configure the Docker Swarm cluster.
 
 ### Applications
 
-*   **[Caddy Web Server](../a1.caddy.md)**: Deep dive into how Caddy is used for reverse proxying and authentication.
-*   **[Portainer Management UI](../a2.portainer.md)**: Learn about Portainer for managing the Docker Swarm environment.
+*   **[Caddy Web Server]({{< relref ./a1.caddy.md >}})**: Deep dive into how Caddy is used for reverse proxying and authentication.
+*   **[Portainer Management UI]({{< relref ./a2.portainer.md >}})**: Learn about Portainer for managing the Docker Swarm environment.

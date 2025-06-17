@@ -70,7 +70,7 @@ The key Ansible variable files involved are:
 
 #### Next Steps/Further Reading
 
-*   **[Understanding Ansible Concepts](./b1.ansible_concepts.md)**: Learn about core Ansible concepts.
-*   **[Caddy Web Server](./a1.caddy.md)**: Deep dive into Caddy's role.
-*   **[Portainer Management UI](./a2.portainer.md)**: Learn about Portainer.
+*   **[Understanding Ansible Concepts]({{< relref "./b1.ansible_concepts.md" >}})**: Learn about core Ansible concepts.
+*   **[Caddy Web Server]({{< relref ./a1.caddy.md  >}})**: Deep dive into Caddy's role.
+*   **[Portainer Management UI]({{< relref ./a2.portainer.md  >}})**: Learn about Portainer.
 *   Review other articles in the "Tools Introduction" and "Learn the Tools" sections of the main `README.md` for a deeper understanding of the components used.
