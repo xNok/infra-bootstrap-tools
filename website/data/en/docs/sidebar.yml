@@ -2,11 +2,13 @@
   pages:
     - title: Overview
     - title: "🚀 Getting Started"
+      path: getting-started-deploy-your-infrastructure
 
 - title: Infrastructure Management
   pages:
     - title: "Understanding Ansible Concepts"
-    - title: "Spinning up infrastructure with Ansible and Terraform"
+    - title: "Spinning up infrastructure"
+      path: infrastructure-provisioning-combining-ansible-and-terraform
     - title: "Docker Swarm Setup"
 
 - title: Tools Introduction
@@ -17,10 +19,10 @@
 - title: Tools Showcase
   pages:
     - title: Pre-commit
-      path: tools/pre-commit.md # Assuming files will be in content/en/docs/tools/
+      path: tools/pre-commit
     - title: 1Password CLI
-      path: tools/1password-cli.md
+      path: tools/1password-cli
     - title: Boilerplate
-      path: tools/boilerplate.md
+      path: tools/boilerplate
     - title: Hugo
-      path: tools/hugo.md
+      path: tools/hugo
