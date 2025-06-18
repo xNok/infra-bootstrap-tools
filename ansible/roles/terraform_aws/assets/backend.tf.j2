@@ -1,0 +1,9 @@
+# Terraform S3 Backend Configuration
+
+terraform {
+  backend "s3" {
+    bucket = "{{ bucket }}"
+    key    = "{{ key }}"
+    region = "{{ region }}"
+  }
+}
