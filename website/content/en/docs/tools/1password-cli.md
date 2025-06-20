@@ -5,6 +5,17 @@ weight: 2
 
 The 1Password CLI (`op`) provides a command-line interface to interact with your 1Password vaults. It allows you to securely fetch secrets, credentials, and other sensitive information stored in 1Password, making it useful for scripting and automation.
 
+## Tutorial
+
+Here's a basic example of how to use the `op` CLI to read a secret:
+
+```bash
+# Read a secret from a specific vault
+op read "op://<YourVault>/<YourSecretItem>/password"
+```
+
+Make sure to replace `<YourVault>` and `<YourSecretItem>` with actual vault and item names or placeholders.
+
 ## Usage in this Project
 
 This project recommends using 1Password CLI for managing sensitive data like API tokens, SSH keys, and other credentials needed by Ansible and Terraform.

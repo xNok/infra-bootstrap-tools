@@ -5,6 +5,34 @@ weight: 1
 
 Pre-commit is a framework for managing and maintaining multi-language pre-commit hooks. It allows you to run checks on your code before you commit it, helping to enforce code style, prevent common mistakes, and ensure code quality.
 
+## Tutorial
+
+Here's how you typically set up and use `pre-commit`:
+
+1.  **Install pre-commit:**
+    If you haven't already, install pre-commit. You can often do this with pip:
+    ```bash
+    pip install pre-commit
+    ```
+    Or, use the project's setup script if available:
+    ```bash
+    ./bin/bash/setup.sh pre-commit
+    ```
+
+2.  **Install the Git hooks:**
+    Navigate to your repository's root directory and run:
+    ```bash
+    pre-commit install
+    ```
+    This command installs the hooks into your `.git/hooks` directory. Now, pre-commit will run automatically before each commit.
+
+3.  **Run manually (optional):**
+    You can also run all pre-commit hooks on all files at any time:
+    ```bash
+    pre-commit run --all-files
+    ```
+    This is useful for checking all files in the repository, not just the staged ones.
+
 ## Usage in this Project
 
 This project uses pre-commit hooks to automate tasks like:

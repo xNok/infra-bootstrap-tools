@@ -5,6 +5,20 @@ weight: 4
 
 [Hugo](https://gohugo.io/) is a fast and flexible static site generator written in Go. It takes content written in Markdown and uses templates to generate a complete HTML website.
 
+## Tutorial
+
+Here's a common way to use Hugo for local development:
+
+```bash
+# Navigate to the website directory
+cd website/
+
+# Start the Hugo development server
+hugo server -D
+```
+
+This command will build the site and serve it locally, usually at `http://localhost:1313/`. The `-D` flag ensures that draft content is also built.
+
 ## Usage in this Project
 
 The documentation website for this project (the site you might be viewing this on if you're reading it online) is built using Hugo.
