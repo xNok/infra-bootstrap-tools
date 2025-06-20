@@ -115,6 +115,38 @@ Below, I've included some explainers on how I solved a specific problem when I e
 * [x] 🏃‍♂️ 2: [How to rotate Docker Secrets with Ansible](https://medium.com/itnext/rotating-docker-swarm-secrets-with-ansible-cbaddfdd8ee9?sk=886dae52f1570c251a6a664d5ee2c5fe)
 * [x] 🏃‍♂️ 3: [How to implement Pull-Request locking for Ansible](https://medium.com/itnext/safe-infrastructure-as-code-github-actions-workflow-with-a-pr-lock-27bef636f852?sk=a6615ca085348aa2543a68f9c7a41077)
 
+## Ansible Collection
+
+This repository is also available as an Ansible Collection on Ansible Galaxy, allowing you to easily reuse the roles in your own Ansible projects.
+
+**Collection Name:** `xnok.infra_bootstrap_tools`
+
+### Installation
+
+To install this collection from Ansible Galaxy, use the following command:
+
+```bash
+ansible-galaxy collection install xnok.infra_bootstrap_tools
+```
+
+### Usage
+
+Once installed, you can use the roles from this collection in your playbooks. For example, to use the `docker` role:
+
+```yaml
+- hosts: all
+  become: yes
+  roles:
+    - role: xnok.infra_bootstrap_tools.docker
+      # Optional: specify variables for the role
+      # docker_users:
+      #   - your_username
+```
+
+Refer to the `README.md` file within each role's directory (`ansible/roles/[role_name]/README.md`) for detailed information on specific roles, their variables, and dependencies.
+
+You can find the collection on Ansible Galaxy: [xnok.infra_bootstrap_tools](https://galaxy.ansible.com/xnok/infra_bootstrap_tools)
+
 ## Architecture
 
 ![](./diagrams/startup_infra_for_small_self_hosted_project.png)

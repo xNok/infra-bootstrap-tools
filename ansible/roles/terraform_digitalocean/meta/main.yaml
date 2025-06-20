@@ -1,9 +1,21 @@
 galaxy_info:
   author: xNok
-  description: Ansible role to provision infrastructure on DigitalOcean using Terraform.
-  license: MIT License
-  min_ansible_version: "2.10"
-
+  description: Manages DigitalOcean infrastructure using Terraform.
+  license: MIT # Ensuring this is MIT as per prompt, was MIT License
+  min_ansible_version: '2.9' # Or your desired minimum version - prompt specified 2.9, original was 2.10. Going with prompt.
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags:
+    - terraform
+    - digitalocean
+    - cloud
+    - infrastructure
+    # Add other relevant tags
 
 dependencies:
-- diodonfrost.terraform
+  - diodonfrost.terraform

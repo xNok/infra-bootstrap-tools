@@ -1,2 +1,20 @@
+galaxy_info:
+  author: xNok
+  description: Configures a node to join a Docker Swarm cluster.
+  license: MIT
+  min_ansible_version: '2.9' # Or your desired minimum version
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags:
+    - docker
+    - swarm
+    - node
+    # Add other relevant tags
+
 dependencies:
   - docker

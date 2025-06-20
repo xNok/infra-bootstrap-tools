@@ -1,15 +1,26 @@
 namespace: "xnok"
 name: "infra_bootstrap_tools"
-description: "IaC configurations to boostrap and manage a small self-hosted project or homelab"
-version: "1.0.0"
+version: "1.0.1"  # Incrementing version
+description: >
+  A collection of Ansible roles for bootstrapping and managing self-hosted projects and homelabs.
+  Includes roles for Docker, Docker Swarm, Terraform, and various utilities.
 readme: "README.md"
 authors:
-    - "xNok"
+  - "xNok <https://github.com/xNok>"
 license:
-    - "MIT"
+  - "MIT"
 tags:
-    - infrastructure
-    - docker
-    - terraform
-    - digitalocean
+  - collection
+  - infrastructure
+  - automation
+  - devops
+  - docker
+  - swarm
+  - terraform
+  - cloud
+  - digitalocean
+  - homelab
+  - selfhosted
 repository: "https://github.com/xNok/infra-bootstrap-tools"
+documentation: "https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/README.md"
+homepage: "https://github.com/xNok/infra-bootstrap-tools"
