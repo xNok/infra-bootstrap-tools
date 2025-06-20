@@ -1,3 +1,21 @@
-dependencies: []
-  # List your role dependencies here, one per line. Be sure to remove the '[]' above,
-  # if you add dependencies to this list.
+galaxy_info:
+  author: xNok
+  description: Deploys Caddy as a Docker Swarm service.
+  license: MIT
+  min_ansible_version: '2.9' # Or your desired minimum version
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags:
+    - docker
+    - swarm
+    - caddy
+    - web
+    - proxy
+    # Add other relevant tags
+
+dependencies: [] # List any dependencies here
