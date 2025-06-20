@@ -1,0 +1,9 @@
+terraform_aws_backend_config: "{{ role_path }}/assets/backend.tf"
+
+# Ansible Inventory Configuration
+terraform_aws_inventory_path: "{{ playbook_dir }}/inventory"
+terraform_aws_inventory_prefix: "aws-swarm"
+terraform_aws_inventory_user: "ubuntu" # Default user for EC2 instances
+
+# Destroy flag
+terraform_aws_destroy: false

@@ -1,0 +1,57 @@
+#################################################
+# OR INFRA Role: terraform-aws
+#################################################
+---
+
+- name: Copy Backend Configuration
+  when: not terraform_aws_destroy | bool
+  ansible.builtin.template:
+    src: "{{ terraform_aws_backend_config }}"
+    dest: "{{ role_path }}/terraform/backend.tf"
+    mode: '0644'
+  vars:
+    bucket: "{{ terraform_aws_backend_bucket }}"
+    key: "{{ terraform_aws_backend_key }}"
+    region: "{{ terraform_aws_backend_region }}"
+
+- name: Provision AWS Infra
+  community.aws.terraform:
+    project_path: '{{ role_path }}/terraform'
+    state: "{{ 'absent' if terraform_aws_destroy | bool else 'present' }}"
+    force_init: true
+  register: terraform_aws_result
+
+- name: Create Ansible Inventory
+  when: not terraform_aws_destroy | bool
+  ansible.builtin.template:
+    src: "{{ role_path }}/assets/inventory.tpl"
+    dest: "{{ terraform_aws_inventory_path }}/aws"
+    mode: '0644'
+  vars:
+    prefix: "{{ terraform_aws_inventory_prefix }}"
+    user: "{{ terraform_aws_inventory_user }}"
+    nodes: "{{ terraform_aws_result.outputs.nodes_ips.value }}"
+    managers: "{{ terraform_aws_result.outputs.managers_ips.value }}"
+
+- name: Delete Ansible Inventory on Destroy
+  when: terraform_aws_destroy | bool
+  ansible.builtin.file:
+    path: "{{ terraform_aws_inventory_path }}/aws"
+    state: 'absent'
+
+- name: Make sure known_hosts exists
+  when: not terraform_aws_destroy | bool
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'HOME') }}/.ssh/known_hosts"
+    state: touch
+    mode: '0600'
+
+- name: Add inventory to known_hosts
+  when: not terraform_aws_destroy | bool
+  ansible.builtin.known_hosts:
+    name: "{{ item.key }}"
+    key: "{{ item.key }} {{ item.value }}"
+  loop: "{{ terraform_aws_result.outputs.known_hosts.value | dict2items }}"
+
+- name: Refresh Ansible Inventory
+  ansible.builtin.meta: refresh_inventory

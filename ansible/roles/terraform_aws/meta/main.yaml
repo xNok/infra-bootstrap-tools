@@ -1,9 +1,9 @@
+---
 galaxy_info:
   author: xNok
-  description: Ansible role to provision infrastructure on DigitalOcean using Terraform.
+  description: Ansible role to provision infrastructure on AWS using Terraform.
   license: MIT License
   min_ansible_version: "2.10"
-
 
 dependencies:
 - diodonfrost.terraform
