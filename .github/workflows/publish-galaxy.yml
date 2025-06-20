@@ -19,7 +19,6 @@ on:
 jobs:
   validate-collection:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' # Only run for pull requests
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4 # Updated to v4
@@ -36,15 +35,9 @@ jobs:
           pip install ansible ansible-core
           ansible-galaxy collection build repo/ansible -v
 
-      - name: Upload collection build artifact (optional)
-        uses: actions/upload-artifact@v4 # Updated to v4
-        with:
-          name: ansible-collection-build
-          path: '*.tar.gz' # Path to the built collection file
-
   publish-collection:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' # Only run for pushes to main
+    if: github.ref == 'refs/heads/main' # Only run for pushes to main
     needs: validate-collection # Optional: make publish depend on successful validation if PRs also pushed to main
     steps:
       - name: Check out the repository
@@ -65,4 +58,4 @@ jobs:
         with:
           api_key: ${{ secrets.GALAXY_API_KEY }}
           collection_dir: 'repo/ansible'
-          # force: true # Uncomment to allow overwriting
+
