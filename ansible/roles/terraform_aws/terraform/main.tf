@@ -71,9 +71,28 @@ resource "aws_key_pair" "deployer" {
   public_key = var.public_key_openssh
 }
 
+# This data source finds the latest Ubuntu 24.04 LTS AMI
+# It filters by the most recent creation date, owner (Canonical), and name.
+data "aws_ami" "default" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = [var.ami_filter]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  # Canonical's AWS account ID
+  owners = ["099720109477"]
+}
+
 resource "aws_instance" "managers" {
   count         = var.manager_count
-  ami           = var.manager_ami_id
+  ami           = data.aws_ami.default
   instance_type = var.manager_instance_type
   subnet_id     = aws_subnet.main.id
   key_name      = aws_key_pair.deployer.key_name
@@ -90,7 +109,7 @@ resource "aws_instance" "managers" {
 
 resource "aws_instance" "nodes" {
   count         = var.worker_count
-  ami           = var.worker_ami_id
+  ami           = data.aws_ami.default
   instance_type = var.worker_instance_type
   subnet_id     = aws_subnet.main.id
   key_name      = aws_key_pair.deployer.key_name

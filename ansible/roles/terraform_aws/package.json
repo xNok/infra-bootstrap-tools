@@ -1,0 +1,5 @@
+{
+    "name": "ansible-role-terraform-aws",
+    "private": true,
+    "version": "0.0.1"
+}

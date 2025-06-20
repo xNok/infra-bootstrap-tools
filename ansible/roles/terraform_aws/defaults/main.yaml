@@ -1,28 +1,8 @@
----
-# Defaults for terraform_aws role
-
-# AWS Region
-aws_region: "us-east-1"
-
-# EC2 Instance Configuration
-manager_instance_type: "t2.micro"
-worker_instance_type: "t2.micro"
-manager_ami_id: "" # Specify the AMI ID for manager instances
-worker_ami_id: "" # Specify the AMI ID for worker instances
-key_pair_name: "" # Specify the name of your AWS EC2 key pair
-
-# VPC Configuration
-vpc_cidr_block: "10.0.0.0/16"
-subnet_cidr_block: "10.0.1.0/24"
-
-# Terraform state configuration
-terraform_aws_backend_bucket: "" # Specify S3 bucket for Terraform state
-terraform_aws_backend_key: "terraform.tfstate"
-terraform_aws_backend_region: "us-east-1"
+terraform_aws_backend_config: "{{ role_path }}/assets/backend.tf"
 
 # Ansible Inventory Configuration
-terraform_aws_inventory_path: "./inventory"
-terraform_aws_inventory_prefix: "aws"
+terraform_aws_inventory_path: "{{ playbook_dir }}/inventory"
+terraform_aws_inventory_prefix: "aws-swarm"
 terraform_aws_inventory_user: "ubuntu" # Default user for EC2 instances
 
 # Destroy flag

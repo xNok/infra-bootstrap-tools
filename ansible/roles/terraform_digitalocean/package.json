@@ -1,5 +1,5 @@
 {
-    "name": "ansible-role-docker-swarm-node",
+    "name": "ansible-role-terraform-digitalocean",
     "private": true,
     "version": "0.0.1"
 }

@@ -1,10 +1,12 @@
+#################################################
+# OR INFRA Role: terraform-aws
+#################################################
 ---
-# Tasks for terraform_aws role
 
 - name: Copy Backend Configuration
   when: not terraform_aws_destroy | bool
   ansible.builtin.template:
-    src: "{{ role_path }}/assets/backend.tf.j2"
+    src: "{{ terraform_aws_backend_config }}"
     dest: "{{ role_path }}/terraform/backend.tf"
     mode: '0644'
   vars:

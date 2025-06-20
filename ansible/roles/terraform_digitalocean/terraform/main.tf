@@ -24,9 +24,9 @@ resource "digitalocean_ssh_key" "infra" {
 resource "digitalocean_droplet" "managers" {
   count = var.manager_count
 
-  image  = "ubuntu-24-04-x64"
+  image  = var.droplet_image
   name   = "manager${count.index}"
-  region = "lon1"
+  region = var.droplet_location
   size   = var.manager_size
 
   monitoring = true
@@ -37,9 +37,9 @@ resource "digitalocean_droplet" "managers" {
 resource "digitalocean_droplet" "nodes" {
   count = var.worker_count
 
-  image  = "ubuntu-20-04-x64"
+  image  = var.droplet_image
   name   = "node${count.index}"
-  region = "lon1"
+  region = var.droplet_location
   size   = var.worker_size
 
   monitoring = true

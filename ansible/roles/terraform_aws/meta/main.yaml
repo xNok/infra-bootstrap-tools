@@ -1,9 +1,9 @@
 ---
 galaxy_info:
-  author: Your Name
+  author: xNok
   description: Ansible role to provision infrastructure on AWS using Terraform.
-  company: Your Company
-  license: license (GPL-2.0-or-later, MIT, etc)
-  min_ansible_version: 2.10
+  license: MIT License
+  min_ansible_version: "2.10"
 
-dependencies: []
+dependencies:
+- diodonfrost.terraform

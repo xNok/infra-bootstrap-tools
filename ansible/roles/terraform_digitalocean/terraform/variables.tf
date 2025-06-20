@@ -4,6 +4,18 @@ variable "project_name" {
   description = "DigitalOcean Project holding all the resource"
 }
 
+variable "droplet_image" {
+  type = string
+  description = "name of the image to use when provioning droplets"
+  default = "ubuntu-24-04-x64"
+}
+
+variable "droplet_location" {
+  type = string
+  description = "location where the droplet need to be deployed"
+  default = "lon1"
+}
+
 variable "worker_count" {
   type = number
   default = 0

@@ -1,1 +1,0 @@
-touch ansible/roles/terraform_aws/defaults/.gitkeep
