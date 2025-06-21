@@ -1,21 +1,11 @@
 # Ansible Collection: xnok.infra_bootstrap_tools
 
-**Version:** 1.0.1
-
-**Description:** A collection of Ansible roles for bootstrapping and managing self-hosted projects and homelabs. Includes roles for Docker, Docker Swarm, Terraform, and various utilities.
-
-**Authors:**
-- xNok <https://github.com/xNok>
+A collection of Ansible roles for bootstrapping and managing self-hosted projects and homelabs. Includes roles for Docker, Docker Swarm, Terraform, and various utilities.
 
 **Repository:** [https://github.com/xNok/infra-bootstrap-tools](https://github.com/xNok/infra-bootstrap-tools)
-**Documentation:** [https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/README.md](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/README.md)
-**Homepage:** [https://github.com/xNok/infra-bootstrap-tools](https://github.com/xNok/infra-bootstrap-tools)
+**Homepage:** [https://github.com/xNok/infra-bootstrap-tools](https://xnok.github.io/infra-bootstrap-tools/)
 
-**Tags:** `collection`, `infrastructure`, `automation`, `devops`, `docker`, `swarm`, `terraform`, `cloud`, `digitalocean`, `homelab`, `selfhosted`
 
-## Introduction
-
-This Ansible collection, `xnok.infra_bootstrap_tools`, provides a suite of roles designed to simplify the setup and ongoing management of self-hosted projects and homelab environments. Whether you're working with Docker, Docker Swarm, or managing infrastructure with Terraform on platforms like AWS or DigitalOcean, these roles aim to automate common tasks and configurations.
 
 ## Roles
 
