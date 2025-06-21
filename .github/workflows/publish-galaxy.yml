@@ -45,16 +45,8 @@ jobs:
         with:
           path: 'repo'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5 # Updated to v5
-        with:
-          python-version: '3.x'
-
-      - name: Install Ansible and ansible-galaxy
-        run: pip install ansible ansible-core
-
       - name: Build and publish collection to Ansible Galaxy
-        uses: ansible/ansible-galaxy-collection@v1
+        uses: artis3n/ansible_galaxy_collection@v2
         with:
           api_key: ${{ secrets.GALAXY_API_KEY }}
           collection_dir: 'repo/ansible'
