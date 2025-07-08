@@ -7,10 +7,6 @@ services:
     networks:
       - n8n_n8n
       - caddy_caddy
-    secrets:
-      - source: mcp_settings
-        target: /app/mcp_settings.json
-        mode: 0400
     volumes:
       - mcphub_data:/app/data
       - mcphub_logs:/app/logs
@@ -33,8 +29,4 @@ networks:
     external: true
   # Define the external network created by your caddy stack to expose dashboard
   caddy_caddy:
-    external: true
-
-secrets:
-  mcp_settings:
     external: true
