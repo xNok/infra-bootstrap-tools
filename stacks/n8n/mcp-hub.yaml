@@ -7,8 +7,11 @@ services:
     networks:
       - n8n_n8n
       - caddy_caddy
+    secrets:
+      - source: mcp_settings
+        target: /app/mcp_settings.json
+        mode: 0400
     volumes:
-      - mcp_settings:/app/mcp_settings.json:ro
       - mcphub_data:/app/data
       - mcphub_logs:/app/logs
     deploy:
@@ -35,6 +38,6 @@ networks:
   caddy_caddy:
     external: true
 
-configs:
+secrets:
   mcp_settings:
     external: true
