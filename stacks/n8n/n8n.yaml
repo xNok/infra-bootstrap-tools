@@ -18,6 +18,9 @@ services:
       - caddy_caddy
       - n8n
     deploy:
+      placement:
+        constraints:
+          - node.role != manager
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
         # Default route
