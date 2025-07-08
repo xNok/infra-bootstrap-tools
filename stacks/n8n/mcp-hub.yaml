@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mcphub:
+    image: samanhappy/mcphub
+    restart: unless-stopped
+    networks:
+      - n8n_n8n
+      - caddy_caddy
+    volumes:
+      - mcp_settings:/app/mcp_settings.json:ro
+      - mcphub_data:/app/data
+      - mcphub_logs:/app/logs
+    deploy:
+      labels:
+        caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
+        caddy.reverse_proxy: "{{ upstreams 3000 }}"
+        caddy.authorize: with admins_policy
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+volumes:
+  mcphub_logs:
+  mcphub_data:
+
+networks:
+  # Define the external network created by your n8n stack
+  n8n_n8n:
+    external: true
+  # Define the external network created by your caddy stack to expose dashboard
+  caddy_caddy:
+    external: true
+
+configs:
+  mcp_settings:
+    external: true
