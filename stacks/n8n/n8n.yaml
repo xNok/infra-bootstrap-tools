@@ -21,7 +21,7 @@ services:
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
         # Default route
-        caddy.0_route: /test
+        caddy.0_route: /rest/oauth2-credential/callback
         caddy.0_route.reverse_proxy: "{{ upstreams 5678 }}"
         caddy.1_route: "*"
         caddy.1_route.reverse_proxy: "{{ upstreams 5678 }}"
