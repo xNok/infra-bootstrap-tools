@@ -59,6 +59,7 @@ jobs:
     needs: [ validate, lock ]
     # The deployment environment thus provides the secrets for that env
     environment: docker_swarm
+    if: github.ref != 'refs/heads/main'
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
