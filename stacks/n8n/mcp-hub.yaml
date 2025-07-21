@@ -10,6 +10,7 @@ services:
     volumes:
       - mcphub_data:/app/data
       - mcphub_logs:/app/logs
+      - mcphub_logs:/app/config
     deploy:
       placement:
         constraints:
@@ -22,6 +23,7 @@ services:
 volumes:
   mcphub_logs:
   mcphub_data:
+  mcphub_config:
 
 networks:
   # Define the external network created by your n8n stack
