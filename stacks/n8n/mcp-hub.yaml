@@ -10,7 +10,7 @@ services:
     volumes:
       - mcphub_data:/app/data
       - mcphub_logs:/app/logs
-      - mcphub_logs:/app/config
+      - mcphub_config:/app/config
     deploy:
       placement:
         constraints:
