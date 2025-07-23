@@ -1,0 +1,17 @@
+{{ define "main" }}
+<div class="h-screen">
+    <div class="prose dark:prose-invert">
+        <h1>{{ .Title }}</h1>
+        <p>{{ .Content }}</p>
+        <ul>
+            {{ range .Paginator.Pages }}
+            <li>
+                <a href="{{ .Permalink }}">{{ .Title }}</a>
+                <p>{{ .Summary }}</p>
+            </li>
+            {{ end }}
+        </ul>
+        {{ template "_internal/pagination.html" . }}
+    </div>
+</div>
+{{ end }}

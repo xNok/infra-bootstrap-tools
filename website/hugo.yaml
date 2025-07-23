@@ -49,6 +49,12 @@ params:
     name: xNok
     url: https://github.com/username/xNok
 
+  menu:
+    main:
+      - name: Blog
+        url: /blog
+        weight: 2
+
   home:
     heading: Learn
     headingSegment2: Infrastructure-as-Code
