@@ -37,7 +37,7 @@
 
 - name: Extract folders from the diff
   set_fact:
-    changed_folders: "{{
+    utils_affected_roles_changed_folders: "{{
       diff.stdout_lines
       | map('regex_replace', '^(.*/).*$' , '\\1')
       | unique
@@ -46,7 +46,7 @@
 
 - name: Filter folders within the roles directory
   set_fact:
-    roles_with_changes: "{{ changed_folders
+    utils_affected_roles_roles_with_changes: "{{ utils_affected_roles_changed_folders
       | select('match', '^' + utils_affected_roles_roles_folder + '/')
       | map('regex_replace', '^' + utils_affected_roles_roles_folder + '/([^/]+)/.*$', '\\1')
       | unique }}"
@@ -57,17 +57,14 @@
     paths: "{{ lookup('env', 'PWD') }}/{{ utils_affected_roles_roles_folder }}"
     recurse: false
     file_type: directory
-  register: found_directories
+  register: utils_affected_roles_found_directories
   when: utils_affected_roles_always_run_all_roles
 
 - name: Set all roles to run if on default branch
   set_fact:
-    roles_with_changes: "{{ found_directories.files
-      | map(attribute='path')
-      | map('basename')
-      | list }}"
+    utils_affected_roles_roles_with_changes: "{{ utils_affected_roles_found_directories.files | map(attribute='path') | map('basename') | list }}"
   when: utils_affected_roles_always_run_all_roles
 
 - name: Debug roles_with_changes output
   debug:
-    msg: "{{ roles_with_changes }}"
+    msg: "{{ utils_affected_roles_roles_with_changes }}"

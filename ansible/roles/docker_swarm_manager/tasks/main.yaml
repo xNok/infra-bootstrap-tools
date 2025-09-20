@@ -12,20 +12,26 @@
   docker_swarm:
     state: present
     advertise_addr: "{{ ansible_host }}"
-  register: result
-  when: inventory_hostname == groups[docker_swarm_manager_inventory_group_name][0] # only on the first manager
+  register: docker_swarm_manager_result
+  when: inventory_hostname == docker_swarm_manager_first_manager # only on the first manager
+
+- name: Set first manager hostname variable
+  set_fact:
+    docker_swarm_manager_first_manager: "{{ groups[docker_swarm_manager_inventory_group_name][0] }}"
 
 ###
 # Manager Setup
 ###
 - name: Get join-token for manager nodes
   set_fact:
-    join_token_manager: "{{ hostvars[groups[docker_swarm_manager_inventory_group_name][0]].result.swarm_facts.JoinTokens.Manager }}"
+    docker_swarm_manager_join_token_manager: "{{
+      hostvars[docker_swarm_manager_first_manager].docker_swarm_manager_result.swarm_facts.JoinTokens.Manager
+    }}"
 
 - name: Join other managers
   docker_swarm:
     state: join
-    join_token: "{{ join_token_manager }}"
+    join_token: "{{ docker_swarm_manager_join_token_manager }}"
     advertise_addr: "{{ ansible_host }}"
     remote_addrs: "{{ groups[docker_swarm_manager_inventory_group_name] | map('extract', hostvars, ['ansible_host']) | join(',') }}"
-  when: inventory_hostname != groups[docker_swarm_manager_inventory_group_name] # exclude the first manager
+    when: inventory_hostname != groups[docker_swarm_manager_inventory_group_name] # exclude the first manager
