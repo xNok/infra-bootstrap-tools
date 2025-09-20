@@ -23,20 +23,20 @@
   gather_facts: true
   become: true
   vars:
-    ansible_ssh_common_args: "-o 'IdentityAgent={{ hostvars['localhost']['ssh_auth_sock'] }}'"
+    ansible_ssh_common_args: "-o 'IdentityAgent={{ hostvars['localhost']['utils_ssh_add_ssh_auth_sock'] }}'"
   environment:
-    SSH_AGENT_PID: "{{ hostvars['localhost']['ssh_agent_pid'] }}"
-    SSH_AUTH_SOCK: "{{ hostvars['localhost']['ssh_auth_sock'] }}"
+    SSH_AGENT_PID: "{{ hostvars['localhost']['utils_ssh_add_ssh_agent_pid'] }}"
+    SSH_AUTH_SOCK: "{{ hostvars['localhost']['utils_ssh_add_ssh_auth_sock'] }}"
 
   roles:
   # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
   # I case we have an issue all master are setup as potential controller
   # this role is for the host running ansible to manage the swarm
   - role: docker_swarm_controller
-    when: "'docker_swarm_controller' in hostvars['localhost']['roles_with_changes']"
+    when: "'docker_swarm_controller' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
   # this role is for creating the swarm and adding host as manager
   - role: docker_swarm_manager
-    when: "'docker_swarm_manager' in hostvars['localhost']['roles_with_changes']"
+    when: "'docker_swarm_manager' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
 
 # SWARM Nodes
 - name: This setup nodes to join the Swarm
@@ -44,14 +44,14 @@
   gather_facts: true
   become: true
   vars:
-    ansible_ssh_common_args: "-o 'IdentityAgent={{ hostvars['localhost']['ssh_auth_sock'] }}'"
+    ansible_ssh_common_args: "-o 'IdentityAgent={{ hostvars['localhost']['utils_ssh_add_ssh_auth_sock'] }}'"
   environment:
-    SSH_AGENT_PID: "{{ hostvars['localhost']['ssh_agent_pid'] }}"
-    SSH_AUTH_SOCK: "{{ hostvars['localhost']['ssh_auth_sock'] }}"
+    SSH_AGENT_PID: "{{ hostvars['localhost']['utils_ssh_add_ssh_agent_pid'] }}"
+    SSH_AUTH_SOCK: "{{ hostvars['localhost']['utils_ssh_add_ssh_auth_sock'] }}"
 
   roles:
   - role: docker_swarm_node # this role is for host to join the swarm
-    when: "'docker_swarm_node' in hostvars['localhost']['roles_with_changes']"
+    when: "'docker_swarm_node' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
 
 # PLUGINS
 - name: This installs docker plugins on all hosts
@@ -60,7 +60,7 @@
 
   roles:
   - role: docker_swarm_plugin_rclone
-    when: "'docker_swarm_plugin_rclone' in hostvars['localhost']['roles_with_changes']"
+    when: "'docker_swarm_plugin_rclone' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
 
 # APPS
 - name: This install Caddy and Portainer in the Swarm
@@ -69,7 +69,7 @@
 
   roles:
   - role: docker_swarm_app_caddy
-    when: "'docker_swarm_app_caddy' in hostvars['localhost']['roles_with_changes']"
+    when: "'docker_swarm_app_caddy' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
   - role: docker_swarm_app_portainer
     docker_swarm_app_portainer_caddy: true
-    when: "'docker_swarm_app_portainer' in hostvars['localhost']['roles_with_changes']"
+    when: "'docker_swarm_app_portainer' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"

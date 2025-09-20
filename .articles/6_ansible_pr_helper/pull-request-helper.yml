@@ -38,7 +38,7 @@
   - name: Filter folders within the roles directory
     when: branch.stdout != default_branch
     set_fact:
-    roles_with_changes: "{{ changed_folders
+    utils_affected_roles_roles_with_changes: "{{ changed_folders
       | select('match', '^' + roles_folder + '/')
       | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1')
       | unique }}"
@@ -53,15 +53,15 @@
 
   - name: Set all roles to run if on default branch
     set_fact:
-      roles_with_changes: "{{ found_directories.files 
+      utils_affected_roles_roles_with_changes: "{{ found_directories.files 
         | map(attribute='path') 
         | map('basename') 
         | list }}"
     when: branch.stdout == default_branch
 
-  - name: Debug roles_with_changes output
+  - name: Debug utils_affected_roles_roles_with_changes output
     debug:
-      msg: "{{ roles_with_changes }}"
+      msg: "{{ utils_affected_roles_roles_with_changes }}"
 
 - name: Conditionally run roles based on changes
   hosts: localhost
@@ -70,14 +70,14 @@
   - name: Include role1 if it has changes
     include_role:
       name: role1
-    when: "'role1' in roles_with_changes"
+    when: "'role1' in utils_affected_roles_roles_with_changes"
 
   - name: Include role2 if it has changes
     include_role:
       name: role2
-    when: "'role2' in roles_with_changes"
+    when: "'role2' in utils_affected_roles_roles_with_changes"
 
   - name: Include role3 if it has changes
     include_role:
       name: role3
-    when: "'role3' in roles_with_changes"
+    when: "'role3' in utils_affected_roles_roles_with_changes"

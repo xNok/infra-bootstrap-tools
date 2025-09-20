@@ -3,18 +3,22 @@
     path: "{{ item.file_path }}"
     checksum: md5
   loop: "{{ utils_rotate_docker_configs_configs }}"
-  register: file_stats
+  register: utils_rotate_docker_configs_file_stats
 
 - name: Create dictionary of checksums
   set_fact:
-    config_checksums: "{{ config_checksums | default({}) | combine({ item.name: file_stats.results[idx].stat.checksum }) }}"
+    utils_rotate_docker_configs_config_checksums: "{{
+      utils_rotate_docker_configs_config_checksums
+      | default({})
+      | combine({item.name: utils_rotate_docker_configs_file_stats.results[idx].stat.checksum})
+      }}"
   loop: "{{ utils_rotate_docker_configs_configs }}"
   loop_control:
     index_var: idx
 
 - name: Create new configs if value has changed
   docker_config:
-    name: "{{ item.name }}_{{ config_checksums[item.name] }}"
+    name: "{{ item.name }}_{{ utils_rotate_docker_configs_config_checksums[item.name] }}"
     data_src: "{{ item.file_path }}"
     state: present
     labels:
@@ -26,5 +30,5 @@
   replace:
     path: "{{ utils_rotate_docker_configs_docker_compose_path }}"
     regexp: "{{ item.name }}(_[a-f0-9]{32})?"
-    replace: "{{ item.name }}_{{ config_checksums[item.name] }}"
+    replace: "{{ item.name }}_{{ utils_rotate_docker_configs_config_checksums[item.name] }}"
   loop: "{{ utils_rotate_docker_configs_configs }}"

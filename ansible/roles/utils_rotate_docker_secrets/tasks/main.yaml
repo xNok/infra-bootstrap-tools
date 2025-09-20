@@ -1,6 +1,6 @@
 - name: Calculate checksums for secrets
   set_fact:
-    secret_checksums: "{{ secret_checksums
+    utils_rotate_docker_secrets_secret_checksums: "{{ secret_checksums
       | default({})
       | combine({item.name: lookup('pipe', 'echo ' + item.value + '
       | md5sum
@@ -10,13 +10,13 @@
 
 - name: Create new secrets if value has changed
   docker_secret:
-    name: "{{ item.name }}_{{ secret_checksums[item.name] }}"
+    name: "{{ item.name }}_{{ utils_rotate_docker_secrets_secret_checksums[item.name] }}"
     data: "{{ item.value }}"
     state: present
     labels:
       managed_by: "rotate_docker_secrets"
       name: "{{ item.name }}"
-  when: (previous_checksums[item.name] is not defined) or (previous_checksums[item.name] != secret_checksums[item.name])
+  when: (previous_checksums[item.name] is not defined) or (previous_checksums[item.name] != utils_rotate_docker_secrets_secret_checksums[item.name])
   loop: "{{ utils_rotate_docker_secrets_secrets }}"
   no_log: true
 
@@ -24,6 +24,6 @@
   replace:
     path: "{{ utils_rotate_docker_secrets_docker_compose_path }}"
     regexp: "{{ item.name }}(_[a-f0-9]{32})?"
-    replace: "{{ item.name }}_{{ secret_checksums[item.name] }}"
+    replace: "{{ item.name }}_{{ utils_rotate_docker_secrets_secret_checksums[item.name] }}"
   loop: "{{ utils_rotate_docker_secrets_secrets }}"
   no_log: true
