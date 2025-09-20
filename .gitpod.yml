@@ -1,6 +1,7 @@
 tasks:
   - name: Setup Environment
     init: |
+      git -c url.https://github.com/.insteadOf=git@github.com: submodule update --init --remote --recursive
       ./bin/bash/setup.sh pre-commit ansible 1password-cli boilerplate hugo
     command: |
       cd website && hugo server -D -F --baseURL $(gp url 1313) --liveReloadPort=443 --appendPort=false --bind=0.0.0.0

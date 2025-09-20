@@ -17,7 +17,7 @@ languages:
 # To omit the Google Analytics script, put a ~ in place of the G-XXXXXXXXXX below.
 services:
   googleAnalytics:
-    ID: G-XXXXXXXXXX
+    ID: G-1368982DJ1
 
 markup:
   highlight:
@@ -31,6 +31,10 @@ markup:
         title: true
 
 params:
+  title: Infra Bootstrap Tools
+  description: IaC configurations to boostrap and manage a small self-hosted project or homelab
+  images:
+  - infra-bootstrap-tools.webp
   project:
     # To omit the startYear, put a ~ in its place.
     startYear: 2022
@@ -50,3 +54,6 @@ params:
     headingSegment2: Infrastructure-as-Code
     description: For Small self-hosted project or Homelab
     getStartedPath: /docs
+
+  social:
+    twitter: AlexCouedelo

@@ -1,8 +1,28 @@
 - title: Documentation
   pages:
     - title: Overview
+    - title: "🚀 Getting Started"
+      path: getting-started-deploy-your-infrastructure
+
+- title: Infrastructure Management
+  pages:
+    - title: "Understanding Ansible Concepts"
+    - title: "Spinning up infrastructure"
+      path: infrastructure-provisioning-combining-ansible-and-terraform
+    - title: "Docker Swarm Setup"
 
 - title: Tools Introduction
   pages:
     - title: Caddy
     - title: Portainer
+
+- title: Tools Showcase
+  pages:
+    - title: Pre-commit
+      path: tools/pre-commit
+    - title: 1Password CLI
+      path: tools/1password-cli
+    - title: Boilerplate
+      path: tools/boilerplate
+    - title: Hugo
+      path: tools/hugo
