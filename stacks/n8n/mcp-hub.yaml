@@ -10,20 +10,19 @@ services:
     volumes:
       - mcphub_data:/app/data
       - mcphub_logs:/app/logs
-      - mcphub_config:/app/config
     environment:
       - NODE_ENV=production
-      - MCP_SETTINGS_FILE=/app/config/mcp_settings.json
-      - JWT_SECRET_FILE=/run/secrets/jwt_secret
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-24h}
-      - DATABASE_PASSWORD_FILE=/run/secrets/db_password
-    secrets:
-      - mcphub_jwt_secret
-      - mcphub_db_password
     deploy:
       placement:
         constraints:
           - node.role != manager
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
         caddy.reverse_proxy: "{{ upstreams 3000 }}"
@@ -32,13 +31,6 @@ services:
 volumes:
   mcphub_logs:
   mcphub_data:
-  mcphub_config:
-
-secrets:
-  jwt_secret:
-    external: true
-  db_password:
-    external: true
 
 networks:
   # Define the external network created by your n8n stack
