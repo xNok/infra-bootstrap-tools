@@ -2,11 +2,10 @@ version: "3.7"
 
 services:
   n8n:
-    image: docker.n8n.io/n8nio/n8n
+    image: docker.n8n.io/n8nio/n8n:1.114.0
     restart: always
-    ports:
-      - "127.0.0.1:5678:5678"
     environment:
+      - N8N_RUNNERS_ENABLED=true
       - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
@@ -17,11 +16,15 @@ services:
     # Docker Stack Config
     networks:
       - caddy_caddy
+      - n8n
     deploy:
+      placement:
+        constraints:
+          - node.role != manager
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
         # Default route
-        caddy.0_route: /test
+        caddy.0_route: /rest/oauth2-credential/callback
         caddy.0_route.reverse_proxy: "{{ upstreams 5678 }}"
         caddy.1_route: "*"
         caddy.1_route.reverse_proxy: "{{ upstreams 5678 }}"
@@ -34,3 +37,5 @@ volumes:
 networks:
   caddy_caddy:
     external: true
+  n8n:
+    attachable: true

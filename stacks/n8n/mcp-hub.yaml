@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mcphub:
+    image: samanhappy/mcphub:0.9.10
+    restart: unless-stopped
+    networks:
+      - n8n_n8n
+      - caddy_caddy
+    volumes:
+      - mcphub_data:/app
+      - mcphub_logs:/app/logs
+    environment:
+      - NODE_ENV=production
+    deploy:
+      placement:
+        constraints:
+          - node.role != manager
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+      labels:
+        caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
+        caddy.reverse_proxy: "{{ upstreams 3000 }}"
+        caddy.authorize: with admins_policy
+
+volumes:
+  mcphub_logs:
+  mcphub_data:
+
+networks:
+  # Define the external network created by your n8n stack
+  n8n_n8n:
+    external: true
+  # Define the external network created by your Caddy stack to expose the dashboard
+  caddy_caddy:
+    external: true
