@@ -8,7 +8,7 @@ services:
       - n8n_n8n
       - caddy_caddy
     volumes:
-      - mcphub_data:/app/data
+      - mcphub_data:/app
       - mcphub_logs:/app/logs
     environment:
       - NODE_ENV=production
