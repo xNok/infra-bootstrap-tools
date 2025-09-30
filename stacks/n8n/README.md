@@ -12,7 +12,7 @@ docker compose \
 ## Going Live
 
 
-### Creating a secure passord for MCPHub dashboard
+### Creating a secure password for MCPHub dashboard
 
 ```
 htpasswd -bnBC 10 "" YOUR_PASSWORD | tr -d ':\n'
