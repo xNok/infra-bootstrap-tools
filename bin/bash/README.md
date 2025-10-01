@@ -1,12 +1,42 @@
 
+
 # Bash Scripts for infra-bootstrap-tools
 
 This folder contains helper scripts for managing and bootstrapping infrastructure stacks and tools. Each script is designed to be portable and easy to use from any environment.
+
+## Unified Dispatcher: `ibt`
+
+The `ibt` command (Infra Bootstrap Tools) is a shell function that provides a unified interface to the main project scripts with subcommands and auto-completion support.
+
+**To enable `ibt` in your shell:**
+
+```bash
+source ./bin/bash/ibt.sh
+```
+
+**Subcommands:**
+
+- `ibt setup [tool ...]` &mdash; Install required tools and dependencies (with tab-completion for tool names)
+- `ibt stacks [args ...]` &mdash; Manage and run infrastructure stacks
+- `ibt tools [args ...]` &mdash; Use Docker-based aliases for Ansible, AWS CLI, etc.
+
+**Example usage:**
+
+```bash
+ibt setup pre-commit ansible
+ibt stacks list
+ibt tools dasb --version
+```
+
+You can add the `source` line to your `~/.bashrc` or `~/.bash_profile` for persistence.
+
+---
 
 ## Script Overview
 
 | Script      | Purpose                                                      |
 |-------------|--------------------------------------------------------------|
+| ibt.sh      | Unified dispatcher for all main scripts (ibt command)        |
 | stacks.sh   | Quickly start and manage stacks defined in this repository   |
 | tools.sh    | Provides Docker-based aliases for Ansible, AWS CLI, etc.     |
 | setup.sh    | Installs all required tools and dependencies for this repo   |
@@ -83,6 +113,7 @@ or add to your `~/.bashrc.d/` for persistent aliases.
 
 ---
 
+
 ## setup.sh
 
 Installs all required tools and dependencies for this repository. Designed for quick setup in local environments, GitHub Codespaces, and Gitpod.
@@ -94,7 +125,11 @@ Installs all required tools and dependencies for this repository. Designed for q
 
 ### Usage
 ```bash
-bash setup.sh
+# Recommended: use the ibt dispatcher
+ibt setup pre-commit ansible
+
+# Or use the script directly
+bash setup.sh pre-commit ansible
 ```
 
 ### Tools Installed

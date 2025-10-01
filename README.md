@@ -11,23 +11,44 @@ Features:
 
 ## Development Environment Setup
 
-This project provides a script to help you set up your local development environment. Additionally, a Gitpod configuration is available for a cloud-based, ready-to-use environment.
 
-### Local Setup Script
+This project provides a convenient dispatcher command, `ibt`, to help you set up your local development environment and manage project tools. Additionally, a Gitpod configuration is available for a cloud-based, ready-to-use environment.
 
-The `./bin/bash/setup.sh` script can install the following tools:
+### Unified Tools Bash script: `ibt`
 
-*   **pre-commit**: For running linters and formatters automatically before committing code.
-*   **Ansible**: For infrastructure automation.
-*   **1Password CLI**: For managing secrets.
-*   **Boilerplate**: For generating boilerplate code.
-*   **Hugo**: For building and serving the documentation website.
+The `ibt` command (Infra Bootstrap Tools) is a shell function that provides a unified interface to the main project scripts with subcommands and auto-completion support.
 
-To use the script, run it with the names of the tools you want to install. For example, to install pre-commit and Ansible:
+**Subcommands:**
+
+- `ibt setup [tool ...]` &mdash; Install required tools and dependencies (see below)
+- `ibt stacks [args ...]` &mdash; Manage and run infrastructure stacks
+- `ibt tools [args ...]` &mdash; Use Docker-based aliases for Ansible, AWS CLI, etc.
+
+**Auto-completion:**
+
+Tab-completion is available for subcommands and for the `setup` tool list (e.g., `ibt setup [TAB]`).
+
+**To enable `ibt` in your shell:**
 
 ```bash
-./bin/bash/setup.sh pre-commit ansible
+source ./bin/bash/ibt.sh
 ```
+
+You can add this line to your `~/.bashrc` or `~/.bash_profile` for persistence.
+
+**Example usage:**
+
+```bash
+# Install pre-commit and Ansible
+ibt setup pre-commit ansible
+
+# List available stacks
+ibt stacks list
+
+# Use Docker-based Ansible
+ibt tools dasb --version
+```
+
 
 ### Gitpod
 

@@ -22,14 +22,24 @@ Before you begin, ensure you have the following tools and accounts:
 
 While not strictly required for deploying the infrastructure, if you plan to contribute to this project or customize it extensively, setting up a consistent development environment is recommended.
 
-*   **Using the Setup Script**: This project includes a helper script to install common tools used for development, such as `pre-commit` for linting, `ansible`, `hugo` for the documentation site, etc. You can find this script at [`./bin/bash/setup.sh`](https://github.com/xNok/infra-bootstrap-tools/blob/main/bin/bash/setup.sh). To install specific tools, run:
+*   **Recommended: Unified Tool Dispatcher (`ibt`)**: For a streamlined experience, use the `ibt` command to install common tools for development (such as `pre-commit`, `ansible`, `hugo` for the documentation site, etc.) with subcommand and tool name completion.
+
+    First, enable the dispatcher in your shell:
     ```bash
-    ./bin/bash/setup.sh <tool_name_1> <tool_name_2>
+    source ./bin/bash/ibt.sh
+    ```
+    You can add this line to your `~/.bashrc` or `~/.bash_profile` for persistence.
+
+    To install specific tools, run:
+    ```bash
+    ibt setup <tool_name_1> <tool_name_2>
     ```
     For example, to install `pre-commit` and `hugo`:
     ```bash
-    ./bin/bash/setup.sh pre-commit hugo
+    ibt setup pre-commit hugo
     ```
+    Use tab-completion after `ibt setup` to see the list of available tools.
+
     Run the script without arguments or with an invalid tool name to see the list of available tools.
 
 *   **Using Gitpod**: For a cloud-based, pre-configured development environment, you can use Gitpod. This is the quickest way to get started without installing anything on your local machine. Look for the "Open in Gitpod" button in the main [`README.md`](https://github.com/xNok/infra-bootstrap-tools/blob/main/README.md) of the project.
