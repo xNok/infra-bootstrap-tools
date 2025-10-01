@@ -36,14 +36,23 @@ find_repo_root() {
   done
 }
 
-REPO_ROOT="$(find_repo_root)"
-if [ -n "$REPO_ROOT" ]; then
-  INFRA_BOOTSTRAP_TOOLS_STACK_PATH="$REPO_ROOT/stacks"
+# Determine stack path based on usage context
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  # Direct invocation: prioritize local repo, then default path
+  REPO_ROOT="$(find_repo_root)"
+  if [ -n "$REPO_ROOT" ]; then
+    INFRA_BOOTSTRAP_TOOLS_STACK_PATH="$REPO_ROOT/stacks"
+  else
+    DEFAULT_PATH="$HOME/.local/share/infra-bootstrap-tools"
+    INFRA_BOOTSTRAP_TOOLS_PATH="${INFRA_BOOTSTRAP_TOOLS_PATH:-$DEFAULT_PATH}"
+    INFRA_BOOTSTRAP_TOOLS_STACK_PATH="${INFRA_BOOTSTRAP_TOOLS_STACK_PATH:-$INFRA_BOOTSTRAP_TOOLS_PATH/stacks}"
+  fi
 else
+  # Sourced: use default path and download if needed
   DEFAULT_PATH="$HOME/.local/share/infra-bootstrap-tools"
   INFRA_BOOTSTRAP_TOOLS_PATH="${INFRA_BOOTSTRAP_TOOLS_PATH:-$DEFAULT_PATH}"
   INFRA_BOOTSTRAP_TOOLS_STACK_PATH="${INFRA_BOOTSTRAP_TOOLS_STACK_PATH:-$INFRA_BOOTSTRAP_TOOLS_PATH/stacks}"
-  # Download stacks if not present (for first-time use)
+  # Download stacks if not present (for first-time use when sourced)
   if [ -n "$INFRA_BOOTSTRAP_TOOLS_PATH" ] && [ "$INFRA_BOOTSTRAP_TOOLS_PATH" = "$DEFAULT_PATH" ] && [ ! -d "$INFRA_BOOTSTRAP_TOOLS_STACK_PATH" ]; then
     mkdir -p "$INFRA_BOOTSTRAP_TOOLS_STACK_PATH"
     curl -sL https://api.github.com/repos/xNok/infra-bootstrap-tools/tarball/main | tar -xz -C "$INFRA_BOOTSTRAP_TOOLS_PATH" --strip=1 --wildcards "*/stacks"
@@ -149,10 +158,10 @@ complete -F _complete_stacks run_stack
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
   # If run directly, parse args
   case "$1" in
-    list_stacks)
+    list|list_stacks)
       list_stacks
       ;;
-    run_stack)
+    run|run_stack)
       shift
       run_stack "$@"
       ;;

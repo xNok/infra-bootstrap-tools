@@ -2,7 +2,7 @@
 
 This folder contains helper scripts for managing and bootstrapping infrastructure stacks with Docker Compose and Ansible. Each script is designed to be portable and easy to use from any environment.
 
-## stacks_tools_alias.sh
+## stacks.sh
 
 A portable Bash script to list and run infrastructure stacks from anywhere, without cloning the repository. Supports modular stacks and local overrides.
 
@@ -16,7 +16,7 @@ A portable Bash script to list and run infrastructure stacks from anywhere, with
 Source the script in your shell:
 
 ```bash
-source <(curl -s https://raw.githubusercontent.com/xNok/infra-bootstrap-tools/main/bin/bash/stacks_tools_alias.sh)
+source <(curl -s https://raw.githubusercontent.com/xNok/infra-bootstrap-tools/main/bin/bash/stacks.sh)
 ```
 
 Or add to your `~/.bashrc.d/` for persistent aliases.
