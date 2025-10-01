@@ -3,4 +3,4 @@
   gather_facts: false
 
   roles:
-  - utils_affected_roles
+  - xnok.infra_bootstrap_tools.utils_affected_roles

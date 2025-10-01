@@ -23,4 +23,4 @@
       }}"
 
   roles:
-  - terraform_digitalocean
+  - xnok.infra_bootstrap_tools.terraform_digitalocean

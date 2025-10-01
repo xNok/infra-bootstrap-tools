@@ -1,5 +1,38 @@
 #!/bin/bash
 
+
+# ------------------------------------------------------------------------------
+# infra-bootstrap-tools: tools.sh
+#
+# Purpose:
+#   Provides aliases to run Ansible, AWS CLI, Packer, and other tools in Docker
+#   containers for a consistent, reproducible environment.
+#
+# Prerequisites:
+#   - Docker must be installed and running.
+#
+# Usage:
+#   Source this script in your shell:
+#     source /path/to/tools.sh
+#   or add to your ~/.bashrc.d/ for persistent aliases.
+#
+# Aliases Provided:
+#   dasb   - Run ansible in Docker
+#   dap    - Run ansible-playbook in Docker
+#   daws   - Run awscli in Docker
+#   dpk    - Run packer in Docker
+#   (extend as needed)
+#
+# Examples:
+#   dasb --version
+#   dap playbooks/main.yml
+#   daws s3 ls
+#   dpk build template.json
+#
+# See also:
+#   setup.sh   - Installs required tools for this repository
+#   stacks.sh  - Manage and run infrastructure stacks
+# ------------------------------------------------------------------------------
 if [ -z "$INFRA_IMAGE_NAME" ]; then
   INFRA_IMAGE_NAME="local-infra-tools"
   docker build -t $INFRA_IMAGE_NAME .
@@ -8,7 +41,7 @@ fi
 
 drun () 
 {
-  docker run --rm ${TTY} \
+  docker run --rm "${TTY}" \
             -w /home/ubuntu \
             -v "$(pwd)":/home/ubuntu \
             -v ~/.ssh:/home/ubuntu/.ssh \

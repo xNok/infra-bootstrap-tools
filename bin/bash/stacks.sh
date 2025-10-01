@@ -1,27 +1,41 @@
 #!/bin/bash
 
-# --- infra-bootstrap-tools: Stacks Tools Alias ---
+
+# ------------------------------------------------------------------------------
+# infra-bootstrap-tools: stacks.sh
+#
+# Purpose:
+#   Quickly start and manage stacks defined in this repository.
+#   Supports both direct invocation and shell aliases for convenience.
+#
+# Prerequisites:
+#   - Docker Compose must be installed.
 #
 # Usage:
-#   Source this script in your shell (e.g. via curl):
-#     source <(curl -s https://raw.githubusercontent.com/xNok/infra-bootstrap-tools/main/bin/bash/stacks_tools_alias.sh)
+#   Source for aliases:
+#     source /path/to/stacks.sh
+#   or add to your ~/.bashrc.d/ for persistent aliases.
+#   Direct invocation:
+#     ./stacks.sh list
+#     ./stacks.sh run <name> [component ...] [local]
+#     ./stacks.sh help
 #
-#   Or add to your ~/.bashrc.d/ for persistent aliases.
-#
-# Features:
-#   - List and run stacks from anywhere, no repo clone needed
-#   - Supports stacks in multiple folders
-#   - Local stacks: <name>.local.yaml
-#   - Modular stacks: a stack can have multiple components
-#   - Aliases for quick stack start/stop
+# Commands/Aliases:
+#   list_stacks | list   - List all available stacks
+#   run_stack  | run     - Run a stack (with optional components/local)
+#   help_stacks | help   - Show usage/help
 #
 # Examples:
-#   list_stacks
 #   run_stack n8n
 #   run_stack n8n local
-#   run_stack openziti
 #   run_stack n8n component1 component2
+#   ./stacks.sh list
+#   ./stacks.sh run n8n local
 #
+# See also:
+#   tools.sh   - Provides Docker-based tool aliases
+#   setup.sh   - Installs required tools for this repository
+# ------------------------------------------------------------------------------
 
 
 # Determine if current directory (or parent) is inside a repo clone
@@ -131,6 +145,7 @@ run_stack() {
   fi
   echo "Running stack: $stack_name"
   echo "Using files: ${files[*]}"
+  # shellcheck disable=SC2068
   docker compose -f "${files[0]}" ${files[@]:1:+-f "${files[@]:1}"} up
 }
 
@@ -151,6 +166,7 @@ _complete_stacks() {
     fname="${fname%.local}"
     stacks+=("$fname")
   done < <(find "$search_path" -type f -name "*.yaml" -print0)
+  # shellcheck disable=SC2207
   COMPREPLY=( $(compgen -W "${stacks[*]}" -- "$cur") )
 }
 complete -F _complete_stacks run_stack

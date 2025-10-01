@@ -1,5 +1,36 @@
 #!/bin/bash
 
+# ------------------------------------------------------------------------------
+# infra-bootstrap-tools: setup.sh
+#
+# Purpose:
+#   Installs all required tools and dependencies for this repository.
+#   Designed for quick setup in local environments, GitHub Codespaces, and Gitpod.
+#
+# Prerequisites:
+#   - Ubuntu/Debian-based system (tested on Codespaces and Gitpod)
+#   - Python and pip
+#   - sudo privileges for some installations
+#
+# Usage:
+#   bash setup.sh
+#
+# Tools Installed:
+#   - Python dependencies (from requirements.txt, test-requirements.txt)
+#   - Ansible and Ansible Galaxy roles (from requirements.yml)
+#   - pre-commit hooks
+#   - 1Password CLI (if needed)
+#   (extend as needed)
+# 
+# Idempotency:
+#   This script can be run multiple times safely.
+# 
+# See also:
+#   tools.sh   - Provides Docker-based tool aliases
+#   stacks.sh  - Manage and run infrastructure stacks
+# ------------------------------------------------------------------------------
+#!/bin/bash
+
 # Function to install pre-commit hooks
 install_pre_commit() {
   echo "Installing pre-commit hooks..."
@@ -64,23 +95,25 @@ install_hugo() {
   brew install hugo
   echo "Hugo installed."
   echo "Starting Hugo server..."
-  cd website && hugo server -D -F --baseURL $(gp url 1313) --liveReloadPort=443 --appendPort=false --bind=0.0.0.0 &
+  cd website && hugo server -D -F --baseURL "$(gp url 1313)" --liveReloadPort=443 --appendPort=false --bind=0.0.0.0 &
   echo "Hugo server started."
 }
 
 _setup_completion() {
-  local cur prev opts
+  local cur opts
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
-  prev="${COMP_WORDS[COMP_CWORD-1]}"
+  # prev="${COMP_WORDS[COMP_CWORD-1]}" # Unused variable, removed to fix SC2034
   opts="pre-commit ansible 1password-cli boilerplate hugo"
 
   case "${COMP_CWORD}" in
     1)
-      COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+  # shellcheck disable=SC2207
+  COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
       ;;
     *)
-      COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+  # shellcheck disable=SC2207
+  COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
       ;;
   esac
   return 0

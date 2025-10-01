@@ -18,3 +18,4 @@ ansible/roles/terraform-*/terraform/backend.tf
 ansible/inventory/*
 !ansible/inventory/.gitkeep
 ansible/playbooks/inventory/*
+ansible/xnok-infra_bootstrap_tools-*.tar.gz

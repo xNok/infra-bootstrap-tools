@@ -1,6 +1,7 @@
 collections:
 - community.docker
 - community.general
+- xnok.infra_bootstrap_tools
 
 
 roles:
