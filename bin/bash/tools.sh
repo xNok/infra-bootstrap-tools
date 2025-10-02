@@ -1,5 +1,10 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+# shellcheck shell=bash
+# Source completion logic if available
+if [ -f "$(dirname "${BASH_SOURCE[0]}")/tools-completion.sh" ]; then
+  # shellcheck source=bin/bash/tools-completion.sh
+  source "$(dirname "${BASH_SOURCE[0]}")/tools-completion.sh"
+fi
 
 # ------------------------------------------------------------------------------
 # infra-bootstrap-tools: tools.sh

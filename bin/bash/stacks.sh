@@ -1,5 +1,10 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+# shellcheck shell=bash
+# Source completion logic if available
+if [ -f "$(dirname "${BASH_SOURCE[0]}")/stacks-completion.sh" ]; then
+  # shellcheck source=bin/bash/stacks-completion.sh
+  source "$(dirname "${BASH_SOURCE[0]}")/stacks-completion.sh"
+fi
 
 # ------------------------------------------------------------------------------
 # infra-bootstrap-tools: stacks.sh

@@ -1,6 +1,6 @@
 - name: Calculate checksums for secrets
   set_fact:
-    utils_rotate_docker_secrets_secret_checksums: "{{ secret_checksums
+    utils_rotate_docker_secrets_secret_checksums: "{{ utils_rotate_docker_secrets_secret_checksums
       | default({})
       | combine({item.name: lookup('pipe', 'echo ' + item.value + '
       | md5sum

@@ -29,7 +29,11 @@
 #   tools.sh   - Provides Docker-based tool aliases
 #   stacks.sh  - Manage and run infrastructure stacks
 # ------------------------------------------------------------------------------
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck shell=bash
+
+# shellcheck source=bin/bash/setup-completion.sh
+source "$(dirname "${BASH_SOURCE[0]}")/setup-completion.sh"
 
 # Function to install pre-commit hooks
 install_pre_commit() {
@@ -122,6 +126,12 @@ _setup_completion() {
 # Main script logic
 complete -F _setup_completion setup.sh
 
+if [[ $# -eq 0 ]]; then
+  echo "Usage: setup.sh <tool1> [tool2 ...]"
+  echo "Available tools: pre-commit, ansible, 1password-cli, boilerplate, hugo"
+  exit 1
+fi
+
 for tool in "$@"; do
   case "$tool" in
     pre-commit)
@@ -141,7 +151,7 @@ for tool in "$@"; do
       ;;
     *)
       echo "Error: Unknown tool: $tool"
-      echo "Available tools: pre-commit, tools, 1password-cli, boilerplate, hugo"
+      echo "Available tools: pre-commit, ansible, 1password-cli, boilerplate, hugo"
       ;;
   esac
 done
