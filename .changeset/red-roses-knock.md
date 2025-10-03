@@ -1,5 +1,5 @@
 ---
-"ansible-roles-terrafrom-digitalocean": minor
+"ansible-role-terraform-digitalocean": minor
 ---
 
 Migrating Terraform Workflow to Github Action
