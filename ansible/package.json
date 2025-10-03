@@ -6,6 +6,18 @@
         "roles/*"
     ],
     "dependencies": {
-        "ansible-role-terraform-digitalocean": "0.1.0"
+    "docker": "0.0.1",
+    "docker_swarm_app_caddy": "0.0.1",
+    "docker_swarm_app_portainer": "0.0.1",
+    "docker_swarm_controller": "0.0.1",
+    "docker_swarm_manager": "0.0.1",
+    "docker_swarm_node": "0.0.1",
+    "docker_swarm_plugin_rclone": "0.0.1",
+    "terraform_aws": "0.0.1",
+    "terraform_digitalocean": "0.1.0",
+    "utils_affected_roles": "0.0.1",
+    "utils_rotate_docker_configs": "0.0.1",
+    "utils_rotate_docker_secrets": "0.0.1",
+    "utils_ssh_add": "0.0.1"
     }
 }
