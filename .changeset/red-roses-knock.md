@@ -1,5 +1,5 @@
 ---
-"infra-bootstrap-tools": minor
+"ansible-roles-terrafrom-digitalocean": minor
 ---
 
 Migrating Terraform Workflow to Github Action

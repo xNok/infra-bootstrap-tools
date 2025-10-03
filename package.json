@@ -1,6 +1,6 @@
 {
   "name": "infra-bootstrap-tools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "repository": "https://github.com/xNok/infra-bootstrap-tools.git",
   "author": "Alexandre Couedelo <nokwebspace@gmail.com>",

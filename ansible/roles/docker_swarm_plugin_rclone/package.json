@@ -1,5 +1,5 @@
 {
-    "name": "ansible-role-terraform-digitalocean",
+    "name": "ansible-role-docker-swarm-plugin-rclone",
     "private": true,
     "version": "0.0.1"
 }
