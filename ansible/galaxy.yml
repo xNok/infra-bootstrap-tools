@@ -1,6 +1,6 @@
 namespace: "xnok"
 name: "infra_bootstrap_tools"
-version: "1.0.3"
+version: "1.0.4"
 description: >
   A collection of Ansible roles for bootstrapping and managing self-hosted projects and homelabs.
   Includes roles for Docker, Docker Swarm, Terraform, and various utilities.
