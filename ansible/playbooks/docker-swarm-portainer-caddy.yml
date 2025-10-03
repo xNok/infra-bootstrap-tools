@@ -4,7 +4,7 @@
   become: true
 
   roles:
-  - role: docker
+  - role: xnok.infra_bootstrap_tools.docker
     when: "'docker' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
 
 # SWARM
@@ -17,15 +17,15 @@
   # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
   # I case we have an issue all master are setup as potential controller
   # this role is for the host running ansible to manage the swarm
-  - role: docker_swarm_controller
+  - role: xnok.infra_bootstrap_tools.docker_swarm_controller
   # this role is for creating the swarm and adding host as manager
-  - role: docker_swarm_manager
+  - role: xnok.infra_bootstrap_tools.docker_swarm_manager
 
 - name: This setup nodes to join the Swarm
   hosts: nodes
 
   roles:
-  - role: docker_swarm_node # this role is for host to join the swarm
+  - role: xnok.infra_bootstrap_tools.docker_swarm_node # this role is for host to join the swarm
 
 # APPS
 - name: This install Caddy and Portainer in the Swarm
@@ -33,6 +33,6 @@
   become: true
 
   roles:
-  - role: docker_swarm_app_caddy
-  - role: docker_swarm_app_portainer
+  - role: xnok.infra_bootstrap_tools.docker_swarm_app_caddy
+  - role: xnok.infra_bootstrap_tools.docker_swarm_app_portainer
     docker_swarm_app_portainer_caddy: true

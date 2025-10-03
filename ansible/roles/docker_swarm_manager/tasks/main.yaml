@@ -8,16 +8,16 @@
 ###
 # SWARM Setup
 ###
+- name: Set first manager hostname variable
+  set_fact:
+    docker_swarm_manager_first_manager: "{{ groups[docker_swarm_manager_inventory_group_name][0] }}"
+
 - name: Init a new swarm with default parameters
   docker_swarm:
     state: present
     advertise_addr: "{{ ansible_host }}"
   register: docker_swarm_manager_result
   when: inventory_hostname == docker_swarm_manager_first_manager # only on the first manager
-
-- name: Set first manager hostname variable
-  set_fact:
-    docker_swarm_manager_first_manager: "{{ groups[docker_swarm_manager_inventory_group_name][0] }}"
 
 ###
 # Manager Setup
@@ -34,4 +34,4 @@
     join_token: "{{ docker_swarm_manager_join_token_manager }}"
     advertise_addr: "{{ ansible_host }}"
     remote_addrs: "{{ groups[docker_swarm_manager_inventory_group_name] | map('extract', hostvars, ['ansible_host']) | join(',') }}"
-    when: inventory_hostname != groups[docker_swarm_manager_inventory_group_name] # exclude the first manager
+  when: inventory_hostname != groups[docker_swarm_manager_inventory_group_name] # exclude the first manager

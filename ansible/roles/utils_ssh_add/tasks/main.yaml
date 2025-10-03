@@ -23,7 +23,7 @@
       eval $(ssh-agent -s) > /dev/null
       echo '{"SSH_AUTH_SOCK":"'$SSH_AUTH_SOCK'","SSH_AGENT_PID":"'$SSH_AGENT_PID'"}'
   register: utils_ssh_add_env_vars_stdout
-  changed_when: env_vars_stdout.rc != 0
+  changed_when: utils_ssh_add_env_vars_stdout.rc != 0
 
 - name: Save to env_vars
   set_fact:

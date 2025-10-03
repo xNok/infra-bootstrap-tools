@@ -3,6 +3,12 @@ repos:
     rev: v1.29.0
     hooks:
       - id: yamllint
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+        args: ["-x"]
+        files: ^bin/bash/.*\.sh$
   - repo: https://github.com/ansible/ansible-lint
     rev: v25.9.0
     hooks:
@@ -11,3 +17,4 @@ repos:
           - "ansible"
         additional_dependencies:
           - ansible
+        files: ^ansible/.*\.ya?ml$

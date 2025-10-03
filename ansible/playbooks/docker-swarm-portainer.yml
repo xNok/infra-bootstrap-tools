@@ -3,7 +3,7 @@
   become: true
 
   roles:
-  - docker
+  - xnok.infra_bootstrap_tools.docker
 
 - name: This setup the Docker Swarm Manager
   hosts: managers
@@ -12,18 +12,18 @@
   roles:
   # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
   # I case we have an issue all master are setup as potential controller
-  - docker_swarm_controller # this role is for the host running ansible to manage the swarm
-  - docker_swarm_manager    # this role is for creating the swarm and adding host as manager
+  - xnok.infra_bootstrap_tools.docker_swarm_controller # this role is for the host running ansible to manage the swarm
+  - xnok.infra_bootstrap_tools.docker_swarm_manager    # this role is for creating the swarm and adding host as manager
 
 - name: This setup nodes to join the Swarm
   hosts: nodes
 
   roles:
-  - docker_swarm_node # this role is for host to join the swarm
+  - xnok.infra_bootstrap_tools.docker_swarm_node # this role is for host to join the swarm
 
 - name: This install Portainer in the Swarm
   hosts: managers[0] # Only one manager need to be hit
   become: true
 
   roles:
-  - docker_swarm_app_portainer
+  - xnok.infra_bootstrap_tools.docker_swarm_app_portainer

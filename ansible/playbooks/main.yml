@@ -11,11 +11,11 @@
     AWS_SECRET_ACCESS_KEY: "{{ tf_aws_secret_access_key }}"
 
   roles:
-  - utils_ssh_add
+  - xnok.infra_bootstrap_tools.utils_ssh_add
   - role: diodonfrost.terraform
     become: true
-  - role: terraform_digitalocean
-  - role: utils_affected_roles
+  - role: xnok.infra_bootstrap_tools.terraform_digitalocean
+  - role: xnok.infra_bootstrap_tools.utils_affected_roles
 
 # SWARM Managers
 - name: This setup the Docker Swarm Manager
@@ -32,10 +32,10 @@
   # NOTE: One node requires python and extra tools to setup the swarm, I call it the controller.
   # I case we have an issue all master are setup as potential controller
   # this role is for the host running ansible to manage the swarm
-  - role: docker_swarm_controller
+  - role: xnok.infra_bootstrap_tools.docker_swarm_controller
     when: "'docker_swarm_controller' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
   # this role is for creating the swarm and adding host as manager
-  - role: docker_swarm_manager
+  - role: xnok.infra_bootstrap_tools.docker_swarm_manager
     when: "'docker_swarm_manager' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
 
 # SWARM Nodes
@@ -50,7 +50,7 @@
     SSH_AUTH_SOCK: "{{ hostvars['localhost']['utils_ssh_add_ssh_auth_sock'] }}"
 
   roles:
-  - role: docker_swarm_node # this role is for host to join the swarm
+  - role: xnok.infra_bootstrap_tools.docker_swarm_node # this role is for host to join the swarm
     when: "'docker_swarm_node' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
 
 # PLUGINS
@@ -59,7 +59,7 @@
   become: true
 
   roles:
-  - role: docker_swarm_plugin_rclone
+  - role: xnok.infra_bootstrap_tools.docker_swarm_plugin_rclone
     when: "'docker_swarm_plugin_rclone' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
 
 # APPS
@@ -68,8 +68,8 @@
   become: true
 
   roles:
-  - role: docker_swarm_app_caddy
+  - role: xnok.infra_bootstrap_tools.docker_swarm_app_caddy
     when: "'docker_swarm_app_caddy' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"
-  - role: docker_swarm_app_portainer
+  - role: xnok.infra_bootstrap_tools.docker_swarm_app_portainer
     docker_swarm_app_portainer_caddy: true
     when: "'docker_swarm_app_portainer' in hostvars['localhost']['utils_affected_roles_roles_with_changes']"

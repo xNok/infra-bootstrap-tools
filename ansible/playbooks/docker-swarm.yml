@@ -3,17 +3,17 @@
   become: true
 
   roles:
-  - docker
+  - xnok.infra_bootstrap_tools.docker
 
 - name: This setup the Docker Swarm Manager
   hosts: managers
   become: true
 
   roles:
-  - docker_swarm_manager # this role is for creating the swarm and adding host as manager
+  - xnok.infra_bootstrap_tools.docker_swarm_manager # this role is for creating the swarm and adding host as manager
 
 - name: This setup nodes to join the Swarm
   hosts: nodes
 
   roles:
-  - docker_swarm_node # this role is for host to join the swarm
+  - xnok.infra_bootstrap_tools.docker_swarm_node # this role is for host to join the swarm
