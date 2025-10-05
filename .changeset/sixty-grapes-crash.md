@@ -3,6 +3,6 @@
 "docker-stack-n8n": patch
 ---
 
-Initial versionning for stacks
+Initial versioning for stacks
 
-Experimenting with [changesets](https://github.com/changesets/changesets), adding versionning to pretty much everything
+Experimenting with [changesets](https://github.com/changesets/changesets), adding versioning to pretty much everything
