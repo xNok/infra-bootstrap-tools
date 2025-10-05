@@ -8,6 +8,8 @@
   "license": "MIT",
   "workspaces": [
       "ansible",
-      "ansible/roles/*"
+      "ansible/roles/*",
+      "stacks",
+      "stacks/*"
   ]
 }

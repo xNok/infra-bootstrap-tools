@@ -1,0 +1,5 @@
+{
+    "name": "docker-stack-openziti",
+    "private": true,
+    "version": "0.0.1"
+}
