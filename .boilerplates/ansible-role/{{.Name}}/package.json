@@ -1,0 +1,5 @@
+{
+    "name": "ansible-role-{{.Name}}",
+    "private": true,
+    "version": "0.0.1"
+}
