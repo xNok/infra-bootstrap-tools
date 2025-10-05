@@ -1,0 +1,5 @@
+{
+    "name": "docker-stack-n8n",
+    "private": true,
+    "version": "0.0.1"
+}
