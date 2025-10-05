@@ -1,5 +1,5 @@
 {
-    "name": "ansible-role-docker-swarm-plugn-rclone",
+    "name": "ansible-role-docker-swarm-node",
     "private": true,
     "version": "0.0.1"
 }
