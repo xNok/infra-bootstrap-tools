@@ -9,6 +9,7 @@
   "workspaces": [
       "ansible",
       "ansible/roles/*",
+      "stacks",
       "stacks/*"
   ]
 }
