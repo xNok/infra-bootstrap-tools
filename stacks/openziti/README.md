@@ -4,6 +4,6 @@
 
 ```
 docker compose \
-    -f ziti.local.yaml
+    -f ziti.local.yaml up -d
 ```
 
