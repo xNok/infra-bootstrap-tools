@@ -352,6 +352,15 @@
             "type": "boolean",
             "description": "If set to true, the session will require explicit plan approval before the agent proceeds.",
             "default": false
+          },
+          "automationMode": {
+            "type": "string",
+            "description": "The automation mode for the session.",
+            "enum": [
+                "AUTOMATION_MODE_UNSPECIFIED",
+                "AUTO_CREATE_PR"
+            ],
+            "default": "AUTOMATION_MODE_UNSPECIFIED"
           }
         }
       },
