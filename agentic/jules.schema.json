@@ -334,6 +334,11 @@
       },
       "CreateSessionRequest": {
         "type": "object",
+        "required": [
+          "prompt",
+          "sourceContext",
+          "title"
+        ],
         "properties": {
           "prompt": {
             "type": "string",
