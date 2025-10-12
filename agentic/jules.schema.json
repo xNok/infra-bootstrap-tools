@@ -1,0 +1,463 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Jules API",
+    "version": "v1alpha",
+    "description": "API for interacting with the Jules agent to work on code repositories."
+  },
+  "servers": [
+    {
+      "url": "https://jules.googleapis.com/v1alpha"
+    }
+  ],
+  "paths": {
+    "/sources": {
+      "get": {
+        "summary": "List Sources",
+        "description": "Returns a list of all sources (e.g., GitHub repositories) you have connected to Jules.",
+        "operationId": "jules.sources.list",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "The maximum number of sources to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "description": "A page token, received from a previous `ListSources` call.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSourcesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/sessions": {
+      "get": {
+        "summary": "List Sessions",
+        "description": "Retrieves a list of your sessions.",
+        "operationId": "jules.sessions.list",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "The maximum number of sessions to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "description": "A page token, received from a previous `ListSessions` call.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSessionsResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create Session",
+        "description": "Creates a new session with a prompt and a source.",
+        "operationId": "jules.sessions.create",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/sessions/{sessionId}:approvePlan": {
+      "post": {
+        "summary": "Approve Plan",
+        "description": "Approves the latest plan for a session that requires explicit plan approval.",
+        "operationId": "jules.sessions.approvePlan",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the session.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plan approved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/sessions/{sessionId}:sendMessage": {
+      "post": {
+        "summary": "Send Message",
+        "description": "Sends a message to the agent within a specific session.",
+        "operationId": "jules.sessions.sendMessage",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the session.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message sent successfully. The response is empty; the agent's reply will be in a new activity.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    },
+    "/sessions/{sessionId}/activities": {
+      "get": {
+        "summary": "List Activities",
+        "description": "Lists the activities within a session, including user messages and agent actions.",
+        "operationId": "jules.sessions.activities.list",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the session.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "The maximum number of activities to return.",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "description": "A page token, received from a previous `ListActivities` call.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListActivitiesResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GithubRepo": {
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string",
+            "example": "bobalover"
+          },
+          "repo": {
+            "type": "string",
+            "example": "boba"
+          }
+        }
+      },
+      "Source": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The resource name of the source.",
+            "example": "sources/github/bobalover/boba"
+          },
+          "id": {
+            "type": "string",
+            "example": "github/bobalover/boba"
+          },
+          "githubRepo": {
+            "$ref": "#/components/schemas/GithubRepo"
+          }
+        }
+      },
+      "ListSourcesResponse": {
+        "type": "object",
+        "properties": {
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            }
+          },
+          "nextPageToken": {
+            "type": "string",
+            "description": "Token to retrieve the next page of results, or empty if there are no more results."
+          }
+        }
+      },
+      "GithubRepoContext": {
+        "type": "object",
+        "properties": {
+          "startingBranch": {
+            "type": "string",
+            "example": "main"
+          }
+        }
+      },
+      "SourceContext": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "The resource name of the source to use.",
+            "example": "sources/github/bobalover/boba"
+          },
+          "githubRepoContext": {
+            "$ref": "#/components/schemas/GithubRepoContext"
+          }
+        }
+      },
+      "CreateSessionRequest": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "The initial prompt for the session.",
+            "example": "Create a boba app!"
+          },
+          "sourceContext": {
+            "$ref": "#/components/schemas/SourceContext"
+          },
+          "title": {
+            "type": "string",
+            "description": "A user-friendly title for the session.",
+            "example": "Boba App"
+          },
+          "requirePlanApproval": {
+            "type": "boolean",
+            "description": "If set to true, the session will require explicit plan approval before the agent proceeds.",
+            "default": false
+          }
+        }
+      },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The resource name of the session.",
+            "example": "sessions/31415926535897932384"
+          },
+          "id": {
+            "type": "string",
+            "example": "31415926535897932384"
+          },
+          "title": {
+            "type": "string",
+            "example": "Boba App"
+          },
+          "sourceContext": {
+            "$ref": "#/components/schemas/SourceContext"
+          },
+          "prompt": {
+            "type": "string",
+            "example": "Create a boba app!"
+          }
+        }
+      },
+      "ListSessionsResponse": {
+        "type": "object",
+        "properties": {
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Session"
+            }
+          },
+          "nextPageToken": {
+            "type": "string",
+            "description": "Token to retrieve the next page of results, or empty if there are no more results."
+          }
+        }
+      },
+      "SendMessageRequest": {
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "The message to send to the agent.",
+            "example": "Can you make the app corgi themed?"
+          }
+        }
+      },
+      "Activity": {
+        "type": "object",
+        "description": "A single unit of work within a Session, like a message or a progress update.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The resource name of the activity."
+          },
+          "type": {
+            "type": "string",
+            "description": "The type of activity.",
+            "enum": [
+              "USER_MESSAGE",
+              "AGENT_RESPONSE",
+              "PLAN_GENERATED",
+              "PROGRESS_UPDATE"
+            ]
+          },
+          "content": {
+            "type": "object",
+            "description": "The content of the activity, which varies by type."
+          },
+          "createTime": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ListActivitiesResponse": {
+        "type": "object",
+        "properties": {
+          "activities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Activity"
+            }
+          },
+          "nextPageToken": {
+            "type": "string",
+            "description": "Token to retrieve the next page of results, or empty if there are no more results."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Goog-Api-Key"
+      }
+    }
+  }
+}
