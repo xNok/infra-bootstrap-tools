@@ -7,15 +7,6 @@ terraform {
       source = "digitalocean/digitalocean"
       version = "~>2.25"
     }
-    github = {
-      source = "integrations/github"
-      version = "~>5.0"
-    }
-
-    tls = {
-      source = "hashicorp/tls"
-      version = "~>3.3"
-    }
 
     sshclient = {
       source = "luma-planet/sshclient"
@@ -29,13 +20,5 @@ provider "sshclient" {
 }
 
 provider "digitalocean" {
-  # Configuration options
-}
-
-provider "github" {
-  # Configuration options
-}
-
-provider "tls" {
   # Configuration options
 }

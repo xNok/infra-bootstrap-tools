@@ -8,7 +8,7 @@ resource "aws_vpc" "main" {
 resource "aws_subnet" "main" {
   vpc_id     = aws_vpc.main.id
   cidr_block = var.subnet_cidr_block
-  availability_zone = "${var.aws_region}a" # Or choose dynamically
+  availability_zone = "${var.region}a" # Or choose dynamically
   tags = {
     Name = "${var.project_name}-subnet"
   }
@@ -74,7 +74,7 @@ data "aws_ami" "default" {
 
   filter {
     name   = "name"
-    values = [var.ami_filter]
+    values = [var.instance_image]
   }
 
   filter {
@@ -89,7 +89,7 @@ data "aws_ami" "default" {
 resource "aws_instance" "managers" {
   count         = var.manager_count
   ami           = data.aws_ami.default
-  instance_type = var.manager_instance_type
+  instance_type = var.manager_instance_size
   subnet_id     = aws_subnet.main.id
   key_name      = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
@@ -106,7 +106,7 @@ resource "aws_instance" "managers" {
 resource "aws_instance" "nodes" {
   count         = var.worker_count
   ami           = data.aws_ami.default
-  instance_type = var.worker_instance_type
+  instance_type = var.worker_instance_size
   subnet_id     = aws_subnet.main.id
   key_name      = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]

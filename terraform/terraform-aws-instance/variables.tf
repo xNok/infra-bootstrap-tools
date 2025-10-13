@@ -1,23 +1,23 @@
-variable "aws_region" {
-  description = "AWS region to deploy resources"
+variable "region" {
+  description = "Cloud region to deploy resources"
   type        = string
   default     = "eu-west-2"
 }
 
-variable "manager_instance_type" {
-  description = "EC2 instance type for manager nodes"
+variable "manager_instance_size" {
+  description = "Cloud instance size for manager nodes"
   type        = string
   default     = "t2.micro"
 }
 
-variable "worker_instance_type" {
-  description = "EC2 instance type for worker nodes"
+variable "worker_instance_size" {
+  description = "Cloud instance size for worker nodes"
   type        = string
   default     = "t2.micro"
 }
 
-variable "ami_filter" {
-  description = "AMI filter to select the AMI for instances"
+variable "instance_image" {
+  description = "Cloud instance image to use for nodes"
   type        = string
   default     = "ubuntu/images/hvm-ssd/ubuntu-noble-24.04-amd64-server-*"
 }

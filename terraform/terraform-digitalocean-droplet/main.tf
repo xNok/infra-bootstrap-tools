@@ -24,10 +24,10 @@ resource "digitalocean_ssh_key" "infra" {
 resource "digitalocean_droplet" "managers" {
   count = var.manager_count
 
-  image  = var.droplet_image
+  image  = var.instance_image
   name   = "manager${count.index}"
-  region = var.droplet_location
-  size   = var.manager_size
+  region = var.region
+  size   = var.manager_instance_size
 
   monitoring = true
 
@@ -37,10 +37,10 @@ resource "digitalocean_droplet" "managers" {
 resource "digitalocean_droplet" "nodes" {
   count = var.worker_count
 
-  image  = var.droplet_image
+  image  = var.instance_image
   name   = "node${count.index}"
-  region = var.droplet_location
-  size   = var.worker_size
+  region = var.region
+  size   = var.worker_instance_size
 
   monitoring = true
 
