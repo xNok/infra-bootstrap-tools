@@ -23,12 +23,14 @@ services:
           - node.role != manager
       labels:
         caddy: ${SUBDOMAIN}.${DOMAIN_NAME}
-        # Default route
-        caddy.0_route: /rest/oauth2-credential/callback
+        caddy.0_route: /webhook/*
         caddy.0_route.reverse_proxy: "{{ upstreams 5678 }}"
-        caddy.1_route: "*"
+        # Default route
+        caddy.1_route: /rest/oauth2-credential/callback
         caddy.1_route.reverse_proxy: "{{ upstreams 5678 }}"
-        caddy.1_route.authorize: with admins_policy
+        caddy.2_route: "*"
+        caddy.2_route.reverse_proxy: "{{ upstreams 5678 }}"
+        caddy.2_route.authorize: with admins_policy
 
 volumes:
   n8n_data:
