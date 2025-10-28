@@ -70,16 +70,35 @@ To add a new subcommand:
 3. Update `ibt.sh` to include the new subcommand
 4. See `IBT_SPEC.md` for detailed guidelines
 
+### Testing
+
+The completion system includes comprehensive tests to ensure all functionality works correctly without needing to install or run actual tools:
+
+```bash
+# Run all completion tests
+bash bin/bash/test_completion.sh
+```
+
+The test suite verifies:
+- `--list-options` flag works for all scripts
+- Completion functions are properly defined
+- Tab completion produces correct results
+- No hardcoded options remain in completion scripts
+- Utility functions work as expected
+- Multi-argument completion works correctly
+
 ---
 
 ## Script Overview
 
-| Script      | Purpose                                                      |
-|-------------|--------------------------------------------------------------|
-| ibt.sh      | Unified dispatcher for all main scripts (ibt command)        |
-| stacks.sh   | Quickly start and manage stacks defined in this repository   |
-| tools.sh    | Provides Docker-based aliases for Ansible, AWS CLI, etc.     |
-| setup.sh    | Installs all required tools and dependencies for this repo   |
+| Script              | Purpose                                                      |
+|---------------------|--------------------------------------------------------------|
+| ibt.sh              | Unified dispatcher for all main scripts (ibt command)        |
+| stacks.sh           | Quickly start and manage stacks defined in this repository   |
+| tools.sh            | Provides Docker-based aliases for Ansible, AWS CLI, etc.     |
+| setup.sh            | Installs all required tools and dependencies for this repo   |
+| completion-utils.sh | Shared completion utilities for all completion scripts       |
+| test_completion.sh  | Comprehensive test suite for completion functionality        |
 
 ---
 
