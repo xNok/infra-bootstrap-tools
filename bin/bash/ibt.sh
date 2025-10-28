@@ -107,36 +107,21 @@ _ibt_completion() {
   fi
   
   # Delegate to subcommand completion if available
+  # Note: Subcommand completions work on the full COMP_WORDS array
   case "${COMP_WORDS[1]}" in
     setup)
       if declare -F _setup_completion >/dev/null; then
-        # Adjust COMP_WORDS and COMP_CWORD for subcommand context
-        local -a subcommand_words=("${COMP_WORDS[@]:1}")
-        COMP_WORDS=("${subcommand_words[@]}")
-        ((COMP_CWORD--))
         _setup_completion
-        COMP_WORDS=("${COMP_WORDS[@]:0:1}" "${subcommand_words[@]}")
-        ((COMP_CWORD++))
       fi
       ;;
     stacks)
       if declare -F _stacks_completion >/dev/null; then
-        local -a subcommand_words=("${COMP_WORDS[@]:1}")
-        COMP_WORDS=("${subcommand_words[@]}")
-        ((COMP_CWORD--))
         _stacks_completion
-        COMP_WORDS=("${COMP_WORDS[@]:0:1}" "${subcommand_words[@]}")
-        ((COMP_CWORD++))
       fi
       ;;
     tools)
       if declare -F _tools_completion >/dev/null; then
-        local -a subcommand_words=("${COMP_WORDS[@]:1}")
-        COMP_WORDS=("${subcommand_words[@]}")
-        ((COMP_CWORD--))
         _tools_completion
-        COMP_WORDS=("${COMP_WORDS[@]:0:1}" "${subcommand_words[@]}")
-        ((COMP_CWORD++))
       fi
       ;;
     *)

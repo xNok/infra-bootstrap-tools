@@ -25,15 +25,13 @@ _ibt_generic_completion() {
   
   COMPREPLY=()
   
-  # Check if script exists and is executable
-  if [[ ! -x "$script_path" && ! -f "$script_path" ]]; then
+  # Check if script exists
+  if [[ ! -f "$script_path" ]]; then
     return 0
   fi
   
   # Fetch options from the script
-  if [[ -f "$script_path" ]]; then
-    opts=$(bash "$script_path" --list-options 2>/dev/null)
-  fi
+  opts=$(bash "$script_path" --list-options 2>/dev/null)
   
   # If no options returned, fall back to empty completion
   if [[ -z "$opts" ]]; then
