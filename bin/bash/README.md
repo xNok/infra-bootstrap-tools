@@ -30,16 +30,75 @@ ibt tools dasb --version
 
 You can add the `source` line to your `~/.bashrc` or `~/.bash_profile` for persistence.
 
+### Tab Completion
+
+The `ibt` command supports intelligent tab completion for subcommands and their options:
+
+- Type `ibt <TAB>` to see available subcommands
+- Type `ibt setup <TAB>` to see available tools to install
+- Type `ibt stacks <TAB>` to see available stack commands
+- Type `ibt tools <TAB>` to see available tool aliases
+
+The completion system dynamically fetches options from the actual scripts, ensuring completions are always accurate.
+
+---
+
+## Completion System Architecture
+
+The bash completion system follows a modular, DRY (Don't Repeat Yourself) architecture:
+
+### Key Components
+
+1. **`completion-utils.sh`** - Shared completion utilities used by all completion scripts
+2. **`IBT_SPEC.md`** - Specification document defining the ibt command structure and extension guidelines
+3. **Individual completion scripts** - Each subcommand has its own completion script that uses the shared utilities
+
+### How It Works
+
+Each script (setup.sh, stacks.sh, tools.sh) implements a `--list-options` flag that outputs its available options. The completion functions dynamically fetch these options instead of hardcoding them, ensuring:
+
+- **Maintainability**: Options are defined in one place only
+- **Accuracy**: Completions always reflect the current script state
+- **Extensibility**: Easy to add new subcommands and options
+
+### For Developers
+
+To add a new subcommand:
+
+1. Create `<subcommand>.sh` with `--list-options` support
+2. Create `<subcommand>-completion.sh` using the shared utilities
+3. Update `ibt.sh` to include the new subcommand
+4. See `IBT_SPEC.md` for detailed guidelines
+
+### Testing
+
+The completion system includes comprehensive tests to ensure all functionality works correctly without needing to install or run actual tools:
+
+```bash
+# Run all completion tests
+bash bin/bash/test_completion.sh
+```
+
+The test suite verifies:
+- `--list-options` flag works for all scripts
+- Completion functions are properly defined
+- Tab completion produces correct results
+- No hardcoded options remain in completion scripts
+- Utility functions work as expected
+- Multi-argument completion works correctly
+
 ---
 
 ## Script Overview
 
-| Script      | Purpose                                                      |
-|-------------|--------------------------------------------------------------|
-| ibt.sh      | Unified dispatcher for all main scripts (ibt command)        |
-| stacks.sh   | Quickly start and manage stacks defined in this repository   |
-| tools.sh    | Provides Docker-based aliases for Ansible, AWS CLI, etc.     |
-| setup.sh    | Installs all required tools and dependencies for this repo   |
+| Script              | Purpose                                                      |
+|---------------------|--------------------------------------------------------------|
+| ibt.sh              | Unified dispatcher for all main scripts (ibt command)        |
+| stacks.sh           | Quickly start and manage stacks defined in this repository   |
+| tools.sh            | Provides Docker-based aliases for Ansible, AWS CLI, etc.     |
+| setup.sh            | Installs all required tools and dependencies for this repo   |
+| completion-utils.sh | Shared completion utilities for all completion scripts       |
+| test_completion.sh  | Comprehensive test suite for completion functionality        |
 
 ---
 

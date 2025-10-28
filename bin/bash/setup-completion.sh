@@ -1,38 +1,18 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
 # Bash completion for setup.sh tools
+#
+# This completion script dynamically fetches available tools from setup.sh
+# using the --list-options flag.
 
+# Source shared completion utilities
+IBT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=bin/bash/completion-utils.sh
+source "$IBT_DIR/completion-utils.sh"
 
-# Generic completion function for tool scripts
-# Usage: _tool_completion "tool1 tool2 ..."
-_tool_completion() {
-  local opts="$1"
-  local cur
-  COMPREPLY=()
-  cur="${COMP_WORDS[COMP_CWORD]}"
-
-  # If no argument after command, list all options
-  if [[ $COMP_CWORD -eq 1 && -z "$cur" ]]; then
-  read -ra COMPREPLY <<< "$(compgen -W "$opts" -- "")"
-    return 0
-  fi
-
-  # If partial argument, complete matching options
-  read -ra COMPREPLY <<< "$(compgen -W "$opts" -- "$cur")"
-  return 0
-}
-
-# For setup.sh
+# Completion function for setup command
 _setup_completion() {
-  _tool_completion "pre-commit ansible 1password-cli boilerplate hugo"
+  _ibt_tool_list_completion "$IBT_DIR/setup.sh"
 }
 
-# For stacks.sh (example, update with real stack names if needed)
-_stacks_completion() {
-  _tool_completion "list run help"
-}
-
-# For tools.sh (example, update with real tool aliases if needed)
-_tools_completion() {
-  _tool_completion "dasb dap daws dpk dtf dbash"
-}
+complete -F _setup_completion setup.sh
