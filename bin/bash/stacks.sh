@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
-# Source completion logic if available
-if [ -f "$(dirname "${BASH_SOURCE[0]}")/stacks-completion.sh" ]; then
-  # shellcheck source=bin/bash/stacks-completion.sh
-  source "$(dirname "${BASH_SOURCE[0]}")/stacks-completion.sh"
-fi
-
 # ------------------------------------------------------------------------------
 # infra-bootstrap-tools: stacks.sh
 #
@@ -24,6 +18,7 @@ fi
 #     ./stacks.sh list
 #     ./stacks.sh run <name> [component ...] [local]
 #     ./stacks.sh help
+#     ./stacks.sh --list-options  # List available commands
 #
 # Commands/Aliases:
 #   list_stacks | list   - List all available stacks
@@ -41,6 +36,20 @@ fi
 #   tools.sh   - Provides Docker-based tool aliases
 #   setup.sh   - Installs required tools for this repository
 # ------------------------------------------------------------------------------
+
+# List available commands for completion
+if [[ "$1" == "--list-options" ]]; then
+  echo "list"
+  echo "run"
+  echo "help"
+  exit 0
+fi
+
+# Source completion logic if available
+if [ -f "$(dirname "${BASH_SOURCE[0]}")/stacks-completion.sh" ]; then
+  # shellcheck source=bin/bash/stacks-completion.sh
+  source "$(dirname "${BASH_SOURCE[0]}")/stacks-completion.sh"
+fi
 
 
 # Determine if current directory (or parent) is inside a repo clone

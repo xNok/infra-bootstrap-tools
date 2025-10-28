@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
 # Bash completion for tools.sh aliases
+#
+# This completion script dynamically fetches available tools from tools.sh
+# using the --list-options flag.
 
+# Source shared completion utilities
+IBT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=bin/bash/completion-utils.sh
+source "$IBT_DIR/completion-utils.sh"
+
+# Completion function for tools command
 _tools_completion() {
-  local opts="dasb dap daws dpk dtf dbash"
-  local cur
-  COMPREPLY=()
-  cur="${COMP_WORDS[COMP_CWORD]}"
-  if [[ $COMP_CWORD -eq 1 && -z "$cur" ]]; then
-  read -ra COMPREPLY <<< "$(compgen -W "$opts" -- "")"
-    return 0
-  fi
-  read -ra COMPREPLY <<< "$(compgen -W "$opts" -- "$cur")"
-  return 0
+  _ibt_generic_completion "$IBT_DIR/tools.sh"
 }
 
 complete -F _tools_completion tools.sh

@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
-# Source completion logic if available
-if [ -f "$(dirname "${BASH_SOURCE[0]}")/tools-completion.sh" ]; then
-  # shellcheck source=bin/bash/tools-completion.sh
-  source "$(dirname "${BASH_SOURCE[0]}")/tools-completion.sh"
-fi
-
 # ------------------------------------------------------------------------------
 # infra-bootstrap-tools: tools.sh
 #
@@ -20,12 +14,15 @@ fi
 #   Source this script in your shell:
 #     source /path/to/tools.sh
 #   or add to your ~/.bashrc.d/ for persistent aliases.
+#   ./tools.sh --list-options  # List available tools
 #
 # Aliases Provided:
 #   dasb   - Run ansible in Docker
 #   dap    - Run ansible-playbook in Docker
 #   daws   - Run awscli in Docker
 #   dpk    - Run packer in Docker
+#   dtf    - Run terraform in Docker
+#   dbash  - Run bash in Docker
 #   (extend as needed)
 #
 # Examples:
@@ -38,6 +35,23 @@ fi
 #   setup.sh   - Installs required tools for this repository
 #   stacks.sh  - Manage and run infrastructure stacks
 # ------------------------------------------------------------------------------
+
+# List available tools for completion
+if [[ "$1" == "--list-options" ]]; then
+  echo "dasb"
+  echo "dap"
+  echo "daws"
+  echo "dpk"
+  echo "dtf"
+  echo "dbash"
+  exit 0
+fi
+
+# Source completion logic if available
+if [ -f "$(dirname "${BASH_SOURCE[0]}")/tools-completion.sh" ]; then
+  # shellcheck source=bin/bash/tools-completion.sh
+  source "$(dirname "${BASH_SOURCE[0]}")/tools-completion.sh"
+fi
 if [ -z "$INFRA_IMAGE_NAME" ]; then
   INFRA_IMAGE_NAME="local-infra-tools"
   docker build -t $INFRA_IMAGE_NAME .

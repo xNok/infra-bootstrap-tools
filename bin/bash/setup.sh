@@ -1,5 +1,5 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
+# shellcheck shell=bash
 # ------------------------------------------------------------------------------
 # infra-bootstrap-tools: setup.sh
 #
@@ -13,7 +13,8 @@
 #   - sudo privileges for some installations
 #
 # Usage:
-#   bash setup.sh
+#   bash setup.sh <tool1> [tool2 ...]
+#   bash setup.sh --list-options  # List available tools
 #
 # Tools Installed:
 #   - Python dependencies (from requirements.txt, test-requirements.txt)
@@ -29,8 +30,16 @@
 #   tools.sh   - Provides Docker-based tool aliases
 #   stacks.sh  - Manage and run infrastructure stacks
 # ------------------------------------------------------------------------------
-#!/usr/bin/env bash
-# shellcheck shell=bash
+
+# List available tools for completion
+if [[ "$1" == "--list-options" ]]; then
+  echo "pre-commit"
+  echo "ansible"
+  echo "1password-cli"
+  echo "boilerplate"
+  echo "hugo"
+  exit 0
+fi
 
 # shellcheck source=bin/bash/setup-completion.sh
 source "$(dirname "${BASH_SOURCE[0]}")/setup-completion.sh"
@@ -104,22 +113,18 @@ install_hugo() {
 }
 
 _setup_completion() {
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local cur opts
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
-  # prev="${COMP_WORDS[COMP_CWORD-1]}" # Unused variable, removed to fix SC2034
-  opts="pre-commit ansible 1password-cli boilerplate hugo"
-
-  case "${COMP_CWORD}" in
-    1)
+  
+  # Dynamically fetch options from the script
+  opts=$("$script_dir/setup.sh" --list-options 2>/dev/null)
+  
+  # Generate completions for any position (allows multiple tools)
   # shellcheck disable=SC2207
-  COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-      ;;
-    *)
-  # shellcheck disable=SC2207
-  COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
-      ;;
-  esac
+  COMPREPLY=($(compgen -W "$opts" -- "$cur"))
   return 0
 }
 
