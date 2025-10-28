@@ -107,7 +107,8 @@ _ibt_completion() {
   fi
   
   # Delegate to subcommand completion if available
-  # Note: Subcommand completions work on the full COMP_WORDS array
+  # Subcommand completion functions use COMP_WORDS[COMP_CWORD] to get the current word,
+  # so they work correctly with the full COMP_WORDS array without adjustment.
   case "${COMP_WORDS[1]}" in
     setup)
       if declare -F _setup_completion >/dev/null; then
