@@ -14,5 +14,8 @@
   ],
   "devDependencies": {
     "@changesets/cli": "^2.27.3"
+  },
+  "scripts": {
+    "release": "changeset tag"
   }
 }
