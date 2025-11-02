@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release_ansible:
+    name: Release Ansible Collection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible dependencies
+        run: pip install ansible-core yq
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Update collection version
+        run: yq -i ".version = \"${{ steps.get_version.outputs.VERSION }}\"" ansible/galaxy.yml
+
+      - name: Build Ansible Collection
+        id: build
+        run: |
+          OUTPUT=$(ansible-galaxy collection build ansible)
+          TARBALL=$(echo "$OUTPUT" | grep -o 'Created collection file .*.tar.gz' | sed 's/Created collection file //')
+          echo "TARBALL=$TARBALL" >> $GITHUB_OUTPUT
+
+      - name: Publish collection to Ansible Galaxy
+        uses: artis3n/ansible_galaxy_collection@v2
+        with:
+          api_key: ${{ secrets.GALAXY_API_KEY }}
+          collection_dir: 'ansible'
+
+      - name: Upload collection to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} ${{ steps.build.outputs.TARBALL }}
