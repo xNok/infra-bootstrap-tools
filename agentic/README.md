@@ -11,16 +11,14 @@ The Pydantic models in `models.py` are generated based on the OpenAPI specificat
 ## Requirements
 
 *   Python 3.9+
-*   `pydantic-ai`
-*   `requests`
 *   An OpenAI API key
 
 ## Setup
 
 1.  **Install Dependencies:**
-    Install the necessary Python libraries using pip:
+    Install the necessary Python libraries using pip from the `requirements.txt` file:
     ```bash
-    pip install "pydantic-ai-slim[openai]" requests
+    pip install -r agentic/requirements.txt
     ```
 
 2.  **Configure API Key:**
