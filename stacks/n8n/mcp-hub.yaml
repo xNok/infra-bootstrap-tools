@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mcphub:
-    image: samanhappy/mcphub:0.9.10
+    image: samanhappy/mcphub:0.10.3
     restart: unless-stopped
     networks:
       - n8n_n8n

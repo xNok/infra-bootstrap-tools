@@ -56,7 +56,7 @@ fi
 find_repo_root() {
   local dir="$PWD"
   while [ "$dir" != "/" ]; do
-    if [ -f "$dir/ansible.cfg" ] && [ -d "$dir/stacks" ]; then
+    if [ -d "$dir/stacks" ]; then
       echo "$dir"
       return
     fi
@@ -89,45 +89,65 @@ fi
 
 help() {
   echo "Usage:"
-  echo "  list_stacks"
-  echo "  run_stack <name> [component ...] [local]"
-  echo "  help"
+  echo "  list"
+  echo "  run <name> [component ...]"
   echo ""
   echo "Examples:"
-  echo "  run_stack n8n"
-  echo "  run_stack n8n local"
-  echo "  run_stack n8n component1 component2"
+  echo "  run n8n"
+  echo "  run n8n mcp-hub"
+  echo ""
+  echo "Notes:"
+  echo "  - Local configurations (.local.yaml) are used by default if available"
+  echo "  - Otherwise, remote configurations (.yaml) are used"
+}
+
+# Get list of available stacks
+get_available_stacks() {
+  local search_path="$INFRA_BOOTSTRAP_TOOLS_STACK_PATH"
+  local stacks=()
+  while IFS= read -r -d '' dir; do
+    local stack_name
+    stack_name=$(basename "$dir")
+    # Only include if the folder contains at least one .yaml file
+    if compgen -G "$dir/*.yaml" > /dev/null; then
+      stacks+=("$stack_name")
+    fi
+  done < <(find "$search_path" -mindepth 1 -maxdepth 1 -type d -print0)
+  echo "${stacks[*]}"
 }
 
 # List all available stacks (each subfolder in stacks/ is a stack) and their components
 list_stacks() {
-  local search_path="$INFRA_BOOTSTRAP_TOOLS_STACK_PATH"
-  local found=0
-  while IFS= read -r -d '' dir; do
-    local stack_name
-    stack_name=$(basename "$dir")
-    # Only show if the folder contains at least one .yaml file
-    if compgen -G "$dir/*.yaml" > /dev/null; then
-      found=1
-      echo "- $stack_name"
-      # List only .local.yaml components
-      for comp in "$dir"/*.local.yaml; do
-        [ -e "$comp" ] || continue
-        comp_name=$(basename "$comp")
-        comp_name="${comp_name%.local.yaml}"
-        echo "    - $comp_name (local)"
-      done
-    fi
-  done < <(find "$search_path" -mindepth 1 -maxdepth 1 -type d -print0)
-  if [ $found -eq 0 ]; then
-    echo "No stacks found in $search_path"
+  local stacks
+  stacks=$(get_available_stacks)
+  if [ -z "$stacks" ]; then
+    echo "No stacks found in $INFRA_BOOTSTRAP_TOOLS_STACK_PATH"
+    return
   fi
+  for stack in $stacks; do
+    echo "- $stack"
+    # List only .local.yaml components
+    local base_path="$INFRA_BOOTSTRAP_TOOLS_STACK_PATH/$stack"
+    for comp in "$base_path"/*.local.yaml; do
+      [ -e "$comp" ] || continue
+      comp_name=$(basename "$comp")
+      comp_name="${comp_name%.local.yaml}"
+      echo "    - $comp_name (local)"
+    done
+  done
 }
 
 # Run a stack (optionally with components and/or local override)
 run_stack() {
   local stack_name="$1"
   shift
+  local stacks
+  stacks=$(get_available_stacks)
+  if ! echo "$stacks" | grep -qw "$stack_name"; then
+    echo "Error: Stack '$stack_name' not found."
+    echo "Available stacks: $stacks"
+    return 1
+  fi
   local components=()
   local use_local=0
   for arg in "$@"; do
@@ -139,18 +159,18 @@ run_stack() {
   done
   local base_path="$INFRA_BOOTSTRAP_TOOLS_STACK_PATH/$stack_name"
   local files=()
-  # Add main stack file
-  if [ $use_local -eq 1 ] && [ -f "$base_path.local.yaml" ]; then
-    files+=("$base_path.local.yaml")
-  elif [ -f "$base_path.yaml" ]; then
-    files+=("$base_path.yaml")
+  # Add main stack file (prefer .local.yaml if exists)
+  if [ -f "$base_path/$stack_name.local.yaml" ]; then
+    files+=("$base_path/$stack_name.local.yaml")
+  elif [ -f "$base_path/$stack_name.yaml" ]; then
+    files+=("$base_path/$stack_name.yaml")
   fi
-  # Add component files
+  # Add component files (prefer .local.yaml if exists)
   for comp in "${components[@]}"; do
-    if [ $use_local -eq 1 ] && [ -f "$base_path.$comp.local.yaml" ]; then
-      files+=("$base_path.$comp.local.yaml")
-    elif [ -f "$base_path.$comp.yaml" ]; then
-      files+=("$base_path.$comp.yaml")
+    if [ -f "$base_path/$comp.local.yaml" ]; then
+      files+=("$base_path/$comp.local.yaml")
+    elif [ -f "$base_path/$comp.yaml" ]; then
+      files+=("$base_path/$comp.yaml")
     fi
   done
   if [ ${#files[@]} -eq 0 ]; then
@@ -159,8 +179,8 @@ run_stack() {
   fi
   echo "Running stack: $stack_name"
   echo "Using files: ${files[*]}"
-  # shellcheck disable=SC2068
-  docker compose -f "${files[0]}" ${files[@]:1:+-f "${files[@]:1}"} up
+  # Build docker compose command with multiple -f flags
+  docker compose $(printf -- '-f %q ' "${files[@]}") up
 }
 
 # Aliases for convenience
@@ -171,17 +191,10 @@ alias help_stacks='help'
 # Bash completion for stack names
 _complete_stacks() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
-  local search_path="$INFRA_BOOTSTRAP_TOOLS_STACK_PATH"
-  local stacks=()
-  while IFS= read -r -d '' file; do
-    local fname
-    fname=$(basename "$file")
-    fname="${fname%.yaml}"
-    fname="${fname%.local}"
-    stacks+=("$fname")
-  done < <(find "$search_path" -type f -name "*.yaml" -print0)
+  local stacks
+  stacks=$(get_available_stacks)
   # shellcheck disable=SC2207
-  COMPREPLY=( $(compgen -W "${stacks[*]}" -- "$cur") )
+  COMPREPLY=( $(compgen -W "$stacks" -- "$cur") )
 }
 complete -F _complete_stacks run_stack
 

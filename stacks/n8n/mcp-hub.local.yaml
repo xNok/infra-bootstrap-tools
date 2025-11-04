@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mcphub:
-    image: samanhappy/mcphub:0.9.10
+    image: samanhappy/mcphub:0.10.3
     ports:
       - "127.0.0.1:3000:3000"
     volumes:
