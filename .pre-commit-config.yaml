@@ -22,3 +22,10 @@ repos:
     rev: v1.86.0
     hooks:
       - id: terraform_docs
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.5
+    hooks:
+      - id: ruff
+        args:
+          - --fix
+      - id: ruff-format
