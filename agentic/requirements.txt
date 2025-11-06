@@ -1,1 +1,1 @@
-"pydantic-ai-slim[openai]"
+pydantic-ai-slim[openai]
