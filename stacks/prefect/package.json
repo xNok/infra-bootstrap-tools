@@ -1,0 +1,5 @@
+{
+    "name": "docker-stack-prefect",
+    "private": true,
+    "version": "0.0.1"
+}
