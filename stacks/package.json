@@ -7,6 +7,7 @@
     ],
     "dependencies": {
         "docker-stack-n8n": "0.0.2",
-        "docker-stack-openziti": "0.0.2"
+        "docker-stack-openziti": "0.0.2",
+        "docker-stack-prefect": "0.0.1"
     }
 }
