@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ibt-agentic"
+version = "0.1.0"
+description = "AI-powered workflow automation for infra-bootstrap-tools"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Alexandre Couedelo", email = "nokwebspace@gmail.com"}
+]
+keywords = ["automation", "ai", "prefect", "mcp", "jules", "github"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "pydantic-ai-slim[openai]>=0.0.14",
+    "prefect>=3.0.0",
+    "pydantic>=2.0.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+jules-deploy = "agentic.deployment.deploy:main"
+
+[project.urls]
+Homepage = "https://github.com/xNok/infra-bootstrap-tools"
+Repository = "https://github.com/xNok/infra-bootstrap-tools"
+Documentation = "https://github.com/xNok/infra-bootstrap-tools/tree/main/agentic"
+
+[tool.setuptools]
+packages = ["agentic", "agentic.jules", "agentic.workflows", "agentic.deployment"]
+
+[tool.setuptools.package-data]
+agentic = ["*.json", ".env.example"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39']
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
