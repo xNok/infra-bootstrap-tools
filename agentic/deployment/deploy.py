@@ -16,7 +16,6 @@ import time
 from typing import Dict, Any
 
 import requests
-from prefect import flow
 
 
 def check_mcp_hub_health(mcp_hub_url: str, max_retries: int = 30, delay: int = 2) -> bool:
