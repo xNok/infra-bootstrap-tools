@@ -25,6 +25,8 @@ Or using the stacks helper script:
 ibt stacks run prefect mcp-hub
 ```
 
+Note: The `ibt stacks` command will automatically use `.local.yaml` files when available.
+
 ## Accessing Services
 
 After starting the stack:
