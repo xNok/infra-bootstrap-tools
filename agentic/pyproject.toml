@@ -49,7 +49,7 @@ Repository = "https://github.com/xNok/infra-bootstrap-tools"
 Documentation = "https://github.com/xNok/infra-bootstrap-tools/tree/main/agentic"
 
 [tool.setuptools]
-packages = ["jules", "workflows", "deployment"]
+packages = ["agentic.jules", "agentic.workflows", "agentic.deployment"]
 
 [tool.setuptools.package-data]
 "*" = ["*.json", ".env.example"]
