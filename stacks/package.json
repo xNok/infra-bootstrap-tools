@@ -1,5 +1,5 @@
 {
-    "name": "docker-stack-collection-infra-bootstrap-tools",
+    "name": "infra-bootstrap-tools-stacks",
     "private": true,
     "version": "1.0.2",
     "workspaces": [

@@ -1,0 +1,137 @@
+name: Package and Release Stacks
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'stacks/**'
+      - '.github/workflows/stacks-package-release.yml'
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  check-version:
+    name: Check Version Change
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check.outputs.changed }}
+      new_version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if version changed
+        id: check
+        run: |
+          # Get the version from package.json in the stacks directory
+          CURRENT_VERSION=$(jq -r '.version' stacks/package.json)
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Check if this is the first commit or if version changed in the last commit
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            PREVIOUS_VERSION=$(git show HEAD~1:stacks/package.json | jq -r '.version' 2>/dev/null || echo "0.0.0")
+            echo "Previous version: $PREVIOUS_VERSION"
+            
+            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            # First commit, assume version changed
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          fi
+
+  package-and-release:
+    name: Package Stacks and Create Release
+    runs-on: ubuntu-latest
+    needs: check-version
+    if: needs.check-version.outputs.version_changed == 'true'
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Create stack archives
+        run: |
+          VERSION="${{ needs.check-version.outputs.new_version }}"
+          mkdir -p dist
+          
+          # Create individual stack archives
+          for stack in stacks/*/; do
+            if [ -d "$stack" ] && [ "$(basename "$stack")" != "node_modules" ]; then
+              stack_name=$(basename "$stack")
+              echo "Creating archive for $stack_name"
+              (cd "$(dirname "$stack")" && zip -r "../dist/${stack_name}-${VERSION}.zip" "$stack_name" -x "*/node_modules/*" "*.git/*")
+            fi
+          done
+          
+          # Create a complete stacks archive
+          echo "Creating complete stacks archive"
+          (cd stacks && zip -r "../dist/infra-bootstrap-tools-stacks-${VERSION}.zip" . -x "node_modules/*" "*.git/*" "*/node_modules/*")
+          
+          ls -lh dist/
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.check-version.outputs.new_version }}"
+          TAG_NAME="stacks-v${VERSION}"
+          
+          # Check if tag already exists
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Tag $TAG_NAME already exists, skipping release creation"
+            exit 0
+          fi
+          
+          # Create and push tag
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+          
+          # Generate release notes
+          cat > release_notes.md <<EOF
+          # Infrastructure Bootstrap Tools - Stacks v${VERSION}
+          
+          This release contains Docker stack configurations for various services.
+          
+          ## Included Stacks
+          EOF
+          
+          # List all stacks
+          for stack in stacks/*/; do
+            if [ -d "$stack" ] && [ "$(basename "$stack")" != "node_modules" ]; then
+              stack_name=$(basename "$stack")
+              stack_version=$(jq -r '.version' "${stack}package.json" 2>/dev/null || echo "unknown")
+              echo "- **${stack_name}** (v${stack_version})" >> release_notes.md
+            fi
+          done
+          
+          cat >> release_notes.md <<EOF
+          
+          ## Installation
+          
+          Download the complete archive or individual stack archives from the assets below.
+          
+          \`\`\`bash
+          # Download complete stacks
+          wget https://github.com/xNok/infra-bootstrap-tools/releases/download/${TAG_NAME}/infra-bootstrap-tools-stacks-${VERSION}.zip
+          
+          # Extract
+          unzip infra-bootstrap-tools-stacks-${VERSION}.zip
+          \`\`\`
+          EOF
+          
+          # Create release with all archives
+          gh release create "$TAG_NAME" \
+            --title "infra-bootstrap-tools-stacks v${VERSION}" \
+            --notes-file release_notes.md \
+            dist/*.zip

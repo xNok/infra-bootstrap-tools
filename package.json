@@ -7,6 +7,7 @@
   "author": "Alexandre Couedelo <nokwebspace@gmail.com>",
   "license": "MIT",
   "workspaces": [
+      "agentic",
       "ansible",
       "ansible/roles/*",
       "stacks",

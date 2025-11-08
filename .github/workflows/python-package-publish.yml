@@ -1,0 +1,132 @@
+name: Publish Python Package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'agentic/**'
+      - '.github/workflows/python-package-publish.yml'
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  check-version:
+    name: Check Version Change
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check.outputs.changed }}
+      new_version: ${{ steps.check.outputs.version }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if version changed
+        id: check
+        run: |
+          # Get the version from package.json in the agentic directory
+          CURRENT_VERSION=$(jq -r '.version' agentic/package.json)
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Check if this is the first commit or if version changed in the last commit
+          if git rev-parse HEAD~1 >/dev/null 2>&1; then
+            PREVIOUS_VERSION=$(git show HEAD~1:agentic/package.json | jq -r '.version' 2>/dev/null || echo "0.0.0")
+            echo "Previous version: $PREVIOUS_VERSION"
+            
+            if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+              echo "changed=true" >> $GITHUB_OUTPUT
+              echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            else
+              echo "changed=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            # First commit, assume version changed
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          fi
+
+  publish:
+    name: Build and Publish Python Package
+    runs-on: ubuntu-latest
+    needs: check-version
+    if: needs.check-version.outputs.version_changed == 'true'
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Update version in pyproject.toml
+        run: |
+          cd agentic
+          VERSION="${{ needs.check-version.outputs.new_version }}"
+          # Update version in pyproject.toml
+          sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
+          # Update package name to infra-bootstrap-tools-agentic
+          sed -i 's/^name = "ibt-agentic"/name = "infra-bootstrap-tools-agentic"/' pyproject.toml
+
+      - name: Build package
+        run: |
+          cd agentic
+          python -m build
+
+      - name: Publish to GitHub Packages
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd agentic
+          # GitHub Packages requires repository URL in the package metadata
+          # We'll upload to GitHub Releases as packages instead
+          echo "Skipping PyPI upload - will attach to GitHub Release instead"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ needs.check-version.outputs.new_version }}"
+          TAG_NAME="agentic-v${VERSION}"
+          
+          # Check if tag already exists
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Tag $TAG_NAME already exists, skipping release creation"
+            exit 0
+          fi
+          
+          # Create and push tag
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+          
+          # Create release with package artifacts
+          gh release create "$TAG_NAME" \
+            --title "infra-bootstrap-tools-agentic v${VERSION}" \
+            --notes "Release of infra-bootstrap-tools-agentic version ${VERSION}
+
+          ## Installation
+          
+          \`\`\`bash
+          pip install https://github.com/xNok/infra-bootstrap-tools/releases/download/${TAG_NAME}/infra_bootstrap_tools_agentic-${VERSION}-py3-none-any.whl
+          \`\`\`
+          
+          Or download and install manually:
+          
+          \`\`\`bash
+          wget https://github.com/xNok/infra-bootstrap-tools/releases/download/${TAG_NAME}/infra_bootstrap_tools_agentic-${VERSION}-py3-none-any.whl
+          pip install infra_bootstrap_tools_agentic-${VERSION}-py3-none-any.whl
+          \`\`\`" \
+            agentic/dist/*
