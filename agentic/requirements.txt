@@ -1,1 +1,14 @@
-pydantic-ai-slim[openai]
+# Core dependencies
+# Install with Google Gemini support (default) or OpenAI support
+pydantic-ai-slim[google-gla]>=0.0.14
+prefect>=3.0.0
+pydantic>=2.0.0
+
+# HTTP client for MCP Hub API
+requests>=2.31.0
+
+# Optional: For better CLI experience
+python-dotenv>=1.0.0
+
+# Optional: Add OpenAI support if needed
+# pydantic-ai-slim[openai]>=0.0.14
