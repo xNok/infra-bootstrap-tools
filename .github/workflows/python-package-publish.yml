@@ -1,0 +1,84 @@
+name: Publish Python Package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to publish (e.g., infra-bootstrap-tools-agentic@0.1.1)'
+        required: true
+        type: string
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  publish:
+    name: Build and Publish Python Package
+    runs-on: ubuntu-latest
+    # Only run if the release tag matches the agentic package pattern
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.event.release.tag_name, 'infra-bootstrap-tools-agentic@')
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAG="${{ inputs.release_tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          # Extract version from tag (format: infra-bootstrap-tools-agentic@0.1.1)
+          VERSION=$(echo "$TAG" | sed 's/infra-bootstrap-tools-agentic@//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Update version in pyproject.toml
+        run: |
+          cd agentic
+          VERSION="${{ steps.version.outputs.version }}"
+          # Update version in pyproject.toml
+          sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
+          # Update package name to infra-bootstrap-tools-agentic
+          sed -i 's/^name = "ibt-agentic"/name = "infra-bootstrap-tools-agentic"/' pyproject.toml
+
+      - name: Build package
+        run: |
+          cd agentic
+          python -m build
+
+      - name: Upload package to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAG="${{ inputs.release_tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          
+          # Upload package artifacts to the release
+          gh release upload "$TAG" \
+            agentic/dist/* \
+            --clobber

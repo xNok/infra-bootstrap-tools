@@ -1,0 +1,10 @@
+{
+  "name": "infra-bootstrap-tools-agentic",
+  "private": true,
+  "version": "0.1.0",
+  "description": "AI-powered workflow automation for infra-bootstrap-tools",
+  "main": "index.py",
+  "repository": "https://github.com/xNok/infra-bootstrap-tools.git",
+  "author": "Alexandre Couedelo <nokwebspace@gmail.com>",
+  "license": "MIT"
+}

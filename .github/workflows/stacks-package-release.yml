@@ -1,0 +1,79 @@
+name: Package and Release Stacks
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to publish (e.g., infra-bootstrap-tools-stacks@1.0.3)'
+        required: true
+        type: string
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  package-and-release:
+    name: Package Stacks and Upload to Release
+    runs-on: ubuntu-latest
+    # Only run if the release tag matches the stacks package pattern
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.event.release.tag_name, 'infra-bootstrap-tools-stacks@')
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAG="${{ inputs.release_tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          # Extract version from tag (format: infra-bootstrap-tools-stacks@1.0.3)
+          VERSION=$(echo "$TAG" | sed 's/infra-bootstrap-tools-stacks@//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Create stack archives
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p dist
+          
+          # Create individual stack archives
+          for stack in stacks/*/; do
+            if [ -d "$stack" ] && [ "$(basename "$stack")" != "node_modules" ]; then
+              stack_name=$(basename "$stack")
+              echo "Creating archive for $stack_name"
+              (cd "$(dirname "$stack")" && zip -r "../dist/${stack_name}-${VERSION}.zip" "$stack_name" -x "*/node_modules/*" "*.git/*")
+            fi
+          done
+          
+          # Create a complete stacks archive
+          echo "Creating complete stacks archive"
+          (cd stacks && zip -r "../dist/infra-bootstrap-tools-stacks-${VERSION}.zip" . -x "node_modules/*" "*.git/*" "*/node_modules/*")
+          
+          ls -lh dist/
+
+      - name: Upload archives to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAG="${{ inputs.release_tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          
+          # Upload package artifacts to the release
+          gh release upload "$TAG" \
+            dist/*.zip \
+            --clobber
