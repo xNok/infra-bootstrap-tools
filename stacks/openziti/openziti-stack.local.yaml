@@ -14,7 +14,7 @@ services:
       - ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION=${ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION:-180m}
       - ZITI_ROUTER_ENROLLMENT_DURATION=${ZITI_ROUTER_ENROLLMENT_DURATION:-180m}
       - ZITI_USER=${ZITI_USER:-admin}
-      - ZITI_PWD_FILE=/run/secrets/ziti_admin_password
+      - ZITI_PWD=${ZITI_PWD:-admin}
     networks:
       ziti:
         aliases:
@@ -22,28 +22,14 @@ services:
       spire:
     volumes:
       - ziti-controller-data:/persistent
-    secrets:
-      - ziti_admin_password
     entrypoint:
-      - "/bin/bash"
-      - "-c"
-      - |
-        export ZITI_PWD=$$(cat /run/secrets/ziti_admin_password)
-        /var/openziti/scripts/run-controller.sh
+      - "/var/openziti/scripts/run-controller.sh"
     healthcheck:
       test: ["CMD", "curl", "-k", "-f", "https://localhost:1280/.well-known/health-check"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == worker
-      restart_policy:
-        condition: on-failure
-        delay: 10s
 
   ziti-console:
     image: openziti/zac:latest
@@ -60,22 +46,10 @@ services:
       - ziti-controller-data:/persistent:ro
     networks:
       - ziti
-      - caddy_caddy
+    ports:
+      - "8443:8443"
     depends_on:
       - ziti-controller
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == worker
-      restart_policy:
-        condition: on-failure
-      labels:
-        caddy: ${ZITI_CONSOLE_HOSTNAME:-ziti-console.example.com}
-        caddy.reverse_proxy: "{{ upstreams 8443 }}"
-        caddy.reverse_proxy.transport: "http"
-        caddy.reverse_proxy.transport.tls: ""
-        caddy.reverse_proxy.transport.tls_insecure_skip_verify: ""
 
   ziti-edge-router:
     image: "${ZITI_IMAGE:-openziti/ziti-router}:${ZITI_VERSION:-latest}"
@@ -96,7 +70,7 @@ services:
     volumes:
       - ziti-controller-data:/persistent
       - type: bind
-        source: /run/spire/sockets
+        source: /tmp/spire-sockets
         target: /run/spire/sockets
         read_only: true
       - spiffe-certs:/spiffe-certs
@@ -104,16 +78,8 @@ services:
       - ziti-controller
     entrypoint: /bin/bash
     command: "/var/openziti/scripts/run-router.sh edge"
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == worker
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-      labels:
-        app: ziti-router
+    labels:
+      app: ziti-router
 
   spiffe-helper:
     image: ghcr.io/spiffe/spiffe-helper:0.8.0
@@ -123,7 +89,7 @@ services:
       - "/opt/spiffe-helper/helper.conf"
     volumes:
       - type: bind
-        source: /run/spire/sockets
+        source: /tmp/spire-sockets
         target: /run/spire/sockets
         read_only: true
       - spiffe-certs:/spiffe-certs
@@ -135,71 +101,14 @@ services:
       - spire
     depends_on:
       - ziti-controller
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == worker
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-      labels:
-        app: spiffe-helper
-
-  bootstrap:
-    image: "ghcr.io/${GITHUB_REPOSITORY:-xnok/infra-bootstrap-tools}-openziti-bootstrap:${ZITI_BOOTSTRAP_VERSION:-latest}"
-    hostname: ziti-bootstrap
-    command: ["/bootstrap/setup.sh"]
-    environment:
-      - ZITI_CTRL_ADVERTISED_ADDRESS=${ZITI_CTRL_ADVERTISED_ADDRESS:-ziti-controller}
-      - ZITI_CTRL_ADVERTISED_PORT=${ZITI_CTRL_ADVERTISED_PORT:-6262}
-      - SPIRE_SERVER_ADDRESS=spire-server:8081
-      - KEYCLOAK_URL=${KEYCLOAK_URL:-https://keycloak.example.com}
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM:-openziti}
-      - TRUST_DOMAIN=${TRUST_DOMAIN:-openziti.local}
-    networks:
-      - ziti
-      - spire
-      - keycloak
-    secrets:
-      - ziti_admin_user
-      - ziti_admin_password
-    depends_on:
-      - ziti-controller
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == worker
-      restart_policy:
-        condition: on-failure
-        max_attempts: 5
-        delay: 30s
-
-secrets:
-  ziti_admin_user:
-    external: true
-  ziti_admin_password:
-    external: true
+    labels:
+      app: spiffe-helper
 
 networks:
   ziti:
-    driver: overlay
-    attachable: true
   spire:
-    external: true
-  keycloak:
-    external: true
-  caddy_caddy:
     external: true
 
 volumes:
   ziti-controller-data:
-    driver: rclone
-    driver_opts:
-      remote: "digitalocean:ziti-controller-data"
-      allow_other: "true"
-      vfs_cache_mode: "writes"
-      poll_interval: "0"
   spiffe-certs:
-    driver: tmpfs
