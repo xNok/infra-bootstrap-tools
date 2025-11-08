@@ -41,7 +41,7 @@ dev = [
 ]
 
 [project.scripts]
-jules-deploy = "agentic.deployment.deploy:main"
+jules-deploy = "deployment.deploy:main"
 
 [project.urls]
 Homepage = "https://github.com/xNok/infra-bootstrap-tools"
@@ -49,10 +49,10 @@ Repository = "https://github.com/xNok/infra-bootstrap-tools"
 Documentation = "https://github.com/xNok/infra-bootstrap-tools/tree/main/agentic"
 
 [tool.setuptools]
-packages = ["agentic", "agentic.jules", "agentic.workflows", "agentic.deployment"]
+packages = ["jules", "workflows", "deployment"]
 
 [tool.setuptools.package-data]
-agentic = ["*.json", ".env.example"]
+"*" = ["*.json", ".env.example"]
 
 [tool.black]
 line-length = 100

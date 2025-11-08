@@ -119,14 +119,23 @@ jobs:
 
           ## Installation
           
+          Download and install the wheel package:
+          
           \`\`\`bash
           pip install https://github.com/xNok/infra-bootstrap-tools/releases/download/${TAG_NAME}/infra_bootstrap_tools_agentic-${VERSION}-py3-none-any.whl
           \`\`\`
           
-          Or download and install manually:
+          Or download manually:
           
           \`\`\`bash
           wget https://github.com/xNok/infra-bootstrap-tools/releases/download/${TAG_NAME}/infra_bootstrap_tools_agentic-${VERSION}-py3-none-any.whl
           pip install infra_bootstrap_tools_agentic-${VERSION}-py3-none-any.whl
-          \`\`\`" \
+          \`\`\`
+          
+          ## Contents
+          
+          This package includes:
+          - Jules AI agent for automated deployments
+          - Prefect workflow orchestration
+          - GitHub integration tools" \
             agentic/dist/*
