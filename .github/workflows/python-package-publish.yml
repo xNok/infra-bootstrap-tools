@@ -15,6 +15,8 @@ jobs:
   check-version:
     name: Check Version Change
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version_changed: ${{ steps.check.outputs.changed }}
       new_version: ${{ steps.check.outputs.version }}
