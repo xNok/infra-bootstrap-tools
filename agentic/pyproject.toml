@@ -41,7 +41,7 @@ dev = [
 ]
 
 [project.scripts]
-jules-deploy = "deployment.deploy:main"
+jules-deploy = "agentic.deployment.deploy:main"
 
 [project.urls]
 Homepage = "https://github.com/xNok/infra-bootstrap-tools"
