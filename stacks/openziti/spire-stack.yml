@@ -1,0 +1,89 @@
+version: "3.7"
+
+services:
+  spire-server:
+    image: ghcr.io/spiffe/spire-server:1.10.3
+    hostname: spire-server
+    command: ["-config", "/opt/spire/conf/server/server.conf"]
+    volumes:
+      - type: volume
+        source: spire-server-data
+        target: /opt/spire/data
+      - type: bind
+        source: ./config/spire/server.conf
+        target: /opt/spire/conf/server/server.conf
+        read_only: true
+    networks:
+      - spire
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8081/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  spire-agent:
+    image: ghcr.io/spiffe/spire-agent:1.10.3
+    hostname: spire-agent
+    command: ["-config", "/opt/spire/conf/agent/agent.conf"]
+    volumes:
+      # Agent configuration
+      - type: bind
+        source: ./config/spire/agent.conf
+        target: /opt/spire/conf/agent/agent.conf
+        read_only: true
+      # Docker socket for workload attestation
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        read_only: true
+      # Workload API socket shared with other containers
+      - type: bind
+        source: /run/spire/sockets
+        target: /run/spire/sockets
+      # Agent data
+      - type: volume
+        source: spire-agent-data
+        target: /opt/spire/data
+    networks:
+      - spire
+    depends_on:
+      - spire-server
+    healthcheck:
+      test: ["CMD", "/opt/spire/bin/spire-agent", "healthcheck", "-socketPath", "/run/spire/sockets/agent.sock"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+
+networks:
+  spire:
+    driver: overlay
+    attachable: true
+
+volumes:
+  spire-server-data:
+    driver: rclone
+    driver_opts:
+      remote: "digitalocean:spire-server-data"
+      allow_other: "true"
+      vfs_cache_mode: "writes"
+      poll_interval: "0"
+  spire-agent-data:
+    driver: local

@@ -1,0 +1,109 @@
+version: "3.7"
+
+services:
+  keycloak-db:
+    image: postgres:16-alpine
+    hostname: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER_FILE: /run/secrets/keycloak_db_user
+      POSTGRES_PASSWORD_FILE: /run/secrets/keycloak_db_password
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - keycloak
+    secrets:
+      - keycloak_db_user
+      - keycloak_db_password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/keycloak_db_user) -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.6
+    hostname: keycloak
+    command:
+      - start
+      - --optimized
+      - --hostname=${KEYCLOAK_HOSTNAME:-keycloak.example.com}
+      - --hostname-strict=false
+      - --proxy-headers=xforwarded
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME_FILE: /run/secrets/keycloak_db_user
+      KC_DB_PASSWORD_FILE: /run/secrets/keycloak_db_password
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_PORT: "8080"
+      KC_HTTPS_PORT: "8443"
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
+      KEYCLOAK_ADMIN_FILE: /run/secrets/keycloak_admin_user
+      KEYCLOAK_ADMIN_PASSWORD_FILE: /run/secrets/keycloak_admin_password
+      # OIDC configuration
+      KC_FEATURES: token-exchange,admin-fine-grained-authz
+    networks:
+      - keycloak
+      - caddy_caddy
+    secrets:
+      - keycloak_db_user
+      - keycloak_db_password
+      - keycloak_admin_user
+      - keycloak_admin_password
+    depends_on:
+      - keycloak-db
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+      labels:
+        caddy: ${KEYCLOAK_HOSTNAME:-keycloak.example.com}
+        caddy.reverse_proxy: "{{ upstreams 8080 }}"
+        caddy.tls: "internal"
+
+secrets:
+  keycloak_db_user:
+    external: true
+  keycloak_db_password:
+    external: true
+  keycloak_admin_user:
+    external: true
+  keycloak_admin_password:
+    external: true
+
+networks:
+  keycloak:
+    driver: overlay
+    attachable: true
+  caddy_caddy:
+    external: true
+
+volumes:
+  keycloak-db-data:
+    driver: rclone
+    driver_opts:
+      remote: "digitalocean:keycloak-db-data"
+      allow_other: "true"
+      vfs_cache_mode: "writes"
+      poll_interval: "0"
