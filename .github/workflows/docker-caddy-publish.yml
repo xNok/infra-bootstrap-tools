@@ -12,10 +12,16 @@ on:
     tags: [ 'v*.*.*' ]
     paths:
       - 'ansible/roles/docker_swarm_app_caddy/assets/**'
+      - '.github/workflows/docker-caddy-publish.yml'
   pull_request:
     branches: [ "main" ]
     paths:
       - 'ansible/roles/docker_swarm_app_caddy/assets/**'
+      - '.github/workflows/docker-caddy-publish.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   # Use docker.io for Docker Hub if empty

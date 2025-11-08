@@ -45,7 +45,7 @@ This is the recommended approach for using Changesets with non-npm packages like
 
 ## Custom Publishing
 
-For packages like the Ansible collection that need custom publishing (e.g., to Ansible Galaxy), there is a separate workflow (`.github/workflows/release.yml`) that:
+For packages like the Ansible collection that need custom publishing (e.g., to Ansible Galaxy), there is a separate workflow (`.github/workflows/ansible-collection-publish.yml`) that:
 - Triggers on git tags (e.g., `v*`)
 - Publishes the Ansible collection to Galaxy
 - Uploads the collection tarball to the GitHub release

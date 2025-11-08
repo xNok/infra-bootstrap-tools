@@ -168,6 +168,21 @@ Refer to the `README.md` file within each role's directory (`ansible/roles/[role
 
 You can find the collection on Ansible Galaxy: [xnok.infra_bootstrap_tools](https://galaxy.ansible.com/xnok/infra_bootstrap_tools)
 
+## Release Management
+
+This monorepo uses [Changesets](https://github.com/changesets/changesets) for automated version management and releases. Different package types (Ansible collection, Python package, Docker stacks) are automatically published when versions are bumped.
+
+For detailed information about the release process, see **[RELEASE.md](./RELEASE.md)**.
+
+### Quick Start
+
+To create a changeset for your changes:
+```bash
+npx changeset add
+```
+
+For more details on package types, publishing workflows, and troubleshooting, see the [full release documentation](./RELEASE.md).
+
 ## Architecture
 
 ![](./diagrams/startup_infra_for_small_self_hosted_project.png)
