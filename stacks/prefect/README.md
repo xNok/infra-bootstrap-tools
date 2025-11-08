@@ -51,9 +51,10 @@ Copy and configure the environment file:
 ```bash
 cp agentic/.env.example agentic/.env
 # Edit agentic/.env with your API keys:
-# - OPENAI_API_KEY
+# - GOOGLE_API_KEY (required for default Gemini model)
 # - GITHUB_TOKEN
 # - JULES_API_KEY
+# - OPENAI_API_KEY (optional, only if using OpenAI models)
 ```
 
 #### c. Deploy the Workflow
@@ -154,13 +155,14 @@ python deployment/deploy.py --deploy-only
 ### Environment Variables
 
 Required:
-- `OPENAI_API_KEY`: For LLM access
+- `GOOGLE_API_KEY`: For Google AI Studio (Gemini) models (default)
 - `GITHUB_TOKEN`: For GitHub MCP server
 - `JULES_API_KEY`: For Jules API access
 
 Optional:
+- `OPENAI_API_KEY`: Only if using OpenAI models
 - `MCP_SERVER_URL`: Default `http://localhost:8000/mcp`
-- `LLM_MODEL`: Default `openai:gpt-4o`
+- `LLM_MODEL`: Default `google-gla:gemini-1.5-flash`
 - `PREFECT_API_URL`: Default `http://localhost:4200/api`
 
 ## Troubleshooting

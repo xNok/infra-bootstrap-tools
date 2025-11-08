@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "pydantic-ai-slim[openai]>=0.0.14",
+    "pydantic-ai-slim[google-gla]>=0.0.14",
     "prefect>=3.0.0",
     "pydantic>=2.0.0",
     "requests>=2.31.0",

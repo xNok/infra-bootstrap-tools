@@ -28,9 +28,10 @@ The Jules agent workflow integrates:
 - Python 3.9+
 - Docker and Docker Compose
 - API Keys:
-  - OpenAI API key
+  - Google AI Studio API key (default, recommended)
   - GitHub Personal Access Token
   - Jules API key
+  - OpenAI API key (optional, only if using OpenAI models)
 
 ### 2. Start the Prefect Stack
 
@@ -66,9 +67,13 @@ cp agentic/.env.example agentic/.env
 ```
 
 Required variables:
-- `OPENAI_API_KEY`: Your OpenAI API key
+- `GOOGLE_API_KEY`: Your Google AI Studio API key (for default Gemini model)
 - `GITHUB_TOKEN`: GitHub personal access token with `repo` scope
 - `JULES_API_KEY`: Your Jules API key from Google Cloud
+
+Optional variables:
+- `OPENAI_API_KEY`: Only needed if you choose to use OpenAI models
+- `LLM_MODEL`: Change the model (default: `google-gla:gemini-1.5-flash`)
 
 ### 5. Deploy the Workflow
 
@@ -153,11 +158,28 @@ Each step is a Prefect task with:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `OPENAI_API_KEY` | Yes | - | OpenAI API key for LLM access |
+| `GOOGLE_API_KEY` | Yes* | - | Google AI Studio API key for Gemini models |
+| `OPENAI_API_KEY` | No** | - | OpenAI API key (only if using OpenAI models) |
 | `GITHUB_TOKEN` | Yes | - | GitHub token for MCP server |
 | `JULES_API_KEY` | Yes | - | Jules API key |
 | `MCP_SERVER_URL` | No | `http://localhost:8000/mcp` | MCP server endpoint |
-| `LLM_MODEL` | No | `openai:gpt-4o` | LLM model to use |
+| `LLM_MODEL` | No | `google-gla:gemini-1.5-flash` | LLM model to use |
+| `PREFECT_API_URL` | No | `http://localhost:4200/api` | Prefect API endpoint |
+
+\* Required for default Gemini model  
+\*\* Required only if `LLM_MODEL` is set to an OpenAI model
+
+### Supported Models
+
+The workflow supports multiple LLM providers. Configure via `LLM_MODEL` environment variable:
+
+**Google AI Studio (default):**
+- `google-gla:gemini-1.5-flash` (default, fast and efficient)
+- `google-gla:gemini-1.5-pro` (more capable, higher cost)
+
+**OpenAI:**
+- `openai:gpt-4o`
+- `openai:gpt-4o-mini`
 | `PREFECT_API_URL` | No | `http://localhost:4200/api` | Prefect API endpoint |
 
 ### Deployment Options
@@ -247,7 +269,7 @@ To develop and test locally without deployment:
 ```python
 # Set environment variables
 import os
-os.environ["OPENAI_API_KEY"] = "your-key"
+os.environ["GOOGLE_API_KEY"] = "your-key"  # or OPENAI_API_KEY for OpenAI models
 os.environ["GITHUB_TOKEN"] = "your-token"
 os.environ["JULES_API_KEY"] = "your-key"
 
@@ -267,7 +289,7 @@ result = jules_agent_workflow(
 The original `jules/agent.py` script is preserved for reference and can still be used standalone:
 
 ```bash
-export OPENAI_API_KEY="your-key"
+export GOOGLE_API_KEY="your-key"  # or OPENAI_API_KEY if configured for OpenAI
 python3 agentic/jules/agent.py https://github.com/owner/repo/issues/123
 ```
 

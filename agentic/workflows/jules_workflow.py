@@ -36,13 +36,13 @@ def initialize_mcp_toolset(mcp_server_url: str) -> FastMCPToolset:
 
 
 @task(name="create_jules_agent")
-def create_jules_agent(toolset: FastMCPToolset, model: str = "openai:gpt-4o") -> Agent:
+def create_jules_agent(toolset: FastMCPToolset, model: str = "google-gla:gemini-1.5-flash") -> Agent:
     """
     Create and configure the Jules agent.
     
     Args:
         toolset: Initialized MCP toolset
-        model: LLM model to use (default: openai:gpt-4o)
+        model: LLM model to use (default: google-gla:gemini-1.5-flash)
         
     Returns:
         Configured Agent instance
@@ -103,7 +103,7 @@ def jules_agent_workflow(
     Args:
         github_issue_url: URL of the GitHub issue to assign
         mcp_server_url: URL of the MCP server (defaults to http://localhost:8000/mcp)
-        model: LLM model to use (defaults to openai:gpt-4o)
+        model: LLM model to use (defaults to google-gla:gemini-1.5-flash)
         
     Returns:
         Agent's response/output
@@ -114,17 +114,25 @@ def jules_agent_workflow(
         RuntimeError: If the agent fails to process the issue
         
     Environment Variables:
-        OPENAI_API_KEY: Required for OpenAI model access
+        GOOGLE_API_KEY: Required for Google AI Studio model access
+        OPENAI_API_KEY: Required if using OpenAI models
         MCP_SERVER_URL: Optional, defaults to http://localhost:8000/mcp
-        LLM_MODEL: Optional, defaults to openai:gpt-4o
+        LLM_MODEL: Optional, defaults to google-gla:gemini-1.5-flash
     """
-    # Validate required environment variables
-    if not os.getenv("OPENAI_API_KEY"):
-        raise ValueError("OPENAI_API_KEY environment variable is required")
+    # Validate required environment variables based on model
+    llm_model = model or os.getenv("LLM_MODEL", "google-gla:gemini-1.5-flash")
+    
+    # Check for appropriate API key based on the model being used
+    if llm_model.startswith("google") or llm_model.startswith("gemini"):
+        if not os.getenv("GOOGLE_API_KEY"):
+            raise ValueError("GOOGLE_API_KEY environment variable is required for Google models")
+    elif llm_model.startswith("openai"):
+        if not os.getenv("OPENAI_API_KEY"):
+            raise ValueError("OPENAI_API_KEY environment variable is required for OpenAI models")
     
     # Use provided or default values
     mcp_url = mcp_server_url or os.getenv("MCP_SERVER_URL", "http://localhost:8000/mcp")
-    llm_model = model or os.getenv("LLM_MODEL", "openai:gpt-4o")
+    llm_model = model or os.getenv("LLM_MODEL", "google-gla:gemini-1.5-flash")
     
     print(f"Connecting to MCP server at: {mcp_url}")
     print(f"Using LLM model: {llm_model}")

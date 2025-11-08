@@ -114,7 +114,7 @@ agentic/
 ## Dependencies
 
 ### Core Dependencies
-- `pydantic-ai-slim[openai]>=0.0.14` - AI agent framework
+- `pydantic-ai-slim[google-gla]>=0.0.14` - AI agent framework with Google Gemini support
 - `prefect>=3.0.0` - Workflow orchestration
 - `pydantic>=2.0.0` - Data validation
 - `requests>=2.31.0` - HTTP client for MCP Hub API

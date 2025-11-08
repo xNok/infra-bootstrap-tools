@@ -7,9 +7,10 @@ This guide will help you quickly get started with the Jules agent workflow on Pr
 - Docker and Docker Compose installed
 - Python 3.9 or higher
 - API Keys:
-  - OpenAI API key (get from https://platform.openai.com/api-keys)
+  - Google AI Studio API key (get from https://aistudio.google.com/apikey) - default, recommended
   - GitHub Personal Access Token (create at https://github.com/settings/tokens with `repo` scope)
   - Jules API key (get from https://jules.googleapis.com/)
+  - OpenAI API key (optional, only if using OpenAI models from https://platform.openai.com/api-keys)
 
 ## Step-by-Step Setup
 
@@ -45,9 +46,10 @@ nano agentic/.env  # or use your preferred editor
 
 Set these variables:
 ```env
-OPENAI_API_KEY=your-openai-api-key-here
+GOOGLE_API_KEY=your-google-api-key-here
 GITHUB_TOKEN=your-github-token-here
 JULES_API_KEY=your-jules-api-key-here
+# Optional: OPENAI_API_KEY=your-openai-api-key-here  (only if using OpenAI models)
 ```
 
 ### 4. Deploy the Workflow

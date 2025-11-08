@@ -62,11 +62,10 @@ def preload_github_mcp_server(mcp_hub_url: str, github_token: str) -> bool:
     
     config = {
         "name": "github",
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "@modelcontextprotocol/server-github"],
-        "env": {
-            "GITHUB_PERSONAL_ACCESS_TOKEN": github_token
+        "type": "http",
+        "url": "https://api.githubcopilot.com/mcp/",
+        "headers": {
+            "Authorization": f"Bearer {github_token}"
         }
     }
     
@@ -222,15 +221,29 @@ def main():
     # Check for required environment variables
     github_token = os.getenv("GITHUB_TOKEN")
     jules_api_key = os.getenv("JULES_API_KEY")
+    google_api_key = os.getenv("GOOGLE_API_KEY")
     openai_api_key = os.getenv("OPENAI_API_KEY")
+    
+    # Check which model will be used
+    llm_model = os.getenv("LLM_MODEL", "google-gla:gemini-1.5-flash")
     
     missing_vars = []
     if not github_token:
         missing_vars.append("GITHUB_TOKEN")
     if not jules_api_key:
         missing_vars.append("JULES_API_KEY")
-    if not openai_api_key:
-        missing_vars.append("OPENAI_API_KEY")
+    
+    # Check for appropriate API key based on model
+    if llm_model.startswith("google") or llm_model.startswith("gemini"):
+        if not google_api_key:
+            missing_vars.append("GOOGLE_API_KEY (required for Google models)")
+    elif llm_model.startswith("openai"):
+        if not openai_api_key:
+            missing_vars.append("OPENAI_API_KEY (required for OpenAI models)")
+    else:
+        # Default to Google
+        if not google_api_key:
+            missing_vars.append("GOOGLE_API_KEY (default model requires this)")
     
     if missing_vars:
         print("✗ Error: Missing required environment variables:")
