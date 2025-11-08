@@ -11,7 +11,7 @@ The monorepo uses Changesets for version management and automated releases. Diff
 ### 1. Ansible Collection (`ansible/`)
 - **Package Name**: `xnok.infra_bootstrap_tools`
 - **Published To**: Ansible Galaxy
-- **Workflow**: `.github/workflows/release.yml`
+- **Workflow**: `.github/workflows/ansible-collection-publish.yml`
 - **Trigger**: Git tags matching `v*` (e.g., `v1.0.0`)
 - **Published By**: Ansible Galaxy publishing action
 
@@ -93,7 +93,7 @@ When the "Version Packages" PR is merged:
 After releases are created, specialized workflows automatically publish packages:
 
 #### Ansible Collection
-- **Workflow**: `.github/workflows/release.yml`
+- **Workflow**: `.github/workflows/ansible-collection-publish.yml`
 - **Triggers on**: Tag `v*` (e.g., `v1.0.0`)
 - **Actions**:
   1. Builds Ansible collection tarball
@@ -118,6 +118,11 @@ After releases are created, specialized workflows automatically publish packages
 ## Manual Package Publishing
 
 If automatic publishing fails or you need to manually publish a package, you can trigger the workflows manually:
+
+### Ansible Collection
+```bash
+gh workflow run ansible-collection-publish.yml -f release_tag=v1.0.0
+```
 
 ### Python Package
 ```bash

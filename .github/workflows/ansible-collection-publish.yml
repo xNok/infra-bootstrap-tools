@@ -1,17 +1,30 @@
-name: Release
+name: Publish Ansible Collection
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to publish (e.g., v1.0.0)'
+        required: true
+        type: string
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release_ansible:
-    name: Release Ansible Collection
+  publish:
+    name: Build and Publish Ansible Collection
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release_tag || github.ref }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -24,7 +37,15 @@ jobs:
 
       - name: Extract version from tag
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.release_tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          VERSION=$(echo "$TAG" | sed 's/^v//')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
 
       - name: Update collection version
         run: yq -i ".version = \"${{ steps.get_version.outputs.VERSION }}\"" ansible/galaxy.yml
@@ -46,4 +67,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ github.ref_name }} ${{ steps.build.outputs.TARBALL }}
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.release_tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          
+          gh release upload "$TAG" \
+            ${{ steps.build.outputs.TARBALL }} \
+            --clobber
