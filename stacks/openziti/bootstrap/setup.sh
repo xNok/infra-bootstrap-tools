@@ -22,7 +22,6 @@ log_error() {
 
 # --- Configuration ---
 ZITI_CTRL_ADDRESS="${ZITI_CTRL_ADVERTISED_ADDRESS:-ziti-controller}"
-ZITI_CTRL_PORT="${ZITI_CTRL_ADVERTISED_PORT:-6262}"
 SPIRE_SERVER="${SPIRE_SERVER_ADDRESS:-spire-server:8081}"
 KEYCLOAK_BASE_URL="${KEYCLOAK_URL:-https://keycloak.example.com}"
 KEYCLOAK_REALM="${KEYCLOAK_REALM:-openziti}"
