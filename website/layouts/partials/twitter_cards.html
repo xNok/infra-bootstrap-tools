@@ -1,0 +1,10 @@
+<meta name="twitter:card" content="summary_large_image">
+{{- with .Site.Params.social.twitter -}}
+<meta name="twitter:site" content="@{{ . }}">
+<meta name="twitter:creator" content="@{{ . }}">
+{{- end -}}
+<meta name="twitter:title" content="{{ .Site.Title }}">
+<meta name="twitter:description" content="{{ .Site.Params.description }}">
+{{- with .Site.Params.images -}}
+<meta name="twitter:image" content="{{ index . 0 | absURL }}">
+{{- end -}}

@@ -1,0 +1,220 @@
+/* Additional styles for blog and gallery sections on home page */
+
+.hero {
+  /* Keep the original hero section styles */
+}
+
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--padding_x2);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: calc(var(--padding) * 2);
+  padding: 0 var(--padding);
+}
+
+.section-header h2 {
+  font-size: 2em;
+  font-weight: 700;
+  color: var(--color);
+}
+
+.section-header .view-all {
+  color: var(--anchor);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.section-header .view-all:hover {
+  color: var(--hover);
+}
+
+/* Blog section styles */
+.blog-section {
+  padding: calc(var(--padding) * 4) 0;
+  background: var(--background-grey);
+}
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: calc(var(--padding) * 2);
+  padding: 0 var(--padding);
+}
+
+.blog-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.blog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.blog-card-content {
+  padding: calc(var(--padding) * 1.5);
+}
+
+.blog-card-content h3 {
+  font-size: 1.3em;
+  font-weight: 600;
+  margin-bottom: var(--padding);
+}
+
+.blog-card-content h3 a {
+  color: var(--color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.blog-card-content h3 a:hover {
+  color: var(--anchor);
+}
+
+.post-meta {
+  color: var(--color-fade);
+  font-size: 0.9em;
+  margin-bottom: var(--padding);
+}
+
+.blog-card-content p {
+  color: var(--color-fade);
+  line-height: 1.6;
+  margin-bottom: var(--padding);
+}
+
+.tags {
+  display: flex;
+  gap: var(--padding_d2);
+  flex-wrap: wrap;
+}
+
+.tag {
+  background: var(--foreground);
+  color: var(--color);
+  padding: 4px 12px;
+  border-radius: calc(var(--radius) * 2);
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+/* Gallery section styles */
+.gallery-section {
+  padding: calc(var(--padding) * 4) 0;
+}
+
+.gallery-mosaic {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--padding);
+  padding: 0 var(--padding);
+}
+
+.gallery-item {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--background-grey);
+}
+
+.gallery-item:nth-child(3n+1) {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.gallery-item a {
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.05);
+}
+
+.gallery-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--foreground) 0%, var(--foreground-hover) 100%);
+  color: var(--color);
+  font-size: 1.2em;
+  font-weight: 600;
+  text-align: center;
+  padding: var(--padding);
+}
+
+.gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+  padding: calc(var(--padding) * 1.5);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.gallery-item:hover .gallery-overlay {
+  opacity: 1;
+}
+
+.gallery-overlay h4 {
+  color: white;
+  font-size: 1.1em;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--padding);
+  }
+
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-mosaic {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-item:nth-child(3n+1) {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-header h2 {
+    font-size: 2.5em;
+  }
+
+  .blog-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
