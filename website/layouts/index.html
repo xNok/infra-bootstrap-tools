@@ -15,7 +15,7 @@
   <title>{{ .Site.Title | .RenderString }} · {{ .Site.Params.description | .RenderString }}</title>
   <link rel="canonical" href="{{ .Permalink }}">
 
-  {{- $css := slice (resources.Get "css/reset.css") (resources.Get "css/theme.css") (resources.Get "css/_btn.css") (resources.Get "css/home.css") | resources.Concat "assets/css/home.css" | minify | fingerprint }}
+  {{- $css := slice (resources.Get "css/reset.css") (resources.Get "css/theme.css") (resources.Get "css/_btn.css") (resources.Get "css/home.css") (resources.Get "css/home-extended.css") | resources.Concat "assets/css/home.css" | minify | fingerprint }}
   <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.integrity }}">
 
   {{ partial "favicons.html" . }}
@@ -32,7 +32,7 @@
   </header>
 
   <main>
-    <section>
+    <section class="hero">
       <div>
         <header>
           <h1>{{ .Site.Params.home.heading }}{{ with .Site.Params.home.headingSegment2 }}<span>{{.}}</span>{{ end }}</h1>
@@ -44,6 +44,68 @@
         </div>
       </div>
     </section>
+
+    {{- $blog := where .Site.RegularPages "Section" "blog" | first 3 }}
+    {{- if $blog }}
+    <section class="blog-section">
+      <div class="section-container">
+        <header class="section-header">
+          <h2>Latest Articles</h2>
+          <a href="{{ .Site.Home.RelPermalink }}blog" class="view-all">View all posts →</a>
+        </header>
+        <div class="blog-grid">
+          {{ range $blog }}
+          <article class="blog-card">
+            <div class="blog-card-content">
+              <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+              <div class="post-meta">
+                <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "Jan 2, 2006" }}</time>
+              </div>
+              <p>{{ .Params.summary }}</p>
+              {{ with .Params.tags }}
+              <div class="tags">
+                {{ range first 2 . }}
+                <span class="tag">{{ . }}</span>
+                {{ end }}
+              </div>
+              {{ end }}
+            </div>
+          </article>
+          {{ end }}
+        </div>
+      </div>
+    </section>
+    {{- end }}
+
+    {{- $gallery := where .Site.RegularPages "Section" "gallery" | first 6 }}
+    {{- if $gallery }}
+    <section class="gallery-section">
+      <div class="section-container">
+        <header class="section-header">
+          <h2>Project Gallery</h2>
+          <a href="{{ .Site.Home.RelPermalink }}gallery" class="view-all">View all projects →</a>
+        </header>
+        <div class="gallery-mosaic">
+          {{ range $gallery }}
+          <div class="gallery-item">
+            <a href="{{ .RelPermalink }}">
+              {{ if .Params.featured_image }}
+              <img src="{{ .Params.featured_image }}" alt="{{ .Title }}" loading="lazy">
+              {{ else }}
+              <div class="gallery-placeholder">
+                <span>{{ .Title }}</span>
+              </div>
+              {{ end }}
+              <div class="gallery-overlay">
+                <h4>{{ .Title }}</h4>
+              </div>
+            </a>
+          </div>
+          {{ end }}
+        </div>
+      </div>
+    </section>
+    {{- end }}
   </main>
 
   <footer>

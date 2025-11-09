@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.LanguageCode | default `en-US` }}">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{{ .Page.Params.description | default .Site.Params.description | .RenderString }}">
+  <meta name="author" content="{{ .Site.Params.author.name }}">
+  <meta name="theme-color" content="{{ .Site.Params.project.themeColor.light }}" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="{{ .Site.Params.project.themeColor.dark }}" media="(prefers-color-scheme: dark)">
+
+  <title>{{ .Title | .RenderString }} · {{ .Site.Title | .RenderString }}</title>
+  <link rel="canonical" href="{{ .Permalink }}">
+
+  {{- $css := slice (resources.Get "css/reset.css") (resources.Get "css/theme.css") (resources.Get "css/_btn.css") (resources.Get "css/docs.css") (resources.Get "css/home-extended.css") (resources.Get "css/blog-extended.css") | resources.Concat "assets/css/blog-list.css" | minify | fingerprint }}
+  <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.integrity }}">
+
+  {{ partial "favicons.html" . }}
+  {{ partial "analytics.html" . }}
+</head>
+
+<body>
+
+<div id="outer-wrapper">
+  <div id="content-wrapper">
+    <header>
+      <a href="{{ .Site.Home.RelPermalink }}" class="site-logo">{{ .Site.Title }}</a>
+      <nav>
+        <a href="{{ .Site.Home.RelPermalink }}docs">Docs</a>
+        <a href="{{ .Site.Home.RelPermalink }}blog" class="active">Blog</a>
+        <a href="{{ .Site.Home.RelPermalink }}gallery">Gallery</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="blog-header">
+        <h1>{{ .Title | .RenderString }}</h1>
+        <p>{{ .Content | safeHTML }}</p>
+      </div>
+
+      <div class="blog-grid">
+        {{ range .Pages.ByDate.Reverse }}
+        <article class="blog-card">
+          {{ if .Params.featured_image }}
+          <div class="blog-card-image" style="background-image: url('{{ .Params.featured_image }}');"></div>
+          {{ end }}
+          <div class="blog-card-content">
+            <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+            <div class="post-meta">
+              <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>
+            </div>
+            <p>{{ .Params.summary }}</p>
+            {{ with .Params.tags }}
+            <div class="tags">
+              {{ range first 3 . }}
+              <span class="tag">{{ . }}</span>
+              {{ end }}
+            </div>
+            {{ end }}
+            <a href="{{ .RelPermalink }}" class="read-more">Read more →</a>
+          </div>
+        </article>
+        {{ end }}
+      </div>
+    </main>
+
+    <footer>
+      <div><i>🧑‍💻</i>{{ i18n "builtByAndCopyright" }}<a href="{{ .Site.Params.author.url }}" target="_blank">{{ .Site.Params.author.name }}</a><i>📅</i> {{ with .Site.Params.project.startYear }}{{.}}-{{ end }}{{ .Site.Params.project.presentYear }}<i>🚀</i> <a href="https://github.com/{{ .Site.Params.project.github.repo }}" target="_blank">GitHub</a></div>
+      <div>
+        <button class="btn"><i>☀️</i><i>⁄</i><i>🌑</i></button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<div id="body-model-outer"></div>
+
+{{- $js := slice (resources.Get "js/color-preference.js") | resources.Concat "assets/js/blog.js" | minify | fingerprint }}
+<script type="text/javascript" src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.integrity }}"></script>
+</body>
+</html>
