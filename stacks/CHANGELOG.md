@@ -1,5 +1,13 @@
 # docker-stack-collection-infra-bootstrap-tools
 
+## 1.0.3
+
+### Patch Changes
+
+- 03e7a8c: Test changeset for stacks package release workflow
+- Updated dependencies [b0f7b0f]
+  - docker-stack-openziti@0.1.0
+
 ## 1.0.2
 
 ### Patch Changes
