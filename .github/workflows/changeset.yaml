@@ -37,7 +37,7 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       
       - name: Create Tags and GitHub Releases for Private Packages
-        if: steps.changesets.outputs.published == 'false' && steps.changesets.outputs.hasChangesets == 'false'
+        if: steps.changesets.outputs.published != 'true' && steps.changesets.outputs.hasChangesets != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
