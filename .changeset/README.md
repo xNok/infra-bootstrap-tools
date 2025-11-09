@@ -29,19 +29,20 @@ When a PR with changesets is merged to the `main` branch:
 2. When the "Version Packages" PR is merged:
    - The action runs `changeset publish`
    - Since all packages are marked as `"private": true`, they are **not** published to npm
-   - Git tags are created for each version (e.g., `v1.0.5`)
-   - **GitHub Releases are created automatically** with the changelog content
+   - A custom script then detects all versioned packages and creates git tags for them (e.g., `infra-bootstrap-tools-agentic@0.1.1`)
+   - **GitHub Releases are created automatically** for each tag with the corresponding changelog content
 
-## Why Not `changeset tag`?
+## Why This Custom Approach?
 
-Previously, the repository used `changeset tag`, which only creates git tags but **does not** create GitHub releases. 
+Since all packages in this repository are marked as `"private": true`, they should not be published to npm. The standard `changeset publish` command is designed for npm publishing and only creates git tags as a side effect of publishing packages. When all packages are private, `changeset publish` skips them entirely and doesn't create any tags or releases.
 
-The current setup uses `changeset publish` with the `createGithubReleases: true` option, which:
-- Skips npm publishing (because packages are private)
-- Creates git tags
-- **Creates GitHub releases** with changelog content
+To solve this, we use a custom workflow step that:
+1. Detects when a "Version Packages" PR has been merged (no changesets remain, no hasChangesets output)
+2. Scans all package.json files to find packages with CHANGELOG.md files
+3. Creates git tags for each package version that doesn't already have a tag
+4. Creates GitHub releases from those tags using the changelog content
 
-This is the recommended approach for using Changesets with non-npm packages like Ansible collections.
+This approach gives us the benefits of Changesets for version management while properly handling private packages.
 
 ## Custom Publishing
 
