@@ -1,13 +1,13 @@
 {
     "name": "infra-bootstrap-tools-stacks",
     "private": true,
-    "version": "1.0.2",
+    "version": "1.0.3",
     "workspaces": [
         "./*"
     ],
     "dependencies": {
         "docker-stack-n8n": "0.0.2",
-        "docker-stack-openziti": "0.0.2",
+        "docker-stack-openziti": "0.1.0",
         "docker-stack-prefect": "0.0.2"
     }
 }
