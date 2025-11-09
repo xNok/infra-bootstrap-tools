@@ -1,0 +1,114 @@
+version: "3.7"
+
+services:
+  ziti-controller:
+    image: "${ZITI_IMAGE:-openziti/ziti-controller}:${ZITI_VERSION:-latest}"
+    hostname: ziti-controller
+    environment:
+      - ZITI_CTRL_NAME=${ZITI_CTRL_NAME:-ziti-controller}
+      - ZITI_CTRL_ADVERTISED_ADDRESS=${ZITI_CTRL_ADVERTISED_ADDRESS:-ziti-controller}
+      - ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}
+      - ZITI_CTRL_EDGE_ADVERTISED_PORT=${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}
+      - ZITI_CTRL_EDGE_IP_OVERRIDE=${ZITI_CTRL_EDGE_IP_OVERRIDE:-0.0.0.0}
+      - ZITI_CTRL_ADVERTISED_PORT=${ZITI_CTRL_ADVERTISED_PORT:-6262}
+      - ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION=${ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION:-180m}
+      - ZITI_ROUTER_ENROLLMENT_DURATION=${ZITI_ROUTER_ENROLLMENT_DURATION:-180m}
+      - ZITI_USER=${ZITI_USER:-admin}
+      - ZITI_PWD=${ZITI_PWD:-admin}
+    networks:
+      ziti:
+        aliases:
+          - ziti-edge-controller
+      spire:
+    volumes:
+      - ziti-controller-data:/persistent
+    entrypoint:
+      - "/var/openziti/scripts/run-controller.sh"
+    healthcheck:
+      test: ["CMD", "curl", "-k", "-f", "https://localhost:1280/.well-known/health-check"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  ziti-console:
+    image: openziti/zac:latest
+    hostname: ziti-console
+    working_dir: /usr/src/app
+    environment:
+      - ZAC_SERVER_CERT_CHAIN=/persistent/pki/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-intermediate/certs/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-server.cert
+      - ZAC_SERVER_KEY=/persistent/pki/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-intermediate/keys/${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}-server.key
+      - ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}
+      - ZITI_CTRL_EDGE_ADVERTISED_PORT=${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}
+      - ZITI_CTRL_NAME=${ZITI_CTRL_NAME:-ziti-edge-controller}
+      - PORTTLS=8443
+    volumes:
+      - ziti-controller-data:/persistent:ro
+    networks:
+      - ziti
+    ports:
+      - "8443:8443"
+    depends_on:
+      - ziti-controller
+
+  ziti-edge-router:
+    image: "${ZITI_IMAGE:-openziti/ziti-router}:${ZITI_VERSION:-latest}"
+    hostname: ziti-edge-router
+    environment:
+      - ZITI_CTRL_ADVERTISED_ADDRESS=${ZITI_CTRL_ADVERTISED_ADDRESS:-ziti-controller}
+      - ZITI_CTRL_ADVERTISED_PORT=${ZITI_CTRL_ADVERTISED_PORT:-6262}
+      - ZITI_CTRL_EDGE_ADVERTISED_ADDRESS=${ZITI_CTRL_EDGE_ADVERTISED_ADDRESS:-ziti-edge-controller}
+      - ZITI_CTRL_EDGE_ADVERTISED_PORT=${ZITI_CTRL_EDGE_ADVERTISED_PORT:-1280}
+      - ZITI_ROUTER_NAME=${ZITI_ROUTER_NAME:-ziti-edge-router}
+      - ZITI_ROUTER_ADVERTISED_ADDRESS=${ZITI_ROUTER_ADVERTISED_ADDRESS:-ziti-edge-router}
+      - ZITI_ROUTER_PORT=${ZITI_ROUTER_PORT:-3022}
+      - ZITI_ROUTER_LISTENER_BIND_PORT=${ZITI_ROUTER_LISTENER_BIND_PORT:-10080}
+      - ZITI_ROUTER_ROLES=public
+    networks:
+      - ziti
+      - spire
+    volumes:
+      - ziti-controller-data:/persistent
+      - type: bind
+        source: /tmp/spire-sockets
+        target: /run/spire/sockets
+        read_only: true
+      - spiffe-certs:/spiffe-certs
+    depends_on:
+      - ziti-controller
+    entrypoint: /bin/bash
+    command: "/var/openziti/scripts/run-router.sh edge"
+    labels:
+      app: ziti-router
+
+  spiffe-helper:
+    image: ghcr.io/spiffe/spiffe-helper:0.8.0
+    hostname: spiffe-helper-router
+    command:
+      - "-config"
+      - "/opt/spiffe-helper/helper.conf"
+    volumes:
+      - type: bind
+        source: /tmp/spire-sockets
+        target: /run/spire/sockets
+        read_only: true
+      - spiffe-certs:/spiffe-certs
+      - type: bind
+        source: ./config/spiffe/helper.conf
+        target: /opt/spiffe-helper/helper.conf
+        read_only: true
+    networks:
+      - spire
+    depends_on:
+      - ziti-controller
+    labels:
+      app: spiffe-helper
+
+networks:
+  ziti:
+  spire:
+    external: true
+
+volumes:
+  ziti-controller-data:
+  spiffe-certs:
