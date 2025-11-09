@@ -26,6 +26,7 @@ docker plugin ls
 
 ```bash
 # Navigate to the openziti directory
+# From the repository root:
 cd stacks/openziti
 
 # Create secrets
