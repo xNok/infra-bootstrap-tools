@@ -60,7 +60,22 @@ nano .env
 # - DOMAIN_NAME
 ```
 
-## Step 4: Deploy SPIRE Stack
+## Step 4: Prepare Host for SPIRE
+
+SPIRE agent requires a shared directory on each Docker Swarm node for the workload API socket.
+
+```bash
+# Run on ALL Docker Swarm nodes (manager and workers)
+sudo mkdir -p /run/spire/sockets
+sudo chmod 1777 /run/spire/sockets
+
+# Verify the directory exists
+ls -la /run/spire/
+```
+
+**Note**: This directory must exist on all nodes before deploying the SPIRE stack. The SPIRE agent will create the socket file at `/run/spire/sockets/agent.sock` which other containers will use to obtain workload identities.
+
+## Step 5: Deploy SPIRE Stack
 
 ```bash
 # Deploy SPIRE
@@ -74,7 +89,7 @@ docker service logs -f spire_spire-server
 docker service logs -f spire_spire-agent
 ```
 
-## Step 5: Deploy Keycloak Stack
+## Step 6: Deploy Keycloak Stack
 
 ```bash
 # Source environment variables
@@ -90,7 +105,7 @@ watch docker stack ps keycloak
 docker service logs -f keycloak_keycloak
 ```
 
-## Step 6: Configure Keycloak
+## Step 7: Configure Keycloak
 
 1. Access Keycloak at `https://keycloak.example.com`
 2. Login with admin credentials (from secret)
@@ -102,7 +117,7 @@ docker service logs -f keycloak_keycloak
    - Valid Redirect URIs: `https://ziti-edge-controller.example.com/*`
 5. Note the JWKS endpoint: `https://keycloak.example.com/realms/openziti/protocol/openid-connect/certs`
 
-## Step 7: Build Bootstrap Image (Optional)
+## Step 8: Build Bootstrap Image (Optional)
 
 If you're not using a pre-built image:
 
@@ -115,7 +130,7 @@ docker tag openziti/ziti-bootstrap:latest your-registry/ziti-bootstrap:latest
 docker push your-registry/ziti-bootstrap:latest
 ```
 
-## Step 8: Deploy OpenZiti Stack
+## Step 9: Deploy OpenZiti Stack
 
 ```bash
 # Source environment variables
@@ -131,7 +146,7 @@ watch docker stack ps openziti
 docker service logs -f openziti_bootstrap
 ```
 
-## Step 9: Verify Deployment
+## Step 10: Verify Deployment
 
 ```bash
 # Check all stacks
@@ -147,7 +162,7 @@ docker service logs openziti_ziti-controller
 # Navigate to https://ziti-console.example.com
 ```
 
-## Step 10: Post-Deployment Configuration
+## Step 11: Post-Deployment Configuration
 
 ### Create Test Identity
 

@@ -202,4 +202,7 @@ volumes:
       vfs_cache_mode: "writes"
       poll_interval: "0"
   spiffe-certs:
-    driver: tmpfs
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

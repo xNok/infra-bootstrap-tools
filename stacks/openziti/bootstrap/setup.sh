@@ -77,32 +77,63 @@ done
 log_info "Logging in to Ziti Controller..."
 export ZITI_CTRL_MGMT_API="https://${ZITI_CTRL_ADDRESS}:1280"
 
-if ! ziti edge login "${ZITI_CTRL_ADDRESS}:1280" -u "${ZITI_ADMIN_USER}" -p "${ZITI_ADMIN_PASS}" -y; then
+# Use environment variable for password to avoid exposure in process listing
+export ZITI_PWD="${ZITI_ADMIN_PASS}"
+if ! ziti edge login "${ZITI_CTRL_ADDRESS}:1280" -u "${ZITI_ADMIN_USER}" -y; then
     log_error "Failed to login to Ziti Controller"
     exit 1
 fi
+unset ZITI_PWD
 
 log_info "Successfully logged in to Ziti Controller"
 
 # --- 3. Configure SPIRE ---
 log_info "Configuring SPIRE for Ziti router workload..."
 
-# Check if SPIRE entry already exists
-SPIRE_ENTRY_EXISTS=$(spire-server entry show -spiffeID "spiffe://${TRUST_DOMAIN}/ziti-router" 2>&1 | grep -c "spiffe://${TRUST_DOMAIN}/ziti-router" || true)
+# SPIRE Server HTTP API endpoint
+SPIRE_SERVER_API="http://${SPIRE_SERVER}"
 
-if [ "$SPIRE_ENTRY_EXISTS" -eq "0" ]; then
+# Check if SPIRE entry already exists
+# Note: Using HTTP API instead of CLI since bootstrap container doesn't have socket access
+SPIRE_ENTRY_CHECK=$(curl -sf "${SPIRE_SERVER_API}/entries" 2>&1 | grep -c "spiffe://${TRUST_DOMAIN}/ziti-router" || true)
+
+if [ "$SPIRE_ENTRY_CHECK" -eq "0" ]; then
     log_info "Creating SPIRE entry for Ziti router..."
     
-    # Create registration entry for Ziti router
-    # Note: The parent ID needs to be obtained from the SPIRE agent
-    # For now, we use a selector-based approach
-    if spire-server entry create \
-        -spiffeID "spiffe://${TRUST_DOMAIN}/ziti-router" \
-        -selector "docker:label:app:ziti-router" \
-        -ttl 3600; then
+    # Create registration entry for Ziti router via HTTP API
+    # Using docker label selector for workload attestation
+    ENTRY_JSON=$(cat <<EOF
+{
+  "entries": [
+    {
+      "spiffe_id": {
+        "trust_domain": "${TRUST_DOMAIN}",
+        "path": "/ziti-router"
+      },
+      "parent_id": {
+        "trust_domain": "${TRUST_DOMAIN}",
+        "path": "/spire/agent/docker"
+      },
+      "selectors": [
+        {
+          "type": "docker",
+          "value": "label:app:ziti-router"
+        }
+      ],
+      "ttl": 86400
+    }
+  ]
+}
+EOF
+)
+    
+    if curl -sf -X POST "${SPIRE_SERVER_API}/entries" \
+        -H "Content-Type: application/json" \
+        -d "${ENTRY_JSON}" > /dev/null 2>&1; then
         log_info "SPIRE entry created successfully"
     else
-        log_warn "Failed to create SPIRE entry (might already exist)"
+        log_warn "Failed to create SPIRE entry via API (might already exist or API not available)"
+        log_info "Note: SPIRE entries may need to be created manually via spire-server CLI"
     fi
 else
     log_info "SPIRE entry already exists for Ziti router"
@@ -147,8 +178,9 @@ fi
 # --- 5. Bind SPIRE CA to Ziti ---
 log_info "Binding SPIRE CA to Ziti..."
 
-# Get SPIRE trust bundle
-if spire-server bundle show > /tmp/spire-trust-bundle.pem 2>&1; then
+# Get SPIRE trust bundle via HTTP endpoint
+SPIRE_SERVER_API="http://${SPIRE_SERVER}"
+if curl -sf "${SPIRE_SERVER_API}/bundle" -o /tmp/spire-trust-bundle.pem; then
     log_info "Retrieved SPIRE trust bundle"
     
     # Check if CA already exists
