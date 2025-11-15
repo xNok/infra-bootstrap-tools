@@ -29,20 +29,37 @@ When a PR with changesets is merged to the `main` branch:
 2. When the "Version Packages" PR is merged:
    - The action runs `changeset publish`
    - Since all packages are marked as `"private": true`, they are **not** published to npm
-   - A custom script then detects all versioned packages and creates git tags for them (e.g., `infra-bootstrap-tools-agentic@0.1.1`)
-   - **GitHub Releases are created automatically** for each tag with the corresponding changelog content
+   - Git tags are created for each version (e.g., `infra-bootstrap-tools-agentic@0.1.1`) via the `privatePackages.tag: true` config
+   - **GitHub Releases are created automatically** with the changelog content via the `createGithubReleases: true` option
 
-## Why This Custom Approach?
+## Configuration for Private Packages
 
-Since all packages in this repository are marked as `"private": true`, they should not be published to npm. The standard `changeset publish` command is designed for npm publishing and only creates git tags as a side effect of publishing packages. When all packages are private, `changeset publish` skips them entirely and doesn't create any tags or releases.
+This repository uses the `privatePackages` configuration option in `.changeset/config.json` to enable tagging of private packages:
 
-To solve this, we use a custom workflow step that:
-1. Detects when a "Version Packages" PR has been merged (no changesets remain, no hasChangesets output)
-2. Scans all package.json files to find packages with CHANGELOG.md files
-3. Creates git tags for each package version that doesn't already have a tag
-4. Creates GitHub releases from those tags using the changelog content
+```json
+{
+  "privatePackages": {
+    "version": true,
+    "tag": true
+  }
+}
+```
 
-This approach gives us the benefits of Changesets for version management while properly handling private packages.
+- `version: true` - Allows private packages to be versioned (default behavior)
+- `tag: true` - Creates git tags for private packages when `changeset publish` runs
+
+With `tag: true`, `changeset publish` outputs "New tag:" lines for private packages, which the GitHub Action detects and uses to create GitHub releases. This is the built-in mechanism for handling private packages in monorepos.
+
+## Why This Approach?
+
+The standard `changeset publish` command is designed primarily for npm publishing. By default, it only creates git tags when actually publishing to npm. For private packages that shouldn't be published to npm, the `privatePackages.tag: true` option enables tag creation without publishing.
+
+The changesets/action then:
+- Detects the "New tag:" output from `changeset publish`
+- Pushes the git tags to the repository
+- Creates GitHub releases with changelog content
+
+This is the recommended approach from the Changesets team for using Changesets with non-npm packages like Ansible collections, Docker stacks, and Python packages.
 
 ## Custom Publishing
 
