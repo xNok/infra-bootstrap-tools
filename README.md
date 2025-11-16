@@ -50,6 +50,22 @@ ibt tools dasb --version
 ```
 
 
+### Nix Shell
+
+For a fully automated and reproducible development environment using Nix, enter the provided Nix shell:
+
+```bash
+nix-shell bin/nix/shell.nix
+```
+
+This shell automatically installs and configures all required tools and dependencies upon entry, including:
+- Essential tools: Python, pip, Ansible, 1Password CLI, Go, Hugo, pre-commit, Git, Docker
+- Python dependencies from `requirements.txt` and `agentic/requirements.txt` (installed in a virtual environment)
+- Ansible Galaxy roles and collections from `requirements.yml`
+- Pre-commit hooks
+
+The environment is ready to use instantly after the initial setup completes. Python packages are installed in a local virtual environment (`.venv`) to avoid conflicts with the Nix-provided Python.
+
 ### Gitpod
 
 Alternatively, you can use Gitpod to get a pre-configured development environment in your browser. Click the button below to get started:

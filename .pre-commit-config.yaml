@@ -17,6 +17,7 @@ repos:
           - "ansible"
         additional_dependencies:
           - ansible
+          - packaging
         files: ^ansible/.*\.ya?ml$
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.86.0
