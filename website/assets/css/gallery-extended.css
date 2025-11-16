@@ -27,27 +27,33 @@ header nav a.active {
 .gallery-header {
   max-width: 900px;
   margin: 0 auto;
-  padding: calc(var(--padding) * 3) var(--padding_x2);
+  padding: calc(var(--padding) * 4) var(--padding_x2) calc(var(--padding) * 3);
   text-align: center;
 }
 
 .gallery-header h1 {
-  font-size: 2.5em;
-  font-weight: 700;
-  margin-bottom: var(--padding);
+  font-size: 3em;
+  font-weight: 800;
+  margin-bottom: calc(var(--padding) * 1.5);
+  background: linear-gradient(135deg, #866ee7 0%, #ea60da 50%, #ed8f57 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .gallery-header p {
-  font-size: 1.1em;
+  font-size: 1.2em;
   color: var(--color-fade);
-  line-height: 1.6;
+  line-height: 1.8;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .gallery-grid-large {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: calc(var(--padding) * 2);
-  padding: calc(var(--padding) * 2);
+  gap: calc(var(--padding) * 2.5);
+  padding: calc(var(--padding) * 3);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -55,14 +61,34 @@ header nav a.active {
 .gallery-card {
   background: var(--background);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: calc(var(--radius) * 2);
   overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+}
+
+.gallery-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(134, 110, 231, 0.05) 0%, rgba(234, 96, 218, 0.05) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .gallery-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  border-color: rgba(134, 110, 231, 0.3);
+}
+
+.gallery-card:hover::before {
+  opacity: 1;
 }
 
 .gallery-card a {
@@ -76,17 +102,34 @@ header nav a.active {
   aspect-ratio: 16 / 9;
   overflow: hidden;
   background: var(--background-grey);
+  position: relative;
+}
+
+.gallery-card-image::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-card:hover .gallery-card-image::after {
+  opacity: 1;
 }
 
 .gallery-card-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s;
+  transition: transform 0.4s ease;
 }
 
 .gallery-card:hover .gallery-card-image img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 .gallery-card-placeholder {
@@ -104,20 +147,46 @@ header nav a.active {
 }
 
 .gallery-card-content {
-  padding: calc(var(--padding) * 1.5);
+  padding: calc(var(--padding) * 2);
+  position: relative;
+  z-index: 2;
 }
 
 .gallery-card-content h2 {
-  font-size: 1.4em;
-  font-weight: 600;
-  margin-bottom: var(--padding);
+  font-size: 1.5em;
+  font-weight: 700;
+  margin-bottom: calc(var(--padding) * 1.2);
   color: var(--color);
+  line-height: 1.3;
 }
 
 .gallery-card-content p {
   color: var(--color-fade);
-  line-height: 1.6;
-  margin-bottom: var(--padding);
+  line-height: 1.7;
+  margin-bottom: calc(var(--padding) * 1.5);
+  font-size: 0.95em;
+}
+
+.gallery-card-content .tags {
+  display: flex;
+  gap: var(--padding_d2);
+  flex-wrap: wrap;
+}
+
+.gallery-card-content .tag {
+  background: linear-gradient(135deg, rgba(134, 110, 231, 0.1) 0%, rgba(234, 96, 218, 0.1) 100%);
+  color: var(--color);
+  padding: 6px 14px;
+  border-radius: calc(var(--radius) * 3);
+  font-size: 0.8em;
+  font-weight: 600;
+  border: 1px solid rgba(134, 110, 231, 0.2);
+  transition: all 0.2s ease;
+}
+
+.gallery-card:hover .tag {
+  background: linear-gradient(135deg, rgba(134, 110, 231, 0.2) 0%, rgba(234, 96, 218, 0.2) 100%);
+  border-color: rgba(134, 110, 231, 0.4);
 }
 
 .gallery-featured-image {
