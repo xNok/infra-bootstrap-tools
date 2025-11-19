@@ -1,32 +1,39 @@
 ---
-title: "Getting Started with Infrastructure as Code"
-date: 2025-11-05
+title: "What is Terraform Cloud and Why You Might Need It"
+date: 2024-01-15
 author: xNok
-summary: Learn the basics of Infrastructure as Code and how to automate your infrastructure deployment using tools like Ansible and Terraform.
-featured_image: /images/blog/iac-basics.jpg
+summary: Explore Terraform Cloud's features, benefits, and how it simplifies infrastructure management for teams of all sizes.
+canonical_url: https://faun.pub/what-is-terraform-cloud-and-why-you-might-need-it-c9847fb8f6e6
 tags:
+  - Terraform
+  - Cloud
   - Infrastructure as Code
-  - Automation
-  - DevOps
 ---
 
-# Getting Started with Infrastructure as Code
+# What is Terraform Cloud and Why You Might Need It
 
-Infrastructure as Code (IaC) is a practice that enables developers and operations teams to manage and provision infrastructure through machine-readable definition files, rather than manual configuration.
+Terraform Cloud is HashiCorp's managed service that enhances Terraform's infrastructure-as-code capabilities with collaboration features, remote state management, and policy enforcement.
 
-## Why IaC?
+## Key Features
 
-- **Consistency**: Ensure your infrastructure is deployed the same way every time
-- **Version Control**: Track changes to your infrastructure over time
-- **Automation**: Reduce manual work and human error
-- **Scalability**: Easily replicate infrastructure across environments
+**Remote State Management**: Terraform Cloud securely stores your infrastructure state in the cloud, eliminating the need for manual state file management and preventing conflicts in team environments.
 
-## Popular IaC Tools
+**Collaboration & Governance**: Teams can work together with features like workspace management, role-based access control, and policy as code using Sentinel.
 
-- **Ansible**: Configuration management and orchestration
-- **Terraform**: Infrastructure provisioning across multiple cloud providers
-- **Docker**: Containerization for consistent application deployment
+**Private Module Registry**: Share and version Terraform modules privately within your organization for consistent infrastructure patterns.
+
+**Cost Estimation**: Preview infrastructure costs before applying changes, helping teams make informed decisions about resource provisioning.
+
+## Why Consider Terraform Cloud?
+
+- **Team Collaboration**: Multiple team members can safely work on infrastructure without state conflicts
+- **Security**: Centralized credential management and audit logging
+- **Workflow Integration**: Connect with VCS providers like GitHub for automated runs
+- **Free Tier Available**: Small teams can start without cost
 
 ## Getting Started
 
-Check out our [documentation](/docs) to learn more about setting up your own infrastructure using these tools.
+Terraform Cloud offers a generous free tier that's perfect for small teams and personal projects. Larger organizations benefit from advanced features in paid tiers.
+
+Read the full article on Medium: [What is Terraform Cloud and why you might need it](https://faun.pub/what-is-terraform-cloud-and-why-you-might-need-it-c9847fb8f6e6)
+

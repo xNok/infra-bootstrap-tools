@@ -1,34 +1,54 @@
 ---
-title: "Setting Up a Homelab with Docker Swarm"
-date: 2025-11-01
+title: "Experimenting with Docker Swarm using Vagrant and Ansible"
+date: 2023-12-10
 author: xNok
-summary: A comprehensive guide to setting up a homelab cluster using Docker Swarm for orchestration and service management.
-featured_image: /images/blog/docker-swarm.jpg
+summary: Learn how to set up a local Docker Swarm cluster using Vagrant and Ansible for safe experimentation before production deployment.
+canonical_url: https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4
 tags:
   - Docker
+  - Docker Swarm
+  - Vagrant
+  - Ansible
   - Homelab
-  - Orchestration
 ---
 
-# Setting Up a Homelab with Docker Swarm
+# Experimenting with Docker Swarm using Vagrant and Ansible
 
-Docker Swarm provides a native clustering solution for Docker that makes it easy to orchestrate containerized services in your homelab.
+Docker Swarm provides native clustering and orchestration for Docker containers. Before deploying to production, it's essential to experiment locally. This guide shows you how to create a disposable Docker Swarm environment using Vagrant and Ansible.
 
-## Why Docker Swarm?
+## Why Use Vagrant for Docker Swarm?
 
-- **Simple Setup**: Easier to set up compared to Kubernetes
-- **Native Docker Integration**: Works seamlessly with Docker
-- **Built-in Load Balancing**: Automatic load balancing across nodes
-- **Service Discovery**: Automatic service discovery and DNS resolution
+**Local Testing**: Experiment with multi-node clusters on your machine without cloud costs.
 
-## Basic Architecture
+**Reproducible Environments**: Vagrant ensures consistent setups across team members.
 
-A typical Docker Swarm setup includes:
+**Safe Experimentation**: Destroy and recreate environments without consequences.
 
-- **Manager Nodes**: Control the cluster and maintain state
+## Setting Up the Environment
+
+The setup involves:
+1. Creating multiple VMs with Vagrant
+2. Using Ansible to install Docker on each node
+3. Initializing a Docker Swarm cluster
+4. Deploying sample services
+
+## Architecture
+
+A typical local Docker Swarm setup includes:
+- **Manager Node**: Controls the cluster and maintains state
 - **Worker Nodes**: Run your containerized applications
 - **Overlay Networks**: Enable communication between services
 
-## Next Steps
+## Benefits of This Approach
 
-Explore our [Docker Swarm documentation](/docs/docker-swarm) to learn how to deploy your first swarm cluster.
+- **Cost-Effective**: No cloud spending during development
+- **Fast Iteration**: Quick setup and teardown cycles
+- **Learning Platform**: Perfect for understanding Swarm concepts
+- **CI/CD Testing**: Validate infrastructure changes locally
+
+## Example Code
+
+The complete working example is available in this repository under `.articles/2_docker_swarm_101`.
+
+Read the full article on Medium: [Experimenting on Docker Swarm with Vagrant and Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4)
+

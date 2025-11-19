@@ -13,7 +13,11 @@
   {{ end -}}
 
   <title>{{ .Title | .RenderString }} · {{ .Site.Title | .RenderString }}</title>
+  {{ if .Params.canonical_url -}}
+  <link rel="canonical" href="{{ .Params.canonical_url }}">
+  {{- else -}}
   <link rel="canonical" href="{{ .Permalink }}">
+  {{- end }}
 
   {{- $css := slice (resources.Get "css/reset.css") (resources.Get "css/theme.css") (resources.Get "css/_btn.css") (resources.Get "css/docs.css") (resources.Get "css/docs-article.css") (resources.Get "css/blog-extended.css") | resources.Concat "assets/css/blog.css" | minify | fingerprint }}
   <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.integrity }}">
