@@ -52,13 +52,29 @@ ibt tools dasb --version
 
 ### Nix Shell
 
-For a fully automated and reproducible development environment using Nix, enter the provided Nix shell:
+**Prerequisites:** This requires [Nix](https://nixos.org/download.html) to be installed on your system.
+
+For a fully automated and reproducible development environment using Nix, you have two options:
+
+#### Option 1: Using Nix Flakes (Recommended)
+
+Nix Flakes provide a more modern and reproducible approach (note: flakes are still experimental but widely adopted):
+
+```bash
+# Enable flakes if not already enabled (add to ~/.config/nix/nix.conf or /etc/nix/nix.conf):
+# experimental-features = nix-command flakes
+
+# Enter the development environment
+nix develop
+```
+
+#### Option 2: Using Traditional Nix Shell
 
 ```bash
 nix-shell bin/nix/shell.nix
 ```
 
-This shell automatically installs and configures all required tools and dependencies upon entry, including:
+Both options automatically install and configure all required tools and dependencies upon entry, including:
 - Essential tools: Python, pip, Ansible, 1Password CLI, Go, Hugo, pre-commit, Git, Docker
 - Python dependencies from `requirements.txt` and `agentic/requirements.txt` (installed in a virtual environment)
 - Ansible Galaxy roles and collections from `requirements.yml`
