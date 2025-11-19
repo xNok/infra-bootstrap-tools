@@ -1,8 +1,12 @@
 {{- with .Site.Params.images -}}
 <meta property="og:image" content="{{ index . 0 | absURL }}">
 {{- end -}}
-<meta property="og:title" content="{{ .Site.Title }}">
+<meta property="og:title" content="{{ .Title | default .Site.Title }}">
+{{- with .Description -}}
+<meta property="og:description" content="{{ . }}">
+{{- else -}}
 <meta property="og:description" content="{{ .Site.Params.description }}">
+{{- end -}}
 <meta property="og:type" content="website">
 <meta property="og:url" content="{{ .Permalink }}">
 <meta property="og:site_name" content="{{ .Site.Title }}">

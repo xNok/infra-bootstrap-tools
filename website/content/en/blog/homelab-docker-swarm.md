@@ -12,6 +12,8 @@ tags:
   - Homelab
 ---
 
+> **Note:** This is a summary of the full article. [Read the complete version on Medium](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4) for detailed instructions and code examples.
+
 # Experimenting with Docker Swarm using Vagrant and Ansible
 
 Docker Swarm provides native clustering and orchestration for Docker containers. Before deploying to production, it's essential to experiment locally. This guide shows you how to create a disposable Docker Swarm environment using Vagrant and Ansible.
