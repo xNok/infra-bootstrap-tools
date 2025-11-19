@@ -5,7 +5,6 @@ This document provides guidelines for creating and organizing content for the In
 ## Table of Contents
 - [Content Structure Overview](#content-structure-overview)
 - [Blog Content Guidelines](#blog-content-guidelines)
-- [Gallery Content Guidelines](#gallery-content-guidelines)
 - [Content Readiness Checklist](#content-readiness-checklist)
 - [Recommended Content to Write](#recommended-content-to-write)
 
@@ -13,11 +12,10 @@ This document provides guidelines for creating and organizing content for the In
 
 ## Content Structure Overview
 
-The website has three main content sections:
+The website has two main content sections:
 
 1. **Documentation** (`website/content/en/docs/`) - Technical guides and reference material
 2. **Blog** (`website/content/en/blog/`) - Articles, tutorials, and updates
-3. **Gallery** (`website/content/en/gallery/`) - Visual showcase of projects and implementations
 
 ---
 
@@ -104,102 +102,6 @@ tags:
 
 ---
 
-## Gallery Content Guidelines
-
-### Purpose
-The gallery showcases completed projects, configurations, and implementations with visual appeal. It's meant to inspire and demonstrate practical applications of the concepts covered in docs and blog posts.
-
-### File Location
-`website/content/en/gallery/[project-slug].md`
-
-### Frontmatter Template
-```yaml
----
-title: "Project Name"
-date: YYYY-MM-DD
-description: A clear, concise description of what the project is
-featured_image: /images/gallery/your-image.jpg (or external URL)
-tags:
-  - Technology1
-  - Technology2
-  - Category
----
-```
-
-### Content Structure
-1. **Overview**: Brief description of the project
-2. **Architecture/Stack**: What technologies were used
-3. **Key Features**: Bullet points of main features
-4. **Implementation Details**: How it was built (optional)
-5. **Results/Outcome**: What was achieved
-
-### Best Practices
-- **Images**: High-quality, relevant images are essential
-  - Minimum size: 1200x675px (16:9 ratio)
-  - Format: JPG or WebP for photos, PNG for diagrams
-  - Optimize for web (compress to <500KB)
-- **Description**: Clear and compelling, 15-25 words
-- **Tags**: Use technology names and categories
-- **Content**: Keep it concise (300-600 words)
-
-### Image Sources
-Until you have your own project images, you can use:
-
-1. **Unsplash** (free, no attribution required)
-   - Search for relevant infrastructure/tech images
-   - Use `https://images.unsplash.com/photo-[ID]?w=1200&q=80`
-
-2. **Your Screenshots**
-   - Take screenshots of your actual infrastructure
-   - Use tools like Grafana, Portainer, etc. to show your setup
-   - Blur/redact sensitive information
-
-3. **Architecture Diagrams**
-   - Create diagrams with tools like:
-     - Draw.io / Diagrams.net (free)
-     - Excalidraw (free, online)
-     - Lucidchart (free tier)
-   - Export as PNG with transparent background
-
-### Pinterest Integration (Future)
-The gallery is designed to support Pinterest integration. When implementing:
-- Add Pinterest save button to gallery items
-- Optimize images for Pinterest (2:3 ratio ideal)
-- Add rich pins metadata
-- Create boards for different categories
-
-### Content Types
-
-#### Infrastructure Projects
-**Example: "Docker Swarm Production Cluster"**
-- Cluster architecture
-- Services deployed
-- High availability setup
-- Monitoring and logging
-
-#### Automation Implementations
-**Example: "Ansible Configuration Management"**
-- Playbook structure
-- Roles and tasks
-- Inventory organization
-- Secrets management
-
-#### Network Setups
-**Example: "Segmented Home Network"**
-- VLAN configuration
-- Firewall rules
-- Security zones
-- Network diagram
-
-#### Monitoring/Observability
-**Example: "Full Stack Monitoring with Prometheus & Grafana"**
-- Metrics collected
-- Dashboards created
-- Alert configuration
-- Integration points
-
----
-
 ## Content Readiness Checklist
 
 Before considering the website ready for release, ensure:
@@ -213,15 +115,6 @@ Before considering the website ready for release, ensure:
 - [ ] Images used have proper attribution (if required)
 - [ ] All code examples are tested and working
 - [ ] Internal links to docs are added where relevant
-
-### Gallery Section (Minimum Requirements)
-- [ ] At least 8 project entries
-- [ ] All entries have featured images
-- [ ] Mix of different project types
-- [ ] Clear, compelling descriptions
-- [ ] Proper tags for categorization
-- [ ] At least 3 entries have your own screenshots/diagrams
-- [ ] Content is organized by relevance/date
 
 ### Quality Standards
 - [ ] No placeholder text (Lorem ipsum, etc.)
@@ -288,57 +181,7 @@ Before considering the website ready for release, ensure:
    - Best practices
    - _Estimated time: 5-6 hours_
 
-### Priority 2: Gallery Projects (Add These Next)
-
-1. **"Production Docker Swarm Cluster"**
-   - Take screenshots of Portainer
-   - Document your actual setup
-   - Show service deployment
-   - _Estimated time: 2-3 hours_
-
-2. **"Home Network Architecture"**
-   - Create a network diagram
-   - Document VLAN setup
-   - Show firewall rules
-   - _Estimated time: 3-4 hours_
-
-3. **"Monitoring Dashboard Collection"**
-   - Screenshot Grafana dashboards
-   - Document metrics collected
-   - Explain alerting setup
-   - _Estimated time: 2-3 hours_
-
-4. **"Ansible Playbook Repository"**
-   - Show directory structure
-   - Highlight key playbooks
-   - Explain organization
-   - _Estimated time: 2 hours_
-
-5. **"Caddy Reverse Proxy Configuration"**
-   - Show Caddyfile examples
-   - Document SSL automation
-   - Explain routing setup
-   - _Estimated time: 2 hours_
-
-6. **"Backup and Disaster Recovery Setup"**
-   - Document backup strategy
-   - Show automation scripts
-   - Explain recovery process
-   - _Estimated time: 3-4 hours_
-
-7. **"CI/CD Pipeline for Infrastructure"**
-   - Show GitHub Actions workflow
-   - Explain testing strategy
-   - Document deployment process
-   - _Estimated time: 3-4 hours_
-
-8. **"Terraform Multi-Cloud Setup"**
-   - Create architecture diagram
-   - Show Terraform modules
-   - Document provider configuration
-   - _Estimated time: 3-4 hours_
-
-### Priority 3: Enhanced Content
+### Priority 2: Enhanced Content
 
 Once the minimum content is complete, consider:
 
@@ -346,6 +189,7 @@ Once the minimum content is complete, consider:
 - **Interactive diagrams** (using Mermaid in markdown)
 - **Code repositories** (link to GitHub examples)
 - **Community contributions** (guest posts)
+- **Series articles** (multi-part tutorials)
 
 ---
 
@@ -357,13 +201,6 @@ Once the minimum content is complete, consider:
 - Include visual breaks (images, code blocks, lists)
 - End with a call-to-action or next steps
 - Preview before publishing
-
-### For Gallery Items
-- Lead with the most impressive visual
-- Focus on what makes the project unique
-- Keep technical jargon minimal in descriptions
-- Let the images tell the story
-- Link to related blog posts for details
 
 ### General
 - Write in active voice
@@ -404,12 +241,12 @@ If you need assistance with content:
 ## Conclusion
 
 This website is ready for release when:
-- Minimum content requirements are met (5+ blog posts, 8+ gallery items)
+- Minimum content requirements are met (5+ blog posts)
 - All content is original and high-quality
 - No placeholder text or broken links remain
 - Site has been tested across devices
 - SEO basics are implemented (meta descriptions, proper headings, etc.)
 
-**Estimated total time to reach release-ready state: 40-50 hours of writing**
+**Estimated total time to reach release-ready state: 25-35 hours of writing**
 
-Start with Priority 1 blog posts, then move to Priority 2 gallery projects. Quality over quantity—it's better to have 5 excellent posts than 10 mediocre ones.
+Start with Priority 1 blog posts. Quality over quantity—it's better to have 5 excellent posts than 10 mediocre ones.

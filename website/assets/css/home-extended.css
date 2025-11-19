@@ -1,4 +1,4 @@
-/* Additional styles for blog and gallery sections on home page */
+/* Additional styles for blog section on home page */
 
 .hero {
   /* Keep the original hero section styles */
@@ -108,85 +108,6 @@
   font-weight: 500;
 }
 
-/* Gallery section styles */
-.gallery-section {
-  padding: calc(var(--padding) * 4) 0;
-}
-
-.gallery-mosaic {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--padding);
-  padding: 0 var(--padding);
-}
-
-.gallery-item {
-  position: relative;
-  aspect-ratio: 1;
-  overflow: hidden;
-  border-radius: var(--radius);
-  background: var(--background-grey);
-}
-
-.gallery-item:nth-child(3n+1) {
-  grid-column: span 2;
-  grid-row: span 2;
-}
-
-.gallery-item a {
-  display: block;
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.gallery-item img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.gallery-item:hover img {
-  transform: scale(1.05);
-}
-
-.gallery-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--foreground) 0%, var(--foreground-hover) 100%);
-  color: var(--color);
-  font-size: 1.2em;
-  font-weight: 600;
-  text-align: center;
-  padding: var(--padding);
-}
-
-.gallery-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-  padding: calc(var(--padding) * 1.5);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.gallery-item:hover .gallery-overlay {
-  opacity: 1;
-}
-
-.gallery-overlay h4 {
-  color: white;
-  font-size: 1.1em;
-  font-weight: 600;
-  margin: 0;
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .section-header {
@@ -197,15 +118,6 @@
 
   .blog-grid {
     grid-template-columns: 1fr;
-  }
-
-  .gallery-mosaic {
-    grid-template-columns: 1fr;
-  }
-
-  .gallery-item:nth-child(3n+1) {
-    grid-column: span 1;
-    grid-row: span 1;
   }
 }
 
