@@ -12,7 +12,7 @@ We use a hybrid PARA method for knowledge management:
 
 ## Your Instructions
 
-1.  **Capture First**: Before writing code, or as you explore the codebase, create a scratchpad note in `docs/_staging_para/1-projects/<current-task>`.
+1.  **Capture First**: Before writing code, or as you explore the codebase, create a scratchpad note in `docs/_staging_para/1-projects/<current-task>.md`.
     - Dump your thoughts, plans, and discoveries there.
     - Don't worry about formatting initially.
 2.  **Refine**: As the task solidifies, clean up the note. If the information is permanent documentation, prepare it for migration to `website/docs`.

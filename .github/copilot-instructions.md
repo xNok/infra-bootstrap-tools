@@ -12,10 +12,10 @@ Make sure code and design decisions are reflected in the docs and linked from `d
 ## 2. Core workflow — Staging PARA (mandatory)
 The `docs/` folder is the single source of truth, specifically organized via the Staging PARA system. Follow this process:
 
-1. **Capture**: Start every task by creating or updating a note in `docs/_staging_para/1-projects/<your-task>/`. Use this to plan, log findings, and draft changes.
+1. **Capture**: Start every task by creating or updating a note in `docs/_staging_para/1-projects/<your-task>.md`. Use this to plan, log findings, and draft changes.
 2. **Refine**: As you work, refine these notes.
-3. **Publish**: Permanent documentation should be migrated to `website/docs`.
-4. **Archive**: Once done, move the raw notes to `docs/_staging_para/4-archives`.
+3. **Publish**: Permanent documentation should be migrated to `website/docs` (handled by the Curator agent).
+4. **Archive**: Once done, move the raw notes to `docs/_staging_para/4-archives/<your-task>.md`.
 
 This ensures that "Work in Progress" is captured but separated from "Published Docs".
 

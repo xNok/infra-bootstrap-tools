@@ -8,16 +8,16 @@ We separate "Work in Progress" (Staging) from "Published Docs" (Website). This f
 
 ### 1. The Capture Phase (Drafting)
 During a Pull Request (PR) or active development:
-- **Drop raw notes, logs, or diagrams** directly into the relevant folder:
-    - `1-projects`: For active tasks (e.g., `agentic-workflow`).
-    - `3-resources`: For tools and reference material (e.g., `caddy`, `portainer`).
+- **Drop raw notes, logs, or diagrams** directly into the relevant folder.
+    - `1-projects`: For active tasks (e.g., `agentic-workflow.md`).
+    - `3-resources`: For tools and reference material (e.g., `caddy.md`, `portainer.md`).
 - **Do not worry about formatting.** Speed and capture are the priorities here.
 - Use `2-areas` for broader categories like `infra`, `dev`, or `sec` if a specific project or resource doesn't fit.
 
 ### 2. The Refine Phase (Publishing)
 Periodically, or when a feature is complete:
 - Review the content in Staging.
-- **Migrate finished content** to the public documentation site at `website/docs` (or `website/content/docs` depending on the site structure).
+- **Migrate finished content** to the public documentation site at `website/docs`.
 - Ensure the migrated content is properly formatted and integrated into the site's structure.
 
 ### 3. The Archive Phase (Cleanup)
