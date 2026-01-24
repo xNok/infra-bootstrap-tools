@@ -1,11 +1,11 @@
 output "managers_ips" {
-  value = [for i in google_compute_instance.managers : i.network_interface[0].access_config[0].nat_ip]
+  value = module.swarm_cluster.managers_ips
 }
 
 output "nodes_ips" {
-  value = [for i in google_compute_instance.nodes : i.network_interface[0].access_config[0].nat_ip]
+  value = module.swarm_cluster.nodes_ips
 }
 
 output "known_hosts" {
-  value = local.known_hosts
+  value = module.swarm_cluster.known_hosts
 }
