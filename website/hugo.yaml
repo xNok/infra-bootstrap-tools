@@ -1,6 +1,5 @@
 theme: e25dx
-relativeURLs: true
-baseURL: '/'
+baseURL: 'https://xnok.github.io/infra-bootstrap-tools/'
 enableGitInfo: true
 defaultContentLanguage: en
 

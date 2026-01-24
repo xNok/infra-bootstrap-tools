@@ -1,19 +1,19 @@
 const cacheName = 'ibt-{{ now.Format "2006-01-02" }}';
 const staticAssets = [
-    './',
-    './index.html',
-    './manifest.json',
-    './docs/**/*',
-    './favicon/android-chrome-192x192.png',
-    './favicon/android-chrome-512x512.png',
-    './favicon/apple-touch-icon.png',
-    './favicon/favicon.ico',
-    './favicon/favicon-16x16.png',
-    './favicon/favicon-32x32.png',
-    './css/home.min.*.css',
-    './css/docs.min.*.css',
-    './js/home.min.*.js',
-    './js/docs.min.*.js',
+    '/infra-bootstrap-tools/',
+    '/infra-bootstrap-tools/index.html',
+    '/infra-bootstrap-tools/manifest.json',
+    '/infra-bootstrap-tools/docs/**/*',
+    '/infra-bootstrap-tools/favicon/android-chrome-192x192.png',
+    '/infra-bootstrap-tools/favicon/android-chrome-512x512.png',
+    '/infra-bootstrap-tools/favicon/apple-touch-icon.png',
+    '/infra-bootstrap-tools/favicon/favicon.ico',
+    '/infra-bootstrap-tools/favicon/favicon-16x16.png',
+    '/infra-bootstrap-tools/favicon/favicon-32x32.png',
+    '/infra-bootstrap-tools/css/home.min.*.css',
+    '/infra-bootstrap-tools/css/docs.min.*.css',
+    '/infra-bootstrap-tools/js/home.min.*.js',
+    '/infra-bootstrap-tools/js/docs.min.*.js',
 ];
 
 self.addEventListener('install', async e => {
