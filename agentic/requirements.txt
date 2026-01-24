@@ -1,6 +1,6 @@
 # Core dependencies
 # Install with Google Gemini support (default) or OpenAI support
-pydantic-ai-slim[google-gla]>=0.0.14
+pydantic-ai-slim[google,fastmcp]>=1.47.0
 prefect>=3.0.0
 pydantic>=2.0.0
 

@@ -11,7 +11,7 @@ from typing import Optional
 
 from prefect import flow, task
 from pydantic_ai import Agent
-from pydantic_ai.toolset import FastMCPToolset
+from pydantic_ai.toolsets.fastmcp import FastMCPToolset
 
 
 @task(name="initialize_mcp_toolset", retries=2, retry_delay_seconds=5)
@@ -60,7 +60,7 @@ def create_jules_agent(toolset: FastMCPToolset, model: str = "google-gla:gemini-
 
 
 @task(name="assign_github_issue", retries=1)
-def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
+async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
     """
     Assign a GitHub issue using the Jules agent.
     
@@ -76,7 +76,7 @@ def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
     """
     try:
         prompt = f"Please assign the task from this GitHub issue: {github_issue_url}"
-        result = agent.run_sync(prompt)
+        result = await agent.run(prompt)
         return result.output
     except Exception as e:
         raise RuntimeError(f"Failed to assign GitHub issue: {e}") from e
@@ -87,7 +87,7 @@ def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
     description="Workflow to assign GitHub issues to Jules agent via MCP server",
     log_prints=True,
 )
-def jules_agent_workflow(
+async def jules_agent_workflow(
     github_issue_url: str,
     mcp_server_url: Optional[str] = None,
     model: Optional[str] = None,
@@ -145,7 +145,7 @@ def jules_agent_workflow(
     agent = create_jules_agent(toolset, llm_model)
     
     # Assign the GitHub issue
-    result = assign_github_issue(agent, github_issue_url)
+    result = await assign_github_issue(agent, github_issue_url)
     
     print(f"Successfully assigned issue. Result: {result}")
     return result
@@ -158,11 +158,12 @@ if __name__ == "__main__":
     Usage:
         python -m agentic.workflows.jules_workflow https://github.com/owner/repo/issues/123
     """
+    import asyncio
     if len(sys.argv) < 2:
         print("Usage: python -m agentic.workflows.jules_workflow <github_issue_url>")
         sys.exit(1)
     
     issue_url = sys.argv[1]
-    result = jules_agent_workflow(issue_url)
+    result = asyncio.run(jules_agent_workflow(issue_url))
     print(f"\n--- Workflow Complete ---")
     print(f"Result: {result}")
