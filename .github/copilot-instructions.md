@@ -9,15 +9,15 @@ As a contributor you may switch hats depending on the task — make the active r
 
 Make sure code and design decisions are reflected in the docs and linked from `docs/` (see Docs First below).
 
-## 2. Core workflow — Staging PARA (mandatory)
-The `docs/` folder is the single source of truth, specifically organized via the Staging PARA system. Follow this process:
+## 2. Core workflow — Docs First (mandatory)
+The `docs/` folder is the single source of truth. Follow this strict, discoverable process every time you start work:
 
-1. **Capture**: Start every task by creating or updating a note in `docs/_staging_para/1-projects/<your-task>.md`. Use this to plan, log findings, and draft changes.
-2. **Refine**: As you work, refine these notes.
-3. **Publish**: Permanent documentation should be migrated to `website/docs` (handled by the Curator agent).
-4. **Archive**: Once done, move the raw notes to `docs/_staging_para/4-archives/<your-task>.md`.
+1. Navigate to `docs/` and open the highest-numbered markdown (e.g., `01-...`, `02-...`) — this is the most recent decision/state.
+2. Read it thoroughly before you write any code. It should link to related decisions or the project plan.
+3. If you discover a gap, update docs first: create a new, higher-numbered document that describes the change and links to prior docs.
+4. As you finish a task, add a short entry in `docs/agents-summaries/XX-task.md` describing what you changed and why (inputs, outputs, side effects).
 
-This ensures that "Work in Progress" is captured but separated from "Published Docs".
+This ensures newcomers can follow the numbered trail to understand the current system state.
 
 ## Quick orientation (big picture)
 - Monorepo with three main families:
@@ -65,5 +65,11 @@ This ensures that "Work in Progress" is captured but separated from "Published D
 - Missing envs: `deploy.py` will list missing env vars (GITHUB_TOKEN, JULES_API_KEY, GOOGLE_API_KEY/OPENAI_API_KEY depending on `LLM_MODEL`).
 - Flow not showing in Prefect UI: ensure Prefect API URL is set (`PREFECT_API_URL`), and check `deploy.py` output — the script sets `PREFECT_API_URL` and calls flow serve.
 
-## Merge guidance
+## Merge guidance (if `.github/copilot-instructions.md` existed)
 - Preserve any project-specific examples and only replace outdated commands. Prefer commands and file references from the `README.md`/`QUICKSTART.md`/`IMPLEMENTATION.md` when merging.
+
+## Notes for future iterations
+- If making larger changes (new stacks, switching Prefect versions, adding MCP servers), add a 1–2 line note here with the new command and the file that needs updating (e.g., `agentic/deployment/deploy.py` or `stacks/prefect/*`).
+
+---
+If any part of this is unclear or you want the instructions to include additional examples (CI, exact pre-commit hooks, or test commands), tell me which area to expand and I'll iterate.
