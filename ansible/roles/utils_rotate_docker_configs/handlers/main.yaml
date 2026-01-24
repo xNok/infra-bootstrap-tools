@@ -5,7 +5,10 @@
 
 - name: Identify configs to keep
   set_fact:
-    utils_rotate_docker_configs_configs_to_keep: "{{ utils_rotate_docker_configs_configs_to_keep | default([]) + [item.name + '_' + utils_rotate_docker_configs_config_checksums[item.name]] }}"
+    utils_rotate_docker_configs_configs_to_keep: "{{
+      utils_rotate_docker_configs_configs_to_keep | default([]) +
+      [item.name + '_' + utils_rotate_docker_configs_config_checksums[item.name]]
+      }}"
   loop: "{{ utils_rotate_docker_configs_configs }}"
 
 - name: Remove dangling configs
