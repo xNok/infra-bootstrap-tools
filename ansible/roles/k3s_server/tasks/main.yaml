@@ -2,11 +2,17 @@
 # OR INFRA Role: K3s Server
 #################################################
 ---
+- name: Download K3s install script
+  get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s_install.sh
+    mode: '0700'
+
 - name: Install K3s Server
-  shell: curl -sfL https://get.k3s.io | sh -
+  command: /tmp/k3s_install.sh
   environment:
-    INSTALL_K3S_VERSION: "{{ k3s_version }}"
-    INSTALL_K3S_EXEC: "{{ k3s_extra_args }}"
+    INSTALL_K3S_VERSION: "{{ k3s_server_version }}"
+    INSTALL_K3S_EXEC: "{{ k3s_server_extra_args }}"
   args:
     creates: /usr/local/bin/k3s
 
@@ -17,8 +23,8 @@
 - name: Read node-token
   slurp:
     src: /var/lib/rancher/k3s/server/node-token
-  register: node_token_content
+  register: k3s_server_node_token_content
 
 - name: Store node-token
   set_fact:
-    k3s_token: "{{ node_token_content['content'] | b64decode | trim }}"
+    k3s_server_token: "{{ k3s_server_node_token_content['content'] | b64decode | trim }}"

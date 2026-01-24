@@ -4,23 +4,29 @@
 ---
 - name: Set K3s Server Host
   set_fact:
-    k3s_server_host: "{{ groups[k3s_server_inventory_group_name][0] }}"
+    k3s_agent_server_host: "{{ groups[k3s_agent_server_inventory_group_name][0] }}"
 
 - name: Get K3s Server Token
   set_fact:
-    k3s_token: "{{ hostvars[k3s_server_host]['k3s_token'] }}"
-  when: k3s_token is not defined
+    k3s_agent_token: "{{ hostvars[k3s_agent_server_host]['k3s_server_token'] }}"
+  when: k3s_agent_token is not defined
 
 - name: Get K3s Server URL
   set_fact:
-    k3s_url: "https://{{ hostvars[k3s_server_host]['ansible_host'] }}:6443"
+    k3s_agent_url: "https://{{ hostvars[k3s_agent_server_host]['ansible_host'] }}:6443"
+
+- name: Download K3s install script
+  get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s_install.sh
+    mode: '0700'
 
 - name: Install K3s Agent
-  shell: curl -sfL https://get.k3s.io | sh -
+  command: /tmp/k3s_install.sh
   environment:
-    K3S_URL: "{{ k3s_url }}"
-    K3S_TOKEN: "{{ k3s_token }}"
-    INSTALL_K3S_VERSION: "{{ k3s_version }}"
-    INSTALL_K3S_EXEC: "{{ k3s_extra_args }}"
+    K3S_URL: "{{ k3s_agent_url }}"
+    K3S_TOKEN: "{{ k3s_agent_token }}"
+    INSTALL_K3S_VERSION: "{{ k3s_agent_version }}"
+    INSTALL_K3S_EXEC: "{{ k3s_agent_extra_args }}"
   args:
     creates: /usr/local/bin/k3s

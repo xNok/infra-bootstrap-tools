@@ -1,4 +1,4 @@
 # K3s Server Defaults
 k3s_server_inventory_group_name: 'managers'
-k3s_version: '' # Leave empty for latest, or set specific version like 'v1.26.0+k3s1'
-k3s_extra_args: '--write-kubeconfig-mode 644' # Make kubeconfig readable by non-root for easier access if needed
+k3s_server_version: '' # Leave empty for latest, or set specific version like 'v1.26.0+k3s1'
+k3s_server_extra_args: '--write-kubeconfig-mode 644' # Make kubeconfig readable by non-root for easier access if needed
