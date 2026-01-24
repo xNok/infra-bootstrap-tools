@@ -5,17 +5,16 @@
 
 - name: Identify secrets to keep
   set_fact:
-    utils_rotate_docker_secrets_secrets_to_keep: "{{
-      utils_rotate_docker_secrets_secrets_to_keep | default([]) +
-      [item.name + '_' + utils_rotate_docker_secrets_secret_checksums[item.name]]
-      }}"
+    utils_rotate_docker_secrets_secrets_to_keep: >-
+      {{ utils_rotate_docker_secrets_secrets_to_keep | default([]) +
+         [item.name + '_' + utils_rotate_docker_secrets_secret_checksums[item.name]] }}
   loop: "{{ utils_rotate_docker_secrets_secrets }}"
 
 - name: Remove dangling secrets
   docker_secret:
     name: "{{ item }}"
     state: absent
-  when: item not in utils_rotate_docker_secrets_secrets_to_keep
+  when: item not in (utils_rotate_docker_secrets_secrets_to_keep | default([]))
   loop: "{{ utils_rotate_docker_secrets_existing_secrets.stdout_lines }}"
   ignore_errors: true
   register: utils_rotate_docker_secrets_ignore_errors_register
