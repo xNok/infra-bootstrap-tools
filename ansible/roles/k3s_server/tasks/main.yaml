@@ -1,0 +1,24 @@
+#################################################
+# OR INFRA Role: K3s Server
+#################################################
+---
+- name: Install K3s Server
+  shell: curl -sfL https://get.k3s.io | sh -
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+    INSTALL_K3S_EXEC: "{{ k3s_extra_args }}"
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: Wait for node-token
+  wait_for:
+    path: /var/lib/rancher/k3s/server/node-token
+
+- name: Read node-token
+  slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: node_token_content
+
+- name: Store node-token
+  set_fact:
+    k3s_token: "{{ node_token_content['content'] | b64decode | trim }}"
