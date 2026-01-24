@@ -1,18 +1,20 @@
 - name: List all Docker secrets managed by this role
   command: docker secret ls --filter label=managed_by=rotate_docker_secrets --format "{{ '{{ .Name }}' }}"
-  register: existing_secrets
+  register: utils_rotate_docker_secrets_existing_secrets
   changed_when: false
 
 - name: Identify secrets to keep
   set_fact:
-    secrets_to_keep: "{{ secrets_to_keep | default([]) + [item.name + '_' + secret_checksums[item.name]] }}"
-  loop: "{{ secrets }}"
+    utils_rotate_docker_secrets_secrets_to_keep: >-
+      {{ utils_rotate_docker_secrets_secrets_to_keep | default([]) +
+         [item.name + '_' + utils_rotate_docker_secrets_secret_checksums[item.name]] }}
+  loop: "{{ utils_rotate_docker_secrets_secrets }}"
 
 - name: Remove dangling secrets
   docker_secret:
     name: "{{ item }}"
     state: absent
-  when: item not in secrets_to_keep
-  loop: "{{ existing_secrets.stdout_lines }}"
+  when: item not in (utils_rotate_docker_secrets_secrets_to_keep | default([]))
+  loop: "{{ utils_rotate_docker_secrets_existing_secrets.stdout_lines }}"
   ignore_errors: true
-  register: ignore_errors_register
+  register: utils_rotate_docker_secrets_ignore_errors_register
