@@ -5,7 +5,7 @@ provider "google" {
 }
 
 module "swarm_cluster" {
-  source = "../../../terraform/terraform-google-instance"
+  source = "github.com/xNok/infra-bootstrap-tools//terraform/terraform-google-instance?ref=main"
 
   project_name          = var.project_name
   project_id            = var.gcp_project_id
