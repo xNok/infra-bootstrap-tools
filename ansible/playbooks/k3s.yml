@@ -3,10 +3,10 @@
   hosts: managers
   become: true
   roles:
-    - k3s_server
+    - xnok.infra_bootstrap_tools.k3s_server
 
 - name: Setup K3s Agents
   hosts: nodes
   become: true
   roles:
-    - k3s_agent
+    - xnok.infra_bootstrap_tools.k3s_agent

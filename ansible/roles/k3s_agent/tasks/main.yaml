@@ -30,3 +30,10 @@
     INSTALL_K3S_EXEC: "{{ k3s_agent_extra_args }}"
   args:
     creates: /usr/local/bin/k3s
+  register: k3s_agent_install
+
+- name: Ensure K3s agent service is running
+  ansible.builtin.systemd:
+    name: k3s-agent
+    state: started
+    enabled: true
