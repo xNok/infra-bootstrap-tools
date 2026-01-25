@@ -261,6 +261,5 @@ Nix provides Python, pip creates venv:
 
 ## Related Resources
 
-- [Bash](./bash.md) - Alternative setup method
-- [Docker](./docker.md) - Containerized tools
-- [Pre-commit](./pre-commit.md) - Code quality hooks
+- [IBT/Nix Refactor Project](../1-projects/ibt-nix-refactor.md) - Active development of Nix integration
+- [Developer Experience Area](../2-areas/developer-experience.md) - Broader developer tooling context
