@@ -1,0 +1,44 @@
+#################################################
+# OR INFRA Role: K3s Server
+#################################################
+---
+- name: Download K3s install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s_install.sh
+    mode: '0700'
+
+- name: Install K3s Server
+  ansible.builtin.command: /tmp/k3s_install.sh
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_server_version }}"
+    INSTALL_K3S_EXEC: "{{ k3s_server_extra_args }}"
+  args:
+    creates: /usr/local/bin/k3s
+  register: k3s_server_install
+
+- name: Verify K3s service is running
+  ansible.builtin.systemd:
+    name: k3s
+    state: started
+    enabled: true
+
+- name: Verify K3s service is running
+  ansible.builtin.command: systemctl is-active k3s
+  register: k3s_service_status
+  changed_when: false
+  failed_when: k3s_service_status.rc != 0
+- name: Wait for node-token
+  ansible.builtin.wait_for:
+    path: /var/lib/rancher/k3s/server/node-token
+    timeout: 300
+    timeout: 300
+
+- name: Read node-token
+  ansible.builtin.slurp:
+    src: /var/lib/rancher/k3s/server/node-token
+  register: k3s_server_node_token_content
+
+- name: Store node-token
+  ansible.builtin.set_fact:
+    k3s_server_token: "{{ k3s_server_node_token_content['content'] | b64decode | trim }}"

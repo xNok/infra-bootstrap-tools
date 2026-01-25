@@ -1,0 +1,4 @@
+# K3s Agent Defaults
+k3s_agent_server_inventory_group_name: 'managers'
+k3s_agent_version: '' # Match server version if set
+k3s_agent_extra_args: ''

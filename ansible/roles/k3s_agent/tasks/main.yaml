@@ -1,0 +1,52 @@
+#################################################
+# OR INFRA Role: K3s Agent
+#################################################
+---
+- name: Set K3s Server Host
+  ansible.builtin.set_fact:
+    k3s_agent_server_host: "{{ groups[k3s_agent_server_inventory_group_name][0] }}"
+
+- name: Get K3s Server Token
+  ansible.builtin.set_fact:
+    k3s_agent_token: "{{ hostvars[k3s_agent_server_host]['k3s_server_token'] }}"
+  when: k3s_agent_token is not defined
+
+- name: Get K3s Server URL
+  ansible.builtin.set_fact:
+    k3s_agent_url: "https://{{ hostvars[k3s_agent_server_host]['ansible_host'] }}:6443"
+
+- name: Download K3s install script
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/k3s_install.sh
+    mode: '0700'
+
+- name: Install K3s Agent
+  ansible.builtin.command: /tmp/k3s_install.sh
+  environment:
+    K3S_URL: "{{ k3s_agent_url }}"
+    K3S_TOKEN: "{{ k3s_agent_token }}"
+    INSTALL_K3S_VERSION: "{{ k3s_agent_version }}"
+    INSTALL_K3S_EXEC: "{{ k3s_agent_extra_args }}"
+  args:
+    creates: /usr/local/bin/k3s
+  register: k3s_agent_install
+  failed_when:
+    - k3s_agent_install.rc != 0
+  register: k3s_agent_install
+  failed_when:
+    - k3s_agent_install.rc != 0
+
+- name: Ensure K3s agent service is running
+  ansible.builtin.service:
+    name: k3s-agent
+    state: started
+    enabled: true
+  when: k3s_agent_install is succeeded
+  register: k3s_agent_install
+
+- name: Ensure K3s agent service is running
+  ansible.builtin.systemd:
+    name: k3s-agent
+    state: started
+    enabled: true

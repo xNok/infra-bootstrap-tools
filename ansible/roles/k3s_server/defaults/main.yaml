@@ -1,0 +1,4 @@
+# K3s Server Defaults
+k3s_server_version: '' # Leave empty for stable channel, or set specific version like 'v1.26.0+k3s1'
+k3s_server_kubeconfig_mode: '600' # File mode for kubeconfig; 600 (owner-only) is the secure default. Override with caution (e.g. to '644').
+k3s_server_extra_args: "--write-kubeconfig-mode {{ k3s_server_kubeconfig_mode }}"

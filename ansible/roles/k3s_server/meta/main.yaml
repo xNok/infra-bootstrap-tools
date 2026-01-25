@@ -1,0 +1,17 @@
+galaxy_info:
+  author: xNok
+  description: Configures a node as a K3s server.
+  license: MIT
+  min_ansible_version: '2.9'
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: Debian
+      versions:
+        - all
+  galaxy_tags:
+    - k3s
+    - kubernetes
+    - server
+dependencies: []
