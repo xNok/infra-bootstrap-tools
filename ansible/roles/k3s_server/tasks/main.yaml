@@ -3,13 +3,13 @@
 #################################################
 ---
 - name: Download K3s install script
-  get_url:
+  ansible.builtin.get_url:
     url: https://get.k3s.io
     dest: /tmp/k3s_install.sh
     mode: '0700'
 
 - name: Install K3s Server
-  command: /tmp/k3s_install.sh
+  ansible.builtin.command: /tmp/k3s_install.sh
   environment:
     INSTALL_K3S_VERSION: "{{ k3s_server_version }}"
     INSTALL_K3S_EXEC: "{{ k3s_server_extra_args }}"
@@ -17,14 +17,14 @@
     creates: /usr/local/bin/k3s
 
 - name: Wait for node-token
-  wait_for:
+  ansible.builtin.wait_for:
     path: /var/lib/rancher/k3s/server/node-token
 
 - name: Read node-token
-  slurp:
+  ansible.builtin.slurp:
     src: /var/lib/rancher/k3s/server/node-token
   register: k3s_server_node_token_content
 
 - name: Store node-token
-  set_fact:
+  ansible.builtin.set_fact:
     k3s_server_token: "{{ k3s_server_node_token_content['content'] | b64decode | trim }}"

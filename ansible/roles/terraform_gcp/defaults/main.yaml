@@ -1,9 +1,0 @@
-terraform_gcp_backend_config: "{{ role_path }}/assets/backend.tf"
-
-# Ansible Inventory Configuration
-terraform_gcp_inventory_path: "{{ playbook_dir }}/inventory"
-terraform_gcp_inventory_prefix: gcp-swarm
-terraform_gcp_inventory_user: ubuntu
-
-# Destroy flag
-terraform_gcp_destroy: false
