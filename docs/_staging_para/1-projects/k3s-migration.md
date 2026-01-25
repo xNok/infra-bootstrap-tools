@@ -5,15 +5,9 @@ description: Upcoming exploration and migration to lightweight Kubernetes (K3s) 
 related_projects:
   - docker-swarm-env
   - openziti-mesh
-  - ibt-cli-tool
-related_resources:
-  - k3s
-  - kubernetes
-  - helm
-  - kubectl
+related_resources: []
 related_areas:
   - infra-orchestration
-  - container-orchestration
 ---
 
 # K3s Migration

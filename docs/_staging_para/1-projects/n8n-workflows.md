@@ -6,12 +6,9 @@ related_projects:
   - agentic-framework
   - docker-swarm-env
 related_resources:
-  - n8n
-  - mcp-hub
-  - docker-compose
+  - mcp
 related_areas:
   - ai-workflow-automation
-  - infra-orchestration
 ---
 
 # Agentic No-Code (n8n Workflows)

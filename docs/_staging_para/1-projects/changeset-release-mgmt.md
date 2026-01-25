@@ -9,12 +9,8 @@ related_projects:
   - openziti-mesh
 related_resources:
   - changesets
-  - github-actions
-  - npm
-  - ansible-galaxy
 related_areas:
-  - release-management
-  - ci-cd-automation
+  - developer-experience
 ---
 
 # Changeset - Release Management

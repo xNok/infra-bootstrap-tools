@@ -100,33 +100,15 @@ ibt <subcommand> [options...]
 
 ### Completion System
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    ibt-completion.sh                         │
-│         (Main completion handler for `ibt` command)          │
-└──────────────────┬──────────────────────────────────────────┘
-                   │
-       ┌───────────┼───────────┐
-       │           │           │
-       ▼           ▼           ▼
-┌──────────┐ ┌──────────┐ ┌──────────┐
-│  setup-  │ │ stacks-  │ │ tools-   │
-│completion│ │completion│ │completion│
-└────┬─────┘ └────┬─────┘ └────┬─────┘
-     │            │            │
-     └────────────┴────────────┘
-                  │
-                  ▼
-       ┌─────────────────────┐
-       │  completion-utils.sh│
-       │  (Shared utilities) │
-       └─────────────────────┘
-                  │
-                  ▼
-       ┌─────────────────────┐
-       │  <subcommand>.sh    │
-       │  --list-options     │
-       └─────────────────────┘
+```mermaid
+graph TD
+    A[ibt-completion.sh<br/>Main completion handler] --> B[setup-completion]
+    A --> C[stacks-completion]
+    A --> D[tools-completion]
+    B --> E[completion-utils.sh<br/>Shared utilities]
+    C --> E
+    D --> E
+    E --> F[subcommand.sh<br/>--list-options]
 ```
 
 ### Design Principles
