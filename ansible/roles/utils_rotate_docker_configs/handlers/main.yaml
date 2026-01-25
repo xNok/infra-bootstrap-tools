@@ -1,18 +1,20 @@
 - name: List all Docker configs managed by this role
   command: docker config ls --filter label=managed_by=rotate_docker_configs --format "{{ '{{ .Name }}' }}"
-  register: existing_configs
+  register: utils_rotate_docker_configs_existing_configs
   changed_when: false
 
 - name: Identify configs to keep
   set_fact:
-    configs_to_keep: "{{ configs_to_keep | default([]) + [item.name + '_' + config_checksums[item.name]] }}"
-  loop: "{{ configs }}"
+    utils_rotate_docker_configs_configs_to_keep: >-
+      {{ utils_rotate_docker_configs_configs_to_keep | default([]) +
+         [item.name + '_' + utils_rotate_docker_configs_config_checksums[item.name]] }}
+  loop: "{{ utils_rotate_docker_configs_configs }}"
 
 - name: Remove dangling configs
   docker_config:
     name: "{{ item }}"
     state: absent
-  when: item not in configs_to_keep
-  loop: "{{ existing_configs.stdout_lines }}"
+  when: item not in (utils_rotate_docker_configs_configs_to_keep | default([]))
+  loop: "{{ utils_rotate_docker_configs_existing_configs.stdout_lines }}"
   ignore_errors: true
-  register: ignore_errors_register
+  register: utils_rotate_docker_configs_ignore_errors_register

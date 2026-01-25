@@ -1,5 +1,0 @@
-{
-    "name": "ansible-role-terraform-gcp",
-    "private": true,
-    "version": "0.1.0"
-}
