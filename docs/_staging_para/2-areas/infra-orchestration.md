@@ -6,8 +6,6 @@ related_projects:
   - openziti-mesh
   - k3s-migration
 related_resources:
-  - docker
-  - docker-swarm
   - ansible
   - terraform
   - caddy

@@ -191,5 +191,4 @@ labels:
 ## Related Resources
 
 - [Portainer](./portainer.md) - Container management UI
-- [Docker](./docker.md) - Container runtime
-- [Docker Swarm](./docker-swarm.md) - Orchestration platform
+- [Docker Swarm Environment](../1-projects/docker-swarm-env.md) - Orchestration platform
