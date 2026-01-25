@@ -31,6 +31,19 @@
   args:
     creates: /usr/local/bin/k3s
   register: k3s_agent_install
+  failed_when:
+    - k3s_agent_install.rc != 0
+  register: k3s_agent_install
+  failed_when:
+    - k3s_agent_install.rc != 0
+
+- name: Ensure K3s agent service is running
+  ansible.builtin.service:
+    name: k3s-agent
+    state: started
+    enabled: true
+  when: k3s_agent_install is succeeded
+  register: k3s_agent_install
 
 - name: Ensure K3s agent service is running
   ansible.builtin.systemd:

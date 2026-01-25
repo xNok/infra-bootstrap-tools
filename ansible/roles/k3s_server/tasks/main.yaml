@@ -23,9 +23,15 @@
     state: started
     enabled: true
 
+- name: Verify K3s service is running
+  ansible.builtin.command: systemctl is-active k3s
+  register: k3s_service_status
+  changed_when: false
+  failed_when: k3s_service_status.rc != 0
 - name: Wait for node-token
   ansible.builtin.wait_for:
     path: /var/lib/rancher/k3s/server/node-token
+    timeout: 300
     timeout: 300
 
 - name: Read node-token
