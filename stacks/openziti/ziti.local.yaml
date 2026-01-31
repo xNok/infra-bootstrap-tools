@@ -13,7 +13,8 @@ services:
       - ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION=${ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION}
       - ZITI_ROUTER_ENROLLMENT_DURATION=${ZITI_ROUTER_ENROLLMENT_DURATION}
       - ZITI_USER=${ZITI_USER:-admin}
-      - ZITI_PWD=${ZITI_PWD}
+    secrets:
+      - ziti_admin_password
     networks:
       ziti:
         aliases:
@@ -21,7 +22,11 @@ services:
     volumes:
       - ziti-fs:/persistent
     entrypoint:
-      - "/var/openziti/scripts/run-controller.sh"
+      - "/bin/bash"
+      - "-c"
+      - |
+        export ZITI_PWD=$(cat /run/secrets/ziti_admin_password)
+        /var/openziti/scripts/run-controller.sh
     deploy:
       placement:
         constraints: [node.role == worker]
@@ -32,10 +37,19 @@ services:
       ziti:
     volumes:
       - ziti-fs:/persistent
+      - ziti-enrollment:/enrollment
     entrypoint:
-      - "/var/openziti/scripts/run-with-ziti-cli.sh"
+      - "/bin/bash"
     command:
-      - "/var/openziti/scripts/access-control.sh"
+      - "-c"
+      - |
+        /var/openziti/scripts/run-with-ziti-cli.sh /var/openziti/scripts/access-control.sh
+        if ls /persistent/*.jwt >/dev/null 2>&1; then
+          echo "Copying enrollment tokens to shared volume..."
+          cp /persistent/*.jwt /enrollment/
+        else
+          echo "WARNING: No enrollment tokens found in /persistent"
+        fi
     deploy:
       restart_policy:
         condition: none
@@ -78,9 +92,26 @@ services:
     networks:
       - ziti
     volumes:
-      - ziti-fs:/persistent
-    entrypoint: /bin/bash
-    command: "/var/openziti/scripts/run-router.sh edge"
+      - ziti-router-data:/persistent
+      - ziti-enrollment:/enrollment:ro
+    entrypoint:
+      - "/bin/bash"
+    command:
+      - "-c"
+      - |
+        echo "Waiting for enrollment tokens..."
+        ATTEMPTS=30
+        while [ $ATTEMPTS -gt 0 ]; do
+          if ls /enrollment/*.jwt >/dev/null 2>&1; then
+            echo "Tokens found, copying..."
+            cp /enrollment/*.jwt /persistent/
+            break
+          fi
+          echo "Waiting for tokens... ($ATTEMPTS attempts left)"
+          sleep 2
+          ATTEMPTS=$((ATTEMPTS - 1))
+        done
+        /var/openziti/scripts/run-router.sh edge
     deploy:
       restart_policy:
         condition: none
@@ -98,3 +129,9 @@ networks:
 
 volumes:
   ziti-fs:
+  ziti-router-data:
+  ziti-enrollment:
+
+secrets:
+  ziti_admin_password:
+    file: ./secrets/ziti_admin_password
