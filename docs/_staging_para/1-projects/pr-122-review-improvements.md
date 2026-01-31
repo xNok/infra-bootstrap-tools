@@ -40,10 +40,39 @@ Apply changes based on review comments for PR #122 (Docker Secrets implementatio
 ## Implementation Plan
 
 1. ✅ Create staging note (this file)
-2. [ ] Fix security issue: Move password to .example file
-3. [ ] Update .gitignore
-4. [ ] Fix entrypoint consistency issues
-5. [ ] Add robust JWT copy operations with logging
-6. [ ] Add documentation for enrollment volume
-7. [ ] Validate changes
-8. [ ] Report progress
+2. ✅ Fix security issue: Move password to .example file
+3. ✅ Update .gitignore
+4. ✅ Update README with setup instructions
+5. ✅ Fix entrypoint consistency issues
+6. ✅ Add robust JWT copy operations with logging
+7. ✅ Add documentation for enrollment volume
+8. [ ] Validate changes
+9. [ ] Report progress
+
+## Changes Made
+
+### Security
+- Removed plaintext password file `stacks/openziti/secrets/ziti_admin_password`
+- Created example file `stacks/openziti/secrets/ziti_admin_password.example` with placeholder
+- Added actual secrets file to `.gitignore`
+- Updated README.md with instructions for creating the secrets file locally
+
+### Code Quality & Consistency
+- **Controller entrypoint**: Changed from inline command to multiline format with pipe operator (matches production stack)
+- **Init container entrypoint**: Changed from inline array to multiline array format for consistency
+- **Router entrypoint**: Changed from inline format to multiline array format for consistency
+
+### Error Handling & Reliability
+- **Init container JWT copy**: Added conditional check with warning message when JWT files not found
+- **Router JWT copy**: Implemented retry mechanism with:
+  - 30 attempts with 2-second sleep intervals
+  - Progress logging on each attempt
+  - Success/failure messaging
+  - Prevents race condition where router starts before JWT files are available
+
+### Documentation
+- **ARCHITECTURE.md**: Added comprehensive "Local Deployment Storage Architecture" section explaining:
+  - Purpose of the three-volume approach
+  - Security benefits of enrollment volume
+  - Step-by-step workflow for JWT token transfer
+  - Why controller and router volumes are isolated

@@ -24,7 +24,9 @@ services:
     entrypoint:
       - "/bin/bash"
       - "-c"
-      - "export ZITI_PWD=$(cat /run/secrets/ziti_admin_password) && /var/openziti/scripts/run-controller.sh"
+      - |
+        export ZITI_PWD=$(cat /run/secrets/ziti_admin_password)
+        /var/openziti/scripts/run-controller.sh
     deploy:
       placement:
         constraints: [node.role == worker]
@@ -36,10 +38,17 @@ services:
     volumes:
       - ziti-fs:/persistent
       - ziti-enrollment:/enrollment
-    entrypoint: ["/bin/bash"]
+    entrypoint:
+      - "/bin/bash"
     command:
       - "-c"
-      - "/var/openziti/scripts/run-with-ziti-cli.sh /var/openziti/scripts/access-control.sh && cp /persistent/*.jwt /enrollment/ 2>/dev/null || true"
+      - |
+        /var/openziti/scripts/run-with-ziti-cli.sh /var/openziti/scripts/access-control.sh
+        if ls /persistent/*.jwt >/dev/null 2>&1; then 
+          cp /persistent/*.jwt /enrollment/
+        else 
+          echo "WARNING: No JWT enrollment files found in /persistent" >&2
+        fi
     deploy:
       restart_policy:
         condition: none
@@ -84,10 +93,27 @@ services:
     volumes:
       - ziti-router-data:/persistent
       - ziti-enrollment:/enrollment:ro
-    entrypoint: /bin/bash
+    entrypoint:
+      - "/bin/bash"
     command:
       - "-c"
-      - "cp /enrollment/*.jwt /persistent/ 2>/dev/null || true && /var/openziti/scripts/run-router.sh edge"
+      - |
+        echo 'ziti-edge-router: waiting for enrollment JWTs in /enrollment...'
+        ATTEMPTS=30
+        SLEEP_SECONDS=2
+        SUCCESS=0
+        for i in $(seq 1 "${ATTEMPTS}"); do
+          if ls /enrollment/*.jwt >/dev/null 2>&1; then
+            echo "ziti-edge-router: found enrollment JWT(s) on attempt ${i}, copying to /persistent"
+            cp /enrollment/*.jwt /persistent/ && SUCCESS=1 && break
+          fi
+          echo "ziti-edge-router: JWTs not yet available (attempt ${i}/${ATTEMPTS}), sleeping ${SLEEP_SECONDS}s..."
+          sleep "${SLEEP_SECONDS}"
+        done
+        if [ "${SUCCESS}" -ne 1 ]; then
+          echo "ziti-edge-router: enrollment JWTs not found after ${ATTEMPTS} attempts, proceeding without copy" >&2
+        fi
+        /var/openziti/scripts/run-router.sh edge
     deploy:
       restart_policy:
         condition: none

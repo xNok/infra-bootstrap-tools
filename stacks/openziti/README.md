@@ -9,6 +9,10 @@ This directory contains multiple stack configurations for deploying OpenZiti wit
 For quick local testing with Docker Compose:
 
 ```bash
+# First, create the local secrets file
+cp secrets/ziti_admin_password.example secrets/ziti_admin_password
+# Edit secrets/ziti_admin_password and set your desired password
+
 # Using ibt helper (recommended)
 ibt stacks run openziti spire-stack
 ibt stacks run openziti keycloak-stack
@@ -19,6 +23,8 @@ docker compose -f spire-stack.local.yaml up -d
 docker compose -f keycloak-stack.local.yaml up -d
 docker compose -f openziti-stack.local.yaml up -d
 ```
+
+**Note**: The `secrets/ziti_admin_password` file is not tracked in git for security reasons. You must create it from the example file before running the local stack.
 
 ### Production Deployment
 

@@ -75,6 +75,7 @@ This architecture provides a production-ready, Docker Swarm-based deployment of 
 - Uses local Docker volumes
 - Uses Docker Secrets for credentials
 - Isolated router storage via separate volumes
+- Enrollment token sharing via dedicated volume (see Storage Architecture below)
 - Single-host oriented
 - No identity integration
 - Manual configuration
@@ -126,6 +127,34 @@ All persistent data uses rclone driver syncing to DigitalOcean Spaces:
 ### Ephemeral Data
 - SPIRE Agent data (node-local)
 - SPIFFE certificates (tmpfs shared volume)
+
+### Local Deployment Storage Architecture
+
+The local deployment (`ziti.local.yaml`) uses a different storage approach designed for security and simplicity:
+
+1. **Controller Persistence Volume** (`ziti-fs`)
+   - Controller database and configuration
+   - PKI certificates and keys
+   - JWT enrollment tokens (generated during initialization)
+   - **Not shared with router** to maintain security isolation
+
+2. **Router Data Volume** (`ziti-router-data`)
+   - Router-specific configuration
+   - Router identity and certificates
+   - Separate from controller to prevent unauthorized access to controller data
+
+3. **Enrollment Volume** (`ziti-enrollment`)
+   - **Purpose**: Secure transfer of JWT enrollment tokens from controller to router
+   - **Why needed**: Avoids sharing the full controller persistence volume with the router, which would expose sensitive controller data
+   - **Security benefit**: Router only receives the specific JWT files needed for enrollment, not the entire controller database and PKI
+   - **Workflow**:
+     1. Controller init container generates JWT tokens in controller volume
+     2. Init container copies JWT tokens to enrollment volume
+     3. Router waits for and retrieves JWT tokens from enrollment volume
+     4. Router copies JWT tokens to its own persistent storage
+     5. Router uses JWT tokens for enrollment with controller
+
+This three-volume approach ensures proper isolation between controller and router while enabling secure enrollment token transfer.
 
 ## Network Architecture
 
