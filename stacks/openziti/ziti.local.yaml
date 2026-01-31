@@ -44,9 +44,9 @@ services:
       - "-c"
       - |
         /var/openziti/scripts/run-with-ziti-cli.sh /var/openziti/scripts/access-control.sh
-        if ls /persistent/*.jwt >/dev/null 2>&1; then 
+        if ls /persistent/*.jwt >/dev/null 2>&1; then
           cp /persistent/*.jwt /enrollment/
-        else 
+        else
           echo "WARNING: No JWT enrollment files found in /persistent" >&2
         fi
     deploy:
