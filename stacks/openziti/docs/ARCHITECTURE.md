@@ -73,7 +73,8 @@ This architecture provides a production-ready, Docker Swarm-based deployment of 
 
 ### Local Deployment (`ziti.local.yaml`)
 - Uses local Docker volumes
-- Shares secrets via volume mounts (hack)
+- Uses Docker Secrets for credentials
+- Isolated router storage via separate volumes
 - Single-host oriented
 - No identity integration
 - Manual configuration

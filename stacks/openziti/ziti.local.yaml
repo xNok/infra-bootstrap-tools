@@ -13,7 +13,8 @@ services:
       - ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION=${ZITI_EDGE_IDENTITY_ENROLLMENT_DURATION}
       - ZITI_ROUTER_ENROLLMENT_DURATION=${ZITI_ROUTER_ENROLLMENT_DURATION}
       - ZITI_USER=${ZITI_USER:-admin}
-      - ZITI_PWD=${ZITI_PWD}
+    secrets:
+      - ziti_admin_password
     networks:
       ziti:
         aliases:
@@ -21,7 +22,9 @@ services:
     volumes:
       - ziti-fs:/persistent
     entrypoint:
-      - "/var/openziti/scripts/run-controller.sh"
+      - "/bin/bash"
+      - "-c"
+      - "export ZITI_PWD=$(cat /run/secrets/ziti_admin_password) && /var/openziti/scripts/run-controller.sh"
     deploy:
       placement:
         constraints: [node.role == worker]
@@ -32,10 +35,11 @@ services:
       ziti:
     volumes:
       - ziti-fs:/persistent
-    entrypoint:
-      - "/var/openziti/scripts/run-with-ziti-cli.sh"
+      - ziti-enrollment:/enrollment
+    entrypoint: ["/bin/bash"]
     command:
-      - "/var/openziti/scripts/access-control.sh"
+      - "-c"
+      - "/var/openziti/scripts/run-with-ziti-cli.sh /var/openziti/scripts/access-control.sh && cp /persistent/*.jwt /enrollment/ 2>/dev/null || true"
     deploy:
       restart_policy:
         condition: none
@@ -78,9 +82,12 @@ services:
     networks:
       - ziti
     volumes:
-      - ziti-fs:/persistent
+      - ziti-router-data:/persistent
+      - ziti-enrollment:/enrollment:ro
     entrypoint: /bin/bash
-    command: "/var/openziti/scripts/run-router.sh edge"
+    command:
+      - "-c"
+      - "cp /enrollment/*.jwt /persistent/ 2>/dev/null || true && /var/openziti/scripts/run-router.sh edge"
     deploy:
       restart_policy:
         condition: none
@@ -98,3 +105,9 @@ networks:
 
 volumes:
   ziti-fs:
+  ziti-router-data:
+  ziti-enrollment:
+
+secrets:
+  ziti_admin_password:
+    file: ./secrets/ziti_admin_password
