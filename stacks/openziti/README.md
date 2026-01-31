@@ -15,6 +15,9 @@ ibt stacks run openziti keycloak-stack
 ibt stacks run openziti openziti-stack
 
 # Or using docker compose directly
+# Create required secrets first
+cp stacks/openziti/secrets/ziti_admin_password.example stacks/openziti/secrets/ziti_admin_password
+
 docker compose -f spire-stack.local.yaml up -d
 docker compose -f keycloak-stack.local.yaml up -d
 docker compose -f openziti-stack.local.yaml up -d

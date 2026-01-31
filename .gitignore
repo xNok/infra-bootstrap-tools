@@ -21,4 +21,4 @@ ansible/playbooks/inventory/*
 ansible/xnok-infra_bootstrap_tools-*.tar.gz
 
 # node
-node_modules/
+node_modules/stacks/openziti/secrets/ziti_admin_password

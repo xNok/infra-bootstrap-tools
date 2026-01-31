@@ -75,6 +75,7 @@ This architecture provides a production-ready, Docker Swarm-based deployment of 
 - Uses local Docker volumes
 - Uses Docker Secrets for credentials
 - Isolated router storage via separate volumes
+  - `ziti-enrollment`: Intermediary volume to securely pass one-time enrollment tokens from controller to router without sharing full persistence
 - Single-host oriented
 - No identity integration
 - Manual configuration
