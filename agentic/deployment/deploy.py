@@ -9,6 +9,7 @@ This script handles:
 """
 
 import argparse
+import concurrent.futures
 import json
 import os
 import sys
@@ -142,6 +143,36 @@ def preload_jules_mcp_server(mcp_hub_url: str, jules_api_key: str, schema_path: 
         return False
 
 
+def preload_mcp_servers(
+    mcp_hub_url: str, github_token: str, jules_api_key: str, schema_path: str
+) -> bool:
+    """
+    Preload MCP servers (GitHub and Jules) in parallel.
+
+    Args:
+        mcp_hub_url: Base URL of MCP Hub
+        github_token: GitHub personal access token
+        jules_api_key: Jules API key
+        schema_path: Path to jules.schema.json OpenAPI spec
+
+    Returns:
+        True if all servers were preloaded successfully, False otherwise
+    """
+    print("\nPreloading MCP servers in parallel...")
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        future_github = executor.submit(preload_github_mcp_server, mcp_hub_url, github_token)
+        future_jules = executor.submit(
+            preload_jules_mcp_server, mcp_hub_url, jules_api_key, schema_path
+        )
+
+        # Wait for both to complete
+        success_github = future_github.result()
+        success_jules = future_jules.result()
+
+    return success_github and success_jules
+
+
 def deploy_jules_workflow(prefect_api_url: str, work_pool_name: str = "default-agent-pool") -> bool:
     """
     Deploy Jules agent workflow to Prefect.
@@ -264,9 +295,9 @@ def main():
                 os.path.dirname(os.path.dirname(__file__)), "jules.schema.json"
             )
 
-            success = preload_github_mcp_server(args.mcp_hub_url, github_token)
-            if success:
-                success = preload_jules_mcp_server(args.mcp_hub_url, jules_api_key, schema_path)
+            success = preload_mcp_servers(
+                args.mcp_hub_url, github_token, jules_api_key, schema_path
+            )
 
             if not success:
                 print("\n✗ Failed to preload MCP servers")
