@@ -8,10 +8,12 @@
 ###
 - name: Install required system packages
   apt:
-    name: "{{ item }}"
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - software-properties-common
     state: present
     update_cache: true
-  loop: ['apt-transport-https', 'ca-certificates', 'software-properties-common']
 
 - name: Add Docker GPG apt Key
   apt_key:
@@ -25,10 +27,13 @@
 
 - name: Update apt and install docker-ce
   apt:
-    name: "{{ item }}"
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - docker-compose
+      - containerd.io
     state: present
     update_cache: true
-  loop: ['docker-ce', 'docker-ce-cli', 'docker-compose', 'containerd.io']
 
 - name: Ensure docker users are added to the docker group.
   user:

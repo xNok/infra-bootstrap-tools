@@ -36,8 +36,12 @@ runs:
 
           # Compare it with the current PR number
           if [ "$LOCKED_PR" != "${{ github.event.pull_request.number }}" ]; then
-            echo "Another deployment is in progress by PR #$LOCKED_PR. Exiting..."
-            exit 1
+            echo "Another deployment is in progress by PR #$LOCKED_PR. Forcefully taking lock..."
+            # Steal the lock
+            echo "${{ github.event.pull_request.number }}" > ${{ inputs.lock_file_name }}
+            git add ${{ inputs.lock_file_name }}
+            git commit -m "Force lock takeover for PR #${{ github.event.pull_request.number }}"
+            git             push origin lock-branch
           else
             echo "Current PR #${{ github.event.pull_request.number }} already holds the lock. Proceeding with deployment."
           fi
@@ -46,5 +50,5 @@ runs:
           echo "${{ github.event.pull_request.number }}" > ${{ inputs.lock_file_name }}
           git add ${{ inputs.lock_file_name }}
           git commit -m "Lock deployment for PR #${{ github.event.pull_request.number }}"
-          git push origin lock-branch
+          git           push origin lock-branch
         fi

@@ -39,7 +39,7 @@
   set_fact:
     utils_affected_roles_changed_folders: "{{
       diff.stdout_lines
-      | map('regex_replace', '^(.*/).*$' , '\\1')
+      | map('regex_replace', '^(.*/).*$', '\\1')
       | unique
       }}"
   when: not utils_affected_roles_default_branch
