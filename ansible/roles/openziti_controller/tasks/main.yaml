@@ -74,13 +74,16 @@
   ansible.builtin.shell: |
     ziti create config controller \
       --output {{ openziti_controller_config_dir }}/controller.yaml \
-      --identity-cert "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-server.cert" \
-      --identity-server-cert "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-server.chain.pem" \
-      --identity-key "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/keys/{{ openziti_controller_external_dns }}-server.key" \
-      --identity-ca "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-intermediate.chain.pem" \
+      --identity-cert "{{ pki_root }}/certs/{{ dns }}-server.cert" \
+      --identity-server-cert "{{ pki_root }}/certs/{{ dns }}-server.chain.pem" \
+      --identity-key "{{ pki_root }}/keys/{{ dns }}-server.key" \
+      --identity-ca "{{ pki_root }}/certs/{{ dns }}-intermediate.chain.pem" \
       --ctrl-address {{ openziti_controller_external_dns }} \
       --ctrl-port {{ openziti_controller_ctrl_port }} \
       --db-file {{ openziti_controller_data_dir }}/ctrl.db
+  vars:
+    pki_root: "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate"
+    dns: "{{ openziti_controller_external_dns }}"
   args:
     creates: "{{ openziti_controller_config_dir }}/controller.yaml"
 
@@ -92,10 +95,13 @@
       --ctrl-endpoint {{ openziti_controller_external_dns }}:{{ openziti_controller_ctrl_port }} \
       --router-address {{ openziti_controller_external_dns }} \
       --router-port {{ openziti_controller_edge_router_port }} \
-      --identity-cert "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-client.cert" \
-      --identity-server-cert "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-client.chain.pem" \
-      --identity-key "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/keys/{{ openziti_controller_external_dns }}-client.key" \
-      --identity-ca "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-intermediate.chain.pem"
+      --identity-cert "{{ pki_root }}/certs/{{ dns }}-client.cert" \
+      --identity-server-cert "{{ pki_root }}/certs/{{ dns }}-client.chain.pem" \
+      --identity-key "{{ pki_root }}/keys/{{ dns }}-client.key" \
+      --identity-ca "{{ pki_root }}/certs/{{ dns }}-intermediate.chain.pem"
+  vars:
+    pki_root: "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate"
+    dns: "{{ openziti_controller_external_dns }}"
   args:
     creates: "{{ openziti_controller_config_dir }}/router.yaml"
 

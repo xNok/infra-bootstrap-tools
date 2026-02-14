@@ -41,12 +41,16 @@
 
 - name: Bind Service to Router Identity
   ansible.builtin.shell: |
-    ziti edge create service-policy "{{ service_item.name }}-bind" Bind       --service-roles "@{{ service_item.name }}"       --identity-roles "@{{ openziti_controller_router_name | default('edge-router') }}"       || true
+    ziti edge create service-policy "{{ service_item.name }}-bind" Bind       --service-roles \
+       "@{{ service_item.name }}"       --identity-roles \
+       "@{{ openziti_controller_router_name | default('edge-router') }}"       || true
   register: openziti_config_bind_policy
   changed_when: "'New service policy' in openziti_config_bind_policy.stdout"
 
 - name: Create Dial Policy for Clients
   ansible.builtin.shell: |
-    ziti edge create service-policy "{{ service_item.name }}-dial" Dial       --service-roles "@{{ service_item.name }}"       --identity-roles "#clients" || true
+    ziti edge create service-policy "{{ service_item.name }}-dial" Dial       --service-roles \
+       "@{{ service_item.name }}"       --identity-roles \
+       "#clients" || true
   register: openziti_config_dial_policy
   changed_when: "'New service policy' in openziti_config_dial_policy.stdout"
