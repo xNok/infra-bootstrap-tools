@@ -1,12 +1,12 @@
 {
     "name": "ansible-collection-infra-bootstrap-tools",
     "private": true,
-    "version": "1.0.5",
+    "version": "1.0.6",
     "workspaces": [
         "roles/*"
     ],
     "dependencies": {
-        "ansible-role-docker": "0.0.1",
+        "ansible-role-docker": "0.0.2",
         "ansible-role-docker-swarm-app-caddy": "0.0.1",
         "ansible-role-docker-swarm-app-portainer": "0.0.1",
         "ansible-role-docker-swarm-controller": "0.0.1",
@@ -15,7 +15,7 @@
         "ansible-role-docker-swarm-plugin-rclone": "0.0.1",
         "ansible-role-terraform-aws": "0.0.1",
         "ansible-role-terraform-digitalocean": "0.1.0",
-        "ansible-role-utils-affected-roles": "0.0.1",
+        "ansible-role-utils-affected-roles": "0.0.2",
         "ansible-role-utils-rotate-docker-configs": "0.0.1",
         "ansible-role-utils-rotate-docker-secrets": "0.0.1",
         "ansible-role-utils-ssh-add": "0.0.1"
