@@ -9,10 +9,11 @@
     update_cache: true
 
 - name: Add OpenZiti GPG key
-  ansible.builtin.shell: |
-    curl -sSL https://get.openziti.io/tun/debian/keys/public | gpg --dearmor -o /usr/share/keyrings/openziti.gpg
-  args:
-    creates: /usr/share/keyrings/openziti.gpg
+  ansible.builtin.get_url:
+    url: https://get.openziti.io/tun/debian/keys/public
+    dest: /usr/share/keyrings/openziti.gpg
+    mode: '0644'
+    decompress: true
 
 - name: Add OpenZiti repository
   ansible.builtin.apt_repository:
@@ -39,19 +40,20 @@
     src: "{{ openziti_client_jwt_path }}"
     dest: "/tmp/enrollment.jwt"
     mode: '0600'
-  register: copy_jwt
+  register: openziti_client_copy_jwt
   ignore_errors: true
 
 - name: Check if identity is already enrolled
   ansible.builtin.stat:
     path: "{{ openziti_client_identity_file }}"
-  register: identity_check
+  register: openziti_client_identity_check
 
 - name: Enroll Identity
   ansible.builtin.shell: |
     ziti-edge-tunnel enroll --jwt /tmp/enrollment.jwt --identity {{ openziti_client_identity_file }}
-  when: not identity_check.stat.exists and copy_jwt.dest is defined
+  when: not openziti_client_identity_check.stat.exists and openziti_client_copy_jwt.dest is defined
   notify: Restart ziti-edge-tunnel
+  changed_when: true
 
 - name: Enable and Start ziti-edge-tunnel
   ansible.builtin.systemd:

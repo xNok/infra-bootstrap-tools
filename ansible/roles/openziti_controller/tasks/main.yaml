@@ -13,58 +13,59 @@
     state: directory
     mode: '0755'
   loop:
-    - "{{ openziti_install_dir }}"
-    - "{{ openziti_config_dir }}"
-    - "{{ openziti_data_dir }}"
-    - "{{ openziti_pki_dir }}"
+    - "{{ openziti_controller_install_dir }}"
+    - "{{ openziti_controller_config_dir }}"
+    - "{{ openziti_controller_data_dir }}"
+    - "{{ openziti_controller_pki_dir }}"
 
 - name: Download OpenZiti CLI
   ansible.builtin.get_url:
-    url: "https://github.com/openziti/ziti/releases/download/v{{ openziti_version }}/ziti-linux-amd64-{{ openziti_version }}.tar.gz"
+    url: "https://github.com/openziti/ziti/releases/download/v{{ openziti_controller_version }}/ziti-linux-amd64-{{ openziti_controller_version }}.tar.gz"
     dest: "/tmp/ziti.tar.gz"
     mode: '0644'
-  register: download_ziti
+  register: openziti_controller_download_ziti
 
 - name: Extract OpenZiti CLI
   ansible.builtin.unarchive:
     src: "/tmp/ziti.tar.gz"
-    dest: "{{ openziti_install_dir }}"
+    dest: "{{ openziti_controller_install_dir }}"
     remote_src: true
     extra_opts: ['--strip-components=1']
-  when: download_ziti.changed
+  when: openziti_controller_download_ziti.changed
 
 - name: Symlink ziti binary to /usr/local/bin
   ansible.builtin.file:
-    src: "{{ openziti_install_dir }}/ziti"
-    dest: "{{ openziti_bin_dir }}/ziti"
+    src: "{{ openziti_controller_install_dir }}/ziti"
+    dest: "{{ openziti_controller_bin_dir }}/ziti"
     state: link
 
 - name: Check if PKI is initialized
   ansible.builtin.stat:
-    path: "{{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs"
-  register: pki_check
+    path: "{{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs"
+  register: openziti_controller_pki_check
 
 - name: Initialize PKI (Internal CA)
   ansible.builtin.shell: |
-    export ZITI_PKI={{ openziti_pki_dir }}
+    export ZITI_PKI={{ openziti_controller_pki_dir }}
     export ZITI_PKI_OS_KEY_P256=true
-    ziti pki create ca --pki-root {{ openziti_pki_dir }} --ca-file {{ openziti_controller_external_dns }}-root --ca-name {{ openziti_controller_external_dns }}-root
-    ziti pki create intermediate --pki-root {{ openziti_pki_dir }} --ca-name {{ openziti_controller_external_dns }}-root --intermediate-name {{ openziti_controller_external_dns }}-intermediate --intermediate-file {{ openziti_controller_external_dns }}-intermediate
-    ziti pki create server --pki-root {{ openziti_pki_dir }} --ca-name {{ openziti_controller_external_dns }}-intermediate --server-name {{ openziti_controller_external_dns }}-server --server-file {{ openziti_controller_external_dns }}-server --dns {{ openziti_controller_external_dns }},localhost --ip 127.0.0.1
-    ziti pki create client --pki-root {{ openziti_pki_dir }} --ca-name {{ openziti_controller_external_dns }}-intermediate --client-name {{ openziti_controller_external_dns }}-client --client-file {{ openziti_controller_external_dns }}-client
-  when: not pki_check.stat.exists
+    ziti pki create ca --pki-root {{ openziti_controller_pki_dir }}       --ca-file {{ openziti_controller_external_dns }}-root       --ca-name {{ openziti_controller_external_dns }}-root
+    ziti pki create intermediate --pki-root {{ openziti_controller_pki_dir }}       --ca-name {{ openziti_controller_external_dns }}-root       --intermediate-name {{ openziti_controller_external_dns }}-intermediate       --intermediate-file {{ openziti_controller_external_dns }}-intermediate
+    ziti pki create server --pki-root {{ openziti_controller_pki_dir }}       --ca-name {{ openziti_controller_external_dns }}-intermediate       --server-name {{ openziti_controller_external_dns }}-server       --server-file {{ openziti_controller_external_dns }}-server       --dns {{ openziti_controller_external_dns }},localhost --ip 127.0.0.1
+    ziti pki create client --pki-root {{ openziti_controller_pki_dir }}       --ca-name {{ openziti_controller_external_dns }}-intermediate       --client-name {{ openziti_controller_external_dns }}-client       --client-file {{ openziti_controller_external_dns }}-client
+  when: not openziti_controller_pki_check.stat.exists
+  changed_when: true
 
 - name: Generate Controller Configuration
   ansible.builtin.shell: |
-    ziti create config controller       --output {{ openziti_config_dir }}/controller.yaml       --identity-cert {{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-server.cert       --identity-server-cert {{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-server.chain.pem       --identity-key {{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/keys/{{ openziti_controller_external_dns }}-server.key       --identity-ca {{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-intermediate.chain.pem       --ctrl-address {{ openziti_controller_external_dns }}       --ctrl-port {{ openziti_controller_ctrl_port }}       --db-file {{ openziti_data_dir }}/ctrl.db
+    ziti create config controller       --output {{ openziti_controller_config_dir }}/controller.yaml       --identity-cert {{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-server.cert       --identity-server-cert {{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-server.chain.pem       --identity-key {{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/keys/{{ openziti_controller_external_dns }}-server.key       --identity-ca {{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-intermediate.chain.pem       --ctrl-address {{ openziti_controller_external_dns }}       --ctrl-port {{ openziti_controller_ctrl_port }}       --db-file {{ openziti_controller_data_dir }}/ctrl.db
   args:
-    creates: "{{ openziti_config_dir }}/controller.yaml"
+    creates: "{{ openziti_controller_config_dir }}/controller.yaml"
 
 - name: Generate Router Configuration
   ansible.builtin.shell: |
-    ziti create config router edge       --output {{ openziti_config_dir }}/router.yaml       --router-name {{ openziti_router_name }}       --ctrl-endpoint {{ openziti_controller_external_dns }}:{{ openziti_controller_ctrl_port }}       --router-address {{ openziti_controller_external_dns }}       --router-port {{ openziti_edge_router_port }}       --identity-cert {{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-client.cert       --identity-server-cert {{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-client.chain.pem       --identity-key {{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/keys/{{ openziti_controller_external_dns }}-client.key       --identity-ca {{ openziti_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-intermediate.chain.pem
+    ziti create config router edge       --output {{ openziti_controller_config_dir }}/router.yaml       --router-name {{ openziti_controller_router_name }}       --ctrl-endpoint {{ openziti_controller_external_dns }}:{{ openziti_controller_ctrl_port }}       --router-address {{ openziti_controller_external_dns }}       --router-port {{ openziti_controller_edge_router_port }}       --identity-cert {{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-client.cert       --identity-server-cert {{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-client.chain.pem       --identity-key {{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/keys/{{ openziti_controller_external_dns }}-client.key       --identity-ca {{ openziti_controller_pki_dir }}/{{ openziti_controller_external_dns }}-intermediate/certs/{{ openziti_controller_external_dns }}-intermediate.chain.pem
   args:
-    creates: "{{ openziti_config_dir }}/router.yaml"
+    creates: "{{ openziti_controller_config_dir }}/router.yaml"
 
 - name: Create Systemd Service for Controller
   ansible.builtin.copy:
@@ -76,7 +77,7 @@
 
       [Service]
       User=root
-      ExecStart={{ openziti_bin_dir }}/ziti controller run {{ openziti_config_dir }}/controller.yaml
+      ExecStart={{ openziti_controller_bin_dir }}/ziti controller run {{ openziti_controller_config_dir }}/controller.yaml
       Restart=always
       RestartSec=5
       LimitNOFILE=65535
@@ -96,7 +97,7 @@
 
       [Service]
       User=root
-      ExecStart={{ openziti_bin_dir }}/ziti router run {{ openziti_config_dir }}/router.yaml
+      ExecStart={{ openziti_controller_bin_dir }}/ziti router run {{ openziti_controller_config_dir }}/router.yaml
       Restart=always
       RestartSec=5
       LimitNOFILE=65535
@@ -131,7 +132,7 @@
     proto: tcp
   loop:
     - "{{ openziti_controller_edge_api_port }}"
-    - "{{ openziti_edge_router_port }}"
+    - "{{ openziti_controller_edge_router_port }}"
     - 22
 
 - name: Configure UFW (Deny K3s Public Access if Dark Mode)

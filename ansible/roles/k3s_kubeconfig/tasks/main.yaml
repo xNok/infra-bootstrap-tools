@@ -3,7 +3,7 @@
   ansible.builtin.fetch:
     src: /etc/rancher/k3s/k3s.yaml
     dest: /tmp/k3s-config.yaml
-    flat: yes
+    flat: true
   run_once: true
 
 - name: Update server URL in kubeconfig

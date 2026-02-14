@@ -28,25 +28,25 @@
 
 - name: Create Configs via CLI
   ansible.builtin.shell: |
-    ziti edge create config "{{ service_item.name }}-host-v1" host.v1 --json-file "/tmp/{{ service_item.name }}-host.json" || true
-    ziti edge create config "{{ service_item.name }}-intercept-v1" intercept.v1 --json-file "/tmp/{{ service_item.name }}-intercept.json" || true
-  register: create_configs
-  changed_when: false
+    ziti edge create config "{{ service_item.name }}-host-v1" host.v1       --json-file "/tmp/{{ service_item.name }}-host.json" || true
+    ziti edge create config "{{ service_item.name }}-intercept-v1" intercept.v1       --json-file "/tmp/{{ service_item.name }}-intercept.json" || true
+  register: openziti_config_create_configs
+  changed_when: "'New config' in openziti_config_create_configs.stdout"
 
 - name: Create Service {{ service_item.name }}
   ansible.builtin.shell: |
-    ziti edge create service "{{ service_item.name }}" --configs "{{ service_item.name }}-host-v1,{{ service_item.name }}-intercept-v1" || true
-  register: create_service
-  changed_when: false
+    ziti edge create service "{{ service_item.name }}"       --configs "{{ service_item.name }}-host-v1,{{ service_item.name }}-intercept-v1" || true
+  register: openziti_config_create_service
+  changed_when: "'New service' in openziti_config_create_service.stdout"
 
 - name: Bind Service to Router Identity
   ansible.builtin.shell: |
-    ziti edge create service-policy "{{ service_item.name }}-bind" Bind --service-roles "@{{ service_item.name }}" --identity-roles "@{{ openziti_router_name | default('edge-router') }}" || true
-  register: bind_policy
-  changed_when: false
+    ziti edge create service-policy "{{ service_item.name }}-bind" Bind       --service-roles "@{{ service_item.name }}"       --identity-roles "@{{ openziti_controller_router_name | default('edge-router') }}" || true
+  register: openziti_config_bind_policy
+  changed_when: "'New service policy' in openziti_config_bind_policy.stdout"
 
 - name: Create Dial Policy for Clients
   ansible.builtin.shell: |
-    ziti edge create service-policy "{{ service_item.name }}-dial" Dial --service-roles "@{{ service_item.name }}" --identity-roles "#clients" || true
-  register: dial_policy
-  changed_when: false
+    ziti edge create service-policy "{{ service_item.name }}-dial" Dial       --service-roles "@{{ service_item.name }}"       --identity-roles "#clients" || true
+  register: openziti_config_dial_policy
+  changed_when: "'New service policy' in openziti_config_dial_policy.stdout"

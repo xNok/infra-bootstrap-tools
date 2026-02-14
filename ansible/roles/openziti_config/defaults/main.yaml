@@ -1,9 +1,9 @@
 # OpenZiti Configuration Defaults
-openziti_controller_url: "https://127.0.0.1:8441" # Use localhost for admin access from the manager node itself
-openziti_admin_username: admin
-openziti_admin_password: admin
+openziti_config_controller_url: "https://127.0.0.1:8441" # Use localhost for admin access from the manager node itself
+openziti_config_admin_username: admin
+openziti_config_admin_password: admin
 
-openziti_services:
+openziti_config_services:
   - name: k3s-service
     host_address: "127.0.0.1"
     host_port: 6443
@@ -12,5 +12,5 @@ openziti_services:
     identities:
       - laptop-client
 
-openziti_identities:
+openziti_config_identities:
   - laptop-client

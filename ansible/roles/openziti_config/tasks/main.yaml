@@ -1,33 +1,34 @@
 ---
 - name: Login to Ziti Controller
   ansible.builtin.shell: |
-    ziti edge login {{ openziti_controller_url }} -u {{ openziti_admin_username }} -p {{ openziti_admin_password }} -y
-  register: ziti_login
+    ziti edge login {{ openziti_config_controller_url }}       -u {{ openziti_config_admin_username }}       -p {{ openziti_config_admin_password }} -y
+  register: openziti_config_ziti_login
   changed_when: false
 
 - name: Create Global Edge Router Policies
   ansible.builtin.shell: |
     ziti edge create edge-router-policy all-endpoints --edge-router-roles '#all' --identity-roles '#all' || true
     ziti edge create service-edge-router-policy all-services --edge-router-roles '#all' --service-roles '#all' || true
-  ignore_errors: true
+  register: openziti_config_create_global_policies
+  changed_when: "'Created' in openziti_config_create_global_policies.stdout"
 
 - name: Configure Services
   include_tasks: service_setup.yml
-  loop: "{{ openziti_services }}"
+  loop: "{{ openziti_config_services }}"
   loop_control:
     loop_var: service_item
 
 - name: Create Client Identities
   ansible.builtin.shell: |
-    ziti edge create identity user "{{ item }}" -o "/tmp/{{ item }}.jwt" -a "clients" || true
+    ziti edge create identity user "{{ item }}" -o "/tmp/{{ item }}.jwt" -a "clients"
   args:
     creates: "/tmp/{{ item }}.jwt"
-  loop: "{{ openziti_identities }}"
-  register: create_identities
+  loop: "{{ openziti_config_identities }}"
+  register: openziti_config_create_identities
 
 - name: Fetch Identity JWTs
   ansible.builtin.fetch:
     src: "/tmp/{{ item }}.jwt"
     dest: "{{ playbook_dir }}/{{ item }}.jwt"
     flat: true
-  loop: "{{ openziti_identities }}"
+  loop: "{{ openziti_config_identities }}"
