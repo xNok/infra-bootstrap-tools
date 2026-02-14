@@ -1,5 +1,13 @@
 # ansible-collection-infra-bootstrap-tools
 
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [356cd1f]
+  - ansible-role-docker@0.0.2
+  - ansible-role-utils-affected-roles@0.0.2
+
 ## 1.0.5
 
 ### Patch Changes
