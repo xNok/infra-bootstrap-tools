@@ -1,0 +1,24 @@
+---
+- name: Fetch K3s kubeconfig
+  ansible.builtin.fetch:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: /tmp/k3s-config.yaml
+    flat: yes
+  run_once: true
+
+- name: Update server URL in kubeconfig
+  ansible.builtin.replace:
+    path: /tmp/k3s-config.yaml
+    regexp: 'https://127.0.0.1:6443'
+    replace: '{{ k3s_kubeconfig_server_url }}'
+  delegate_to: localhost
+  run_once: true
+
+- name: Install kubeconfig locally
+  ansible.builtin.copy:
+    src: /tmp/k3s-config.yaml
+    dest: "{{ k3s_kubeconfig_path }}"
+    mode: '0600'
+  delegate_to: localhost
+  run_once: true
+  when: k3s_kubeconfig_path | length > 0

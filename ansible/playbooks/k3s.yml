@@ -1,12 +1,30 @@
 ---
-- name: Setup K3s Server
+- name: Setup K3s Server with Dark Mode
   hosts: managers
   become: true
+  vars:
+    k3s_server_dark_mode: true
   roles:
     - k3s_server
+    - role: openziti_controller
+      when: k3s_server_dark_mode | bool
+    - role: openziti_config
+      when: k3s_server_dark_mode | bool
+    - role: k3s_kubeconfig
+      when: k3s_server_dark_mode | bool
 
 - name: Setup K3s Agents
   hosts: nodes
   become: true
   roles:
     - k3s_agent
+
+- name: Setup Local Client for Dark Mode
+  hosts: localhost
+  connection: local
+  become: true
+  vars:
+    k3s_server_dark_mode: true
+  roles:
+    - role: openziti_client
+      when: k3s_server_dark_mode | bool

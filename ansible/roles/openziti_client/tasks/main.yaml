@@ -1,0 +1,68 @@
+---
+- name: Ensure dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+    update_cache: true
+
+- name: Add OpenZiti GPG key
+  ansible.builtin.shell: |
+    curl -sSL https://get.openziti.io/tun/debian/keys/public | gpg --dearmor -o /usr/share/keyrings/openziti.gpg
+  args:
+    creates: /usr/share/keyrings/openziti.gpg
+
+- name: Add OpenZiti repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/openziti.gpg] https://packages.openziti.org/zitipax-openziti-deb-stable bullseye main"
+    state: present
+    filename: openziti
+
+- name: Install ziti-edge-tunnel
+  ansible.builtin.apt:
+    name: ziti-edge-tunnel
+    state: present
+    update_cache: true
+
+- name: Create OpenZiti Identity Directory
+  ansible.builtin.file:
+    path: "{{ openziti_client_identity_dir }}"
+    state: directory
+    mode: '0700'
+    owner: ziti
+    group: ziti
+
+- name: Copy Enrollment JWT to Target
+  ansible.builtin.copy:
+    src: "{{ openziti_client_jwt_path }}"
+    dest: "/tmp/enrollment.jwt"
+    mode: '0600'
+  register: copy_jwt
+  ignore_errors: true
+
+- name: Check if identity is already enrolled
+  ansible.builtin.stat:
+    path: "{{ openziti_client_identity_file }}"
+  register: identity_check
+
+- name: Enroll Identity
+  ansible.builtin.shell: |
+    ziti-edge-tunnel enroll --jwt /tmp/enrollment.jwt --identity {{ openziti_client_identity_file }}
+  when: not identity_check.stat.exists and copy_jwt.dest is defined
+  notify: Restart ziti-edge-tunnel
+
+- name: Enable and Start ziti-edge-tunnel
+  ansible.builtin.systemd:
+    name: ziti-edge-tunnel
+    state: started
+    enabled: true
+
+- name: Ensure identity directory permissions
+  ansible.builtin.file:
+    path: "{{ openziti_client_identity_dir }}"
+    state: directory
+    owner: ziti
+    group: ziti
+    recurse: true

@@ -1,0 +1,24 @@
+# OpenZiti Controller Defaults
+openziti_version: '1.1.13' # Set a stable version
+openziti_install_dir: /opt/openziti
+openziti_bin_dir: /usr/local/bin
+openziti_config_dir: /etc/openziti
+openziti_pki_dir: /etc/openziti/pki
+openziti_data_dir: /var/lib/openziti
+
+# External Address/DNS for Controller/Edge Router
+openziti_controller_external_dns: "{{ ansible_host }}"
+openziti_controller_external_ip: "{{ ansible_host }}"
+
+# Ports
+openziti_controller_ctrl_port: 6262 # Fabric Controller
+openziti_controller_mgmt_port: 10000 # Management API (if separate)
+openziti_controller_edge_api_port: 8441 # Edge Controller API
+openziti_edge_router_port: 8442 # Edge Router Listener
+
+# Admin Credentials
+openziti_admin_username: admin
+openziti_admin_password: admin
+
+# Router Name
+openziti_router_name: "edge-router"

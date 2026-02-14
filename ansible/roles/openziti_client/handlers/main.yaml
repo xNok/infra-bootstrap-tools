@@ -1,0 +1,5 @@
+---
+- name: Restart ziti-edge-tunnel
+  ansible.builtin.systemd:
+    name: ziti-edge-tunnel
+    state: restarted

@@ -1,0 +1,10 @@
+---
+- name: Restart Controller
+  ansible.builtin.systemd:
+    name: ziti-controller
+    state: restarted
+
+- name: Restart Router
+  ansible.builtin.systemd:
+    name: ziti-router
+    state: restarted

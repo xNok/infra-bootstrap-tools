@@ -1,0 +1,52 @@
+---
+- name: Create Host Config for {{ service_item.name }}
+  ansible.builtin.copy:
+    dest: "/tmp/{{ service_item.name }}-host.json"
+    content: |
+      {
+        "protocol": "tcp",
+        "address": "{{ service_item.host_address }}",
+        "port": {{ service_item.host_port }}
+      }
+    mode: '0644'
+
+- name: Create Intercept Config for {{ service_item.name }}
+  ansible.builtin.copy:
+    dest: "/tmp/{{ service_item.name }}-intercept.json"
+    content: |
+      {
+        "protocols": ["tcp"],
+        "addresses": ["{{ service_item.intercept_address }}"],
+        "portRanges": [
+          {
+            "low": {{ service_item.intercept_port }},
+            "high": {{ service_item.intercept_port }}
+          }
+        ]
+      }
+    mode: '0644'
+
+- name: Create Configs via CLI
+  ansible.builtin.shell: |
+    ziti edge create config "{{ service_item.name }}-host-v1" host.v1 --json-file "/tmp/{{ service_item.name }}-host.json" || true
+    ziti edge create config "{{ service_item.name }}-intercept-v1" intercept.v1 --json-file "/tmp/{{ service_item.name }}-intercept.json" || true
+  register: create_configs
+  changed_when: false
+
+- name: Create Service {{ service_item.name }}
+  ansible.builtin.shell: |
+    ziti edge create service "{{ service_item.name }}" --configs "{{ service_item.name }}-host-v1,{{ service_item.name }}-intercept-v1" || true
+  register: create_service
+  changed_when: false
+
+- name: Bind Service to Router Identity
+  ansible.builtin.shell: |
+    ziti edge create service-policy "{{ service_item.name }}-bind" Bind --service-roles "@{{ service_item.name }}" --identity-roles "@{{ openziti_router_name | default('edge-router') }}" || true
+  register: bind_policy
+  changed_when: false
+
+- name: Create Dial Policy for Clients
+  ansible.builtin.shell: |
+    ziti edge create service-policy "{{ service_item.name }}-dial" Dial --service-roles "@{{ service_item.name }}" --identity-roles "#clients" || true
+  register: dial_policy
+  changed_when: false
