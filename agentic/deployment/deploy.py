@@ -160,7 +160,7 @@ def preload_mcp_servers(
     """
     print("\nPreloading MCP servers in parallel...")
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         future_github = executor.submit(preload_github_mcp_server, mcp_hub_url, github_token)
         future_jules = executor.submit(
             preload_jules_mcp_server, mcp_hub_url, jules_api_key, schema_path
