@@ -1,0 +1,5 @@
+# OpenZiti Client Defaults
+openziti_client_identity_name: "laptop-client"
+openziti_client_jwt_path: "{{ playbook_dir }}/{{ openziti_client_identity_name }}.jwt"
+openziti_client_identity_dir: "/opt/openziti/etc/identities"
+openziti_client_identity_file: "{{ openziti_client_identity_dir }}/{{ openziti_client_identity_name }}.json"

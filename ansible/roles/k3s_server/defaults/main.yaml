@@ -1,4 +1,14 @@
 # K3s Server Defaults
 k3s_server_version: '' # Leave empty for stable channel, or set specific version like 'v1.26.0+k3s1'
 k3s_server_kubeconfig_mode: '600' # File mode for kubeconfig; 600 (owner-only) is the secure default. Override with caution (e.g. to '644').
-k3s_server_extra_args: "--write-kubeconfig-mode {{ k3s_server_kubeconfig_mode }}"
+
+# Dark Mode Configuration
+k3s_server_dark_mode: false
+k3s_server_bind_address: "{{ '127.0.0.1' if k3s_server_dark_mode else '0.0.0.0' }}"
+k3s_server_tls_san: "{{ 'k3s.ziti' if k3s_server_dark_mode else '' }}"
+
+# Extra arguments for K3s installation
+k3s_server_extra_args: >-
+  --write-kubeconfig-mode {{ k3s_server_kubeconfig_mode }}
+  {{ '--bind-address ' + k3s_server_bind_address if k3s_server_dark_mode else '' }}
+  {{ '--tls-san ' + k3s_server_tls_san if k3s_server_dark_mode else '' }}
