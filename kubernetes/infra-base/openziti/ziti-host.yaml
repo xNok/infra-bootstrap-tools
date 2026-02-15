@@ -1,0 +1,23 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta2
+kind: HelmRelease
+metadata:
+  name: ziti-router
+  namespace: openziti
+spec:
+  chart:
+    spec:
+      chart: ziti-router
+      version: "0.0.12" # Verify latest version or remove to track latest
+      sourceRef:
+        kind: HelmRepository
+        name: openziti
+        namespace: flux-system
+  interval: 1h
+  install:
+    createNamespace: true
+  values:
+    edge:
+      advertisedHost: "ziti-router.openziti.svc.cluster.local"
+    ctrl:
+      endpoint: "ziti-controller.openziti.svc.cluster.local:6262"
+    enrollmentJwt: "ReplaceWithExpectedSecretOrMechanic"
