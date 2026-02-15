@@ -95,7 +95,7 @@
           provider: github
           url: "https://github.com/{{ k3s_flux_bootstrap_github_user }}/{{ k3s_flux_bootstrap_github_repo }}.git"
           ref: "refs/heads/main"
-          path: "clusters/{{ k3s_flux_bootstrap_cluster_name }}"
+          path: "kubernetes/clusters/{{ k3s_flux_bootstrap_cluster_name }}"
           pullSecret: "flux-system"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
