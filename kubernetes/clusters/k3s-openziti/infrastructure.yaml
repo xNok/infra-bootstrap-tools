@@ -1,0 +1,43 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: infra-sources
+  namespace: flux-system
+spec:
+  interval: 1h
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: "./kubernetes/infra-base/sources"
+  prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: infra-cert-manager
+  namespace: flux-system
+spec:
+  interval: 1h
+  dependsOn:
+    - name: infra-sources
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: "./kubernetes/infra-base/cert-manager"
+  prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: infra-openziti
+  namespace: flux-system
+spec:
+  interval: 1h
+  dependsOn:
+    - name: infra-cert-manager
+    - name: infra-sources
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: "./kubernetes/infra-base/openziti"
+  prune: true

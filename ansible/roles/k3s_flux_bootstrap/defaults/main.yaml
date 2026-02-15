@@ -1,0 +1,7 @@
+# Defaults for Flux Bootstrap
+k3s_flux_bootstrap_github_user: "xnok"
+k3s_flux_bootstrap_github_repo: "infra-bootstrap-tools"  # GitHub repository name for Flux bootstrap
+k3s_flux_bootstrap_cluster_name: "k3s-openziti"
+k3s_flux_bootstrap_flux_version: "2.x"
+k3s_flux_bootstrap_flux_operator_version: "0.41.1" # Latest version
+k3s_flux_bootstrap_github_token: ""

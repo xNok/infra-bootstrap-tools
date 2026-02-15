@@ -1,0 +1,8 @@
+write-kubeconfig-mode: "{{ k3s_server_kubeconfig_mode | default('600') }}"
+{% if k3s_server_use_openziti_dark %}
+tls-san:
+  - "{{ k3s_server_openziti_tls_san }}"
+bind-address: "{{ k3s_server_openziti_bind_address }}"
+disable:
+  - traefik
+{% endif %}

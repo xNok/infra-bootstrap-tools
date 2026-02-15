@@ -1,0 +1,17 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: jetstack
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.jetstack.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: openziti
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://openziti-test-kitchen.github.io/helm-charts

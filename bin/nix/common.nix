@@ -11,6 +11,7 @@
     python3
     python3Packages.pip
     ansible
+    ansible-lint
     _1password-cli
     go
     hugo

@@ -14,3 +14,9 @@ docker_swarm_app_caddy_digitalocean_api_token: "{{
   lookup('community.general.onepassword', 'CADDY_DIGITALOCEAN_API_TOKEN',
   vault='infra-bootstrap-tools', field='credential')
   }}"
+
+# Flux Bootstrap Secrets
+k3s_flux_bootstrap_github_token: "{{
+  lookup('community.general.onepassword', 'GitHub_Flux_Token',
+  vault='infra-bootstrap-tools', field='password')
+  }}"
