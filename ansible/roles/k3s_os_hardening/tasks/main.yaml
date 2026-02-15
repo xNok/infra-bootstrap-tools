@@ -1,0 +1,42 @@
+---
+- name: Install UFW
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+    update_cache: true
+
+- name: Set UFW default input policy
+  community.general.ufw:
+    direction: incoming
+    policy: "{{ k3s_os_hardening_default_input }}"
+    state: enabled
+
+- name: Set UFW default output policy
+  community.general.ufw:
+    direction: outgoing
+    policy: "{{ k3s_os_hardening_default_output }}"
+    state: enabled
+
+- name: Allow SSH (temporary)
+  community.general.ufw:
+    rule: allow
+    port: 22
+    proto: tcp
+
+- name: Allow OpenZiti Controller
+  community.general.ufw:
+    rule: allow
+    port: 8441
+    proto: tcp
+
+- name: Allow OpenZiti Edge Router
+  community.general.ufw:
+    rule: allow
+    port: 8442
+    proto: tcp
+
+- name: Deny K3s API publicly
+  community.general.ufw:
+    rule: deny
+    port: 6443
+    proto: tcp

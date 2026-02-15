@@ -1,0 +1,3 @@
+# Defaults for OS Hardening
+k3s_os_hardening_default_input: "deny"
+k3s_os_hardening_default_output: "allow"

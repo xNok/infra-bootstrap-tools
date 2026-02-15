@@ -2,8 +2,13 @@
 - name: Setup K3s Server
   hosts: managers
   become: true
+  vars:
+    # Enable Dark Stack Mode
+    k3s_server_use_openziti_dark: true
   roles:
+    - k3s_os_hardening
     - k3s_server
+    - k3s_flux_bootstrap
 
 - name: Setup K3s Agents
   hosts: nodes

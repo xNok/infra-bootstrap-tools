@@ -18,6 +18,8 @@ repos:
         additional_dependencies:
           - ansible
           - packaging
+          - ansible-compat
+          - pyyaml
         files: ^ansible/.*\.ya?ml$
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.86.0

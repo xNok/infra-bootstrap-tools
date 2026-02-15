@@ -1,6 +1,7 @@
 collections:
 - community.docker
 - community.general
+- kubernetes.core
 - xnok.infra_bootstrap_tools
 
 

@@ -1,0 +1,107 @@
+---
+- name: Ensure Helm dependencies are installed
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - gnupg
+      - curl
+    state: present
+
+- name: Add Helm GPG key
+  ansible.builtin.get_url:
+    url: https://baltocdn.com/helm/signing.asc
+    dest: /usr/share/keyrings/helm.gpg
+    mode: '0644'
+    force: true
+
+- name: Get dpkg architecture
+  ansible.builtin.command: dpkg --print-architecture
+  register: k3s_flux_bootstrap_deb_architecture
+  changed_when: false
+
+- name: Add Helm apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ k3s_flux_bootstrap_deb_architecture.stdout }} signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+    filename: helm-stable-debian
+    state: present
+
+- name: Install Helm
+  ansible.builtin.apt:
+    name: helm
+    state: present
+    update_cache: true
+
+- name: Install Kubernetes Python Library
+  ansible.builtin.pip:
+    name: kubernetes
+    state: present
+
+- name: Install Flux Operator
+  kubernetes.core.helm:
+    name: flux-operator
+    chart_ref: oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator
+    release_namespace: flux-system
+    create_namespace: true
+    state: present
+    wait: true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Create GitHub App Secret
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: flux-system
+        namespace: flux-system
+      type: Opaque
+      stringData:
+        app-id: "{{ k3s_flux_bootstrap_github_app_id }}"
+        app-installation-id: "{{ k3s_flux_bootstrap_github_app_installation_id }}"
+        app-private-key: |
+          {{ lookup('community.general.onepassword', 'GitHub_Flux_App_Private_Key', field='notesPlain') }}
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Apply FluxInstance
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: fluxcd.controlplane.io/v1
+      kind: FluxInstance
+      metadata:
+        name: flux
+        namespace: flux-system
+      spec:
+        distribution:
+          version: "{{ k3s_flux_bootstrap_flux_version }}"
+          registry: "ghcr.io/fluxcd"
+        components:
+          - source-controller
+          - kustomize-controller
+          - helm-controller
+          - notification-controller
+          - image-reflector-controller
+          - image-automation-controller
+        cluster:
+          type: kubernetes
+          multitenant: false
+          networkPolicy: true
+          domain: "cluster.local"
+        sync:
+          kind: GitRepository
+          provider: github
+          url: "https://github.com/{{ k3s_flux_bootstrap_github_user }}/{{ k3s_flux_bootstrap_github_repo }}.git"
+          ref: "refs/heads/main"
+          path: "clusters/{{ k3s_flux_bootstrap_cluster_name }}"
+          pullSecret: "flux-system"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Wait for Flux to reconcile
+  ansible.builtin.command: kubectl -n flux-system wait --for=condition=ready --timeout=300s fluxinstance/flux
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+  changed_when: false
