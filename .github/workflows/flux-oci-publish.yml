@@ -1,0 +1,50 @@
+name: Publish Flux Artifacts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'kubernetes/**'
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+jobs:
+  publish-manifests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cluster: ["k3s-openziti"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flux CLI
+        run: |
+          curl -s https://fluxcd.io/install.sh | sudo bash
+
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish manifests
+        env:
+          OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/${{ matrix.cluster }}"
+        run: |
+          flux push artifact $OCI_REPO:$(git rev-parse --short HEAD) \
+              --path="./kubernetes" \
+              --source="${{ github.event.repository.html_url }}" \
+              --revision="$(git rev-parse HEAD)"
+
+      - name: Tag latest
+        env:
+          OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/${{ matrix.cluster }}"
+        run: |
+          flux tag artifact $OCI_REPO:$(git rev-parse --short HEAD) --tag latest

@@ -3,7 +3,7 @@ k3s_flux_bootstrap_github_user: "xnok"
 k3s_flux_bootstrap_github_repo: "infra-bootstrap-tools"
 k3s_flux_bootstrap_cluster_name: "k3s-openziti"
 k3s_flux_bootstrap_flux_version: "2.x"
-k3s_flux_bootstrap_flux_operator_version: "v0.16.0" # Check for latest version
-k3s_flux_bootstrap_github_app_id: "{{ lookup('community.general.onepassword', 'GitHub_Flux_App', field='username') }}"
-k3s_flux_bootstrap_github_app_installation_id: "{{ lookup('community.general.onepassword', 'GitHub_Flux_App', field='password') }}"
-# k3s_flux_bootstrap_github_private_key: (lookup from 1Password usually)
+k3s_flux_bootstrap_flux_operator_version: "0.41.1" # Latest version
+k3s_flux_bootstrap_github_app_id: ""
+k3s_flux_bootstrap_github_app_installation_id: ""
+k3s_flux_bootstrap_github_private_key: ""

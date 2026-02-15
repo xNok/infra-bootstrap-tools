@@ -8,6 +8,7 @@
   roles:
     - k3s_os_hardening
     - k3s_server
+    # Requires 1Password secrets! See roles/k3s_flux_bootstrap/README.md for creating them.
     - k3s_flux_bootstrap
 
 - name: Setup K3s Agents

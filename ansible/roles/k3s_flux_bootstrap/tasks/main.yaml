@@ -61,7 +61,7 @@
         app-id: "{{ k3s_flux_bootstrap_github_app_id }}"
         app-installation-id: "{{ k3s_flux_bootstrap_github_app_installation_id }}"
         app-private-key: |
-          {{ lookup('community.general.onepassword', 'GitHub_Flux_App_Private_Key', field='notesPlain') }}
+          {{ k3s_flux_bootstrap_github_private_key }}
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
@@ -91,11 +91,10 @@
           networkPolicy: true
           domain: "cluster.local"
         sync:
-          kind: GitRepository
-          provider: github
-          url: "https://github.com/{{ k3s_flux_bootstrap_github_user }}/{{ k3s_flux_bootstrap_github_repo }}.git"
-          ref: "refs/heads/main"
-          path: "kubernetes/clusters/{{ k3s_flux_bootstrap_cluster_name }}"
+          kind: OCIArtifact
+          provider: oci
+          url: "oci://ghcr.io/{{ k3s_flux_bootstrap_github_user }}/manifests/{{ k3s_flux_bootstrap_cluster_name }}"
+          ref: "latest"
           pullSecret: "flux-system"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
