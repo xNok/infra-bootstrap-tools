@@ -24,10 +24,13 @@ create_item_if_missing() {
     fi
 }
 
-echo "Creating 'GitHub_Flux_App' secrets..."
-create_item_if_missing "GitHub_Flux_App" "Login" "${VAULT}" \
-    "username=APP_ID_PLACEHOLDER" \
-    "password=INSTALLATION_ID_PLACEHOLDER"
+echo "Creating 'GitHub_Flux_Token' secret placeholder..."
+if ! op item get "GitHub_Flux_Token" --vault "${VAULT}" >/dev/null 2>&1; then
+    op item create --category="Login" --title="GitHub_Flux_Token" --vault="${VAULT}" \
+        "password=GITHUB_PAT_PLACEHOLDER"
+else
+    echo "Item 'GitHub_Flux_Token' already exists."
+fi
 
 echo "Creating 'GitHub_Flux_App_Private_Key' secrets..."
 create_item_if_missing "GitHub_Flux_App_Private_Key" "Secure Note" "${VAULT}" \

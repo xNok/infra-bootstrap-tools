@@ -8,9 +8,7 @@ The following items are expected to exist in the `infra-bootstrap-tools` vault.
 
 | Item Title | Field | Description | Used By |
 | text | text | text | text |
-| `GitHub_Flux_App` | `username` | GitHub App ID | `roles/k3s_flux_bootstrap` |
-| `GitHub_Flux_App` | `password` | GitHub App Installation ID | `roles/k3s_flux_bootstrap` |
-| `GitHub_Flux_App_Private_Key` | `notesPlain` | GitHub App Private Key (PEM) | `roles/k3s_flux_bootstrap` |
+| `GitHub_Flux_Token` | `password` | GitHub Personal Access Token | `roles/k3s_flux_bootstrap` |
 | `CADDY_GITHUB_APP` | `username` | GitHub OAuth Client ID | `roles/docker_swarm_app_caddy` |
 | `CADDY_GITHUB_APP` | `credential` | GitHub OAuth Client Secret | `roles/docker_swarm_app_caddy` |
 | `CADDY_JWT_SHARED_KEY` | `password` | JWT Shared Key | `roles/docker_swarm_app_caddy` |

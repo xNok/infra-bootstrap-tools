@@ -16,15 +16,7 @@ docker_swarm_app_caddy_digitalocean_api_token: "{{
   }}"
 
 # Flux Bootstrap Secrets
-k3s_flux_bootstrap_github_app_id: "{{
-  lookup('community.general.onepassword', 'GitHub_Flux_App',
-  vault='infra-bootstrap-tools', field='username')
-  }}"
-k3s_flux_bootstrap_github_app_installation_id: "{{
-  lookup('community.general.onepassword', 'GitHub_Flux_App',
+k3s_flux_bootstrap_github_token: "{{
+  lookup('community.general.onepassword', 'GitHub_Flux_Token',
   vault='infra-bootstrap-tools', field='password')
-  }}"
-k3s_flux_bootstrap_github_private_key: "{{
-  lookup('community.general.onepassword', 'GitHub_Flux_App_Private_Key',
-  vault='infra-bootstrap-tools', field='notesPlain')
   }}"

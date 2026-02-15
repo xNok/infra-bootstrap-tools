@@ -1,27 +1,24 @@
 ---
-- name: Ensure Helm dependencies are installed
+- name: Ensure dependencies are installed
   ansible.builtin.apt:
     name:
       - apt-transport-https
       - gnupg
       - curl
+      - python3-pip
+      - python3-kubernetes
     state: present
 
 - name: Add Helm GPG key
-  ansible.builtin.get_url:
-    url: https://baltocdn.com/helm/signing.asc
-    dest: /usr/share/keyrings/helm.gpg
-    mode: '0644'
-    force: true
-
-- name: Get dpkg architecture
-  ansible.builtin.command: dpkg --print-architecture
-  register: k3s_flux_bootstrap_deb_architecture
-  changed_when: false
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL https://packages.buildkite.com/helm-linux/helm-debian/gpgkey | gpg --dearmor -o /usr/share/keyrings/helm.gpg
+  args:
+    creates: /usr/share/keyrings/helm.gpg
 
 - name: Add Helm apt repository
   ansible.builtin.apt_repository:
-    repo: "deb [arch={{ k3s_flux_bootstrap_deb_architecture.stdout }} signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+    repo: "deb [signed-by=/usr/share/keyrings/helm.gpg] https://packages.buildkite.com/helm-linux/helm-debian/any/ any main"
     filename: helm-stable-debian
     state: present
 
@@ -35,6 +32,7 @@
   ansible.builtin.pip:
     name: kubernetes
     state: present
+    break_system_packages: true
 
 - name: Install Flux Operator
   kubernetes.core.helm:
@@ -47,7 +45,7 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Create GitHub App Secret
+- name: Create GHCR pull secret
   kubernetes.core.k8s:
     state: present
     definition:
@@ -56,12 +54,16 @@
       metadata:
         name: flux-system
         namespace: flux-system
-      type: Opaque
+      type: kubernetes.io/dockerconfigjson
       stringData:
-        app-id: "{{ k3s_flux_bootstrap_github_app_id }}"
-        app-installation-id: "{{ k3s_flux_bootstrap_github_app_installation_id }}"
-        app-private-key: |
-          {{ k3s_flux_bootstrap_github_private_key }}
+        .dockerconfigjson: "{{ docker_config | to_json }}"
+  vars:
+    docker_config:
+      auths:
+        ghcr.io:
+          username: "{{ k3s_flux_bootstrap_github_user }}"
+          password: "{{ k3s_flux_bootstrap_github_token }}"
+          auth: "{{ (k3s_flux_bootstrap_github_user + ':' + k3s_flux_bootstrap_github_token) | b64encode }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
