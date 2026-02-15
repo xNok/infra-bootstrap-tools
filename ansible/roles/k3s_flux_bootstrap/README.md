@@ -19,7 +19,7 @@ Then update the values in 1Password. See [docs/SECRETS.md](../../../docs/SECRETS
 ### 1. GitHub Personal Access Token (`GitHub_Flux_Token`)
 - Item Name: `GitHub_Flux_Token`
 - Vault: `infra-bootstrap-tools`
-- Field `password`: Your GitHub Personal Access Token with appropriate permissions for reading packages from GHCR.
+- Field `password`: Your GitHub Personal Access Token with required scopes: `read:packages` (to pull OCI artifacts from GHCR).
 
 ## Variables
 

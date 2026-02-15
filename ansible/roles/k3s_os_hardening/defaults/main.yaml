@@ -8,4 +8,4 @@ k3s_os_hardening_default_output: "allow"
 # - 10.0.0.0/24 or 10.1.0.0/16 for small to medium networks
 # - 192.168.1.0/24 for home/small office networks
 # - For production: use the smallest CIDR that includes all your K3s nodes
-k3s_os_hardening_k3s_api_cidr: "10.0.0.0/24"  # Internal network CIDR for K3s traffic - OVERRIDE THIS
+k3s_os_hardening_k3s_api_cidr: "10.0.0.0/24"
