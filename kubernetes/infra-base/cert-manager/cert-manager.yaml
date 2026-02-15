@@ -17,6 +17,5 @@ spec:
     createNamespace: true
     crds: CreateReplace
   values:
-    installCRDs: true
     prometheus:
       enabled: false

@@ -4,6 +4,9 @@ metadata:
   name: ziti-router
   namespace: openziti
 spec:
+  dependsOn:
+    - name: ziti-controller
+      namespace: openziti
   chart:
     spec:
       chart: ziti-router
@@ -25,3 +28,11 @@ spec:
       name: ziti-router-enrollment
       valuesKey: enrollmentJwt
       targetPath: enrollmentJwt
+---
+# NOTE: The Secret 'ziti-router-enrollment' must be created manually before this HelmRelease can succeed.
+# Create it with:
+#   kubectl create secret generic ziti-router-enrollment \
+#     --namespace=openziti \
+#     --from-literal=enrollmentJwt=<your-jwt-token>
+#
+# The JWT token should be obtained from the ziti-controller after it's running.

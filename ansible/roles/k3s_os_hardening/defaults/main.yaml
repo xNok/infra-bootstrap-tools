@@ -1,3 +1,4 @@
 # Defaults for OS Hardening
 k3s_os_hardening_default_input: "deny"
 k3s_os_hardening_default_output: "allow"
+k3s_os_hardening_k3s_api_cidr: "10.0.0.0/8"  # Internal network CIDR for K3s traffic
