@@ -22,7 +22,7 @@ It configures UFW (Uncomplicated Firewall) and related settings to secure the ho
 
 ## Role Variables
 
-The exact variable names may vary depending on how the role is implemented, but the following patterns are commonly expected:
+The following variables are defined in `defaults/main.yml`:
 
 - `k3s_os_hardening_default_input` (string, default: `"deny"`)  
   Default policy for incoming connections.
@@ -30,14 +30,8 @@ The exact variable names may vary depending on how the role is implemented, but 
 - `k3s_os_hardening_default_output` (string, default: `"allow"`)  
   Default policy for outgoing connections.
 
-- `k3s_os_hardening_allowed_tcp_ports` (list of ints)  
-  Additional TCP ports to allow inbound (e.g. for application workloads or management tools).
-
-- `k3s_os_hardening_allowed_udp_ports` (list of ints)  
-  Additional UDP ports to allow inbound.
-
 - `k3s_os_hardening_k3s_api_cidr` (string, default: `"10.0.0.0/8"`)  
-  CIDR range for internal K3s traffic (API server, kubelet, etc.).
+  CIDR range for internal K3s traffic (API server, kubelet, flannel VXLAN).
 
 > Refer to this role's `defaults/main.yml` and `vars/` files for the authoritative list of variables and their defaults.
 
