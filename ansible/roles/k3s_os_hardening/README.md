@@ -46,7 +46,8 @@ Include the role in your playbook and set any variables relevant to your environ
   roles:
     - role: k3s_os_hardening
       vars:
-        k3s_os_hardening_k3s_api_cidr: "192.168.1.0/24"
+        # IMPORTANT: Set this to your actual internal network CIDR
+        k3s_os_hardening_k3s_api_cidr: "10.1.0.0/16"
 ```
 
 ## Dependencies

@@ -1,9 +1,11 @@
 # Defaults for OS Hardening
 k3s_os_hardening_default_input: "deny"
 k3s_os_hardening_default_output: "allow"
-# IMPORTANT: Override this with your actual internal network CIDR range.
-# Default is intentionally restrictive. Common alternatives:
-# - 10.0.0.0/24 for a small network
+# CRITICAL SECURITY SETTING: This CIDR controls which IPs can access K3s internal ports.
+# The default is intentionally restrictive (small /24 subnet) to fail safely.
+# You MUST override this with your actual internal network CIDR range.
+# Examples based on your infrastructure:
+# - 10.0.0.0/24 or 10.1.0.0/16 for small to medium networks
 # - 192.168.1.0/24 for home/small office networks
-# - Adjust based on your infrastructure's actual internal addressing
-k3s_os_hardening_k3s_api_cidr: "10.0.0.0/24"  # Internal network CIDR for K3s traffic
+# - For production: use the smallest CIDR that includes all your K3s nodes
+k3s_os_hardening_k3s_api_cidr: "10.0.0.0/24"  # Internal network CIDR for K3s traffic - OVERRIDE THIS
