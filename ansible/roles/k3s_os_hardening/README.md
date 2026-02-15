@@ -30,8 +30,9 @@ The following variables are defined in `defaults/main.yml`:
 - `k3s_os_hardening_default_output` (string, default: `"allow"`)  
   Default policy for outgoing connections.
 
-- `k3s_os_hardening_k3s_api_cidr` (string, default: `"10.0.0.0/8"`)  
+- `k3s_os_hardening_k3s_api_cidr` (string, default: `"10.0.0.0/24"`)  
   CIDR range for internal K3s traffic (API server, kubelet, flannel VXLAN).
+  **IMPORTANT**: Override this variable with your actual internal network CIDR range for your infrastructure.
 
 > Refer to this role's `defaults/main.yml` and `vars/` files for the authoritative list of variables and their defaults.
 
