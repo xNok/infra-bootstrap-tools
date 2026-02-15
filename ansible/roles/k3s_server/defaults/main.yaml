@@ -5,7 +5,7 @@ k3s_server_kubeconfig_mode: '600' # File mode for kubeconfig; 600 (owner-only) i
 # OpenZiti Dark Configuration
 k3s_server_use_openziti_dark: false
 k3s_server_openziti_tls_san: "k3s.ziti"
-k3s_server_openziti_bind_address: "127.0.0.1"
+k3s_server_openziti_bind_address: "0.0.0.0"
 
 # Extra arguments (logic in tasks/main.yaml will construct this if not overridden)
 k3s_server_extra_args: >-

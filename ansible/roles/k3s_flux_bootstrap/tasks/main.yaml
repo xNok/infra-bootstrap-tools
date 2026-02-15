@@ -70,34 +70,7 @@
 - name: Apply FluxInstance
   kubernetes.core.k8s:
     state: present
-    definition:
-      apiVersion: fluxcd.controlplane.io/v1
-      kind: FluxInstance
-      metadata:
-        name: flux
-        namespace: flux-system
-      spec:
-        distribution:
-          version: "{{ k3s_flux_bootstrap_flux_version }}"
-          registry: "ghcr.io/fluxcd"
-        components:
-          - source-controller
-          - kustomize-controller
-          - helm-controller
-          - notification-controller
-          - image-reflector-controller
-          - image-automation-controller
-        cluster:
-          type: kubernetes
-          multitenant: false
-          networkPolicy: true
-          domain: "cluster.local"
-        sync:
-          kind: OCIArtifact
-          provider: oci
-          url: "oci://ghcr.io/{{ k3s_flux_bootstrap_github_user }}/manifests/{{ k3s_flux_bootstrap_cluster_name }}"
-          ref: "latest"
-          pullSecret: "flux-system"
+    definition: "{{ lookup('template', role_path + '/templates/flux-instance.yaml.j2') | from_yaml }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
