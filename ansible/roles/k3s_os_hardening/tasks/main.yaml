@@ -35,8 +35,23 @@
     port: 8442
     proto: tcp
 
-- name: Deny K3s API publicly
+- name: Allow K3s API on internal network only
   community.general.ufw:
-    rule: deny
+    rule: allow
     port: 6443
     proto: tcp
+    src: "{{ k3s_os_hardening_k3s_api_cidr }}"
+
+- name: Allow K3s kubelet on internal network only
+  community.general.ufw:
+    rule: allow
+    port: 10250
+    proto: tcp
+    src: "{{ k3s_os_hardening_k3s_api_cidr }}"
+
+- name: Allow K3s flannel VXLAN on internal network only
+  community.general.ufw:
+    rule: allow
+    port: 8472
+    proto: udp
+    src: "{{ k3s_os_hardening_k3s_api_cidr }}"

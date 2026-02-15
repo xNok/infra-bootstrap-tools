@@ -4,6 +4,9 @@ metadata:
   name: trust-manager
   namespace: cert-manager
 spec:
+  dependsOn:
+    - name: cert-manager
+      namespace: cert-manager
   chart:
     spec:
       chart: trust-manager

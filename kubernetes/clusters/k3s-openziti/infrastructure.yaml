@@ -6,7 +6,7 @@ metadata:
 spec:
   interval: 1h
   sourceRef:
-    kind: GitRepository
+    kind: OCIRepository
     name: flux-system
   path: "./kubernetes/infra-base/sources"
   prune: true
@@ -21,7 +21,7 @@ spec:
   dependsOn:
     - name: infra-sources
   sourceRef:
-    kind: GitRepository
+    kind: OCIRepository
     name: flux-system
   path: "./kubernetes/infra-base/cert-manager"
   prune: true
@@ -37,7 +37,7 @@ spec:
     - name: infra-cert-manager
     - name: infra-sources
   sourceRef:
-    kind: GitRepository
+    kind: OCIRepository
     name: flux-system
   path: "./kubernetes/infra-base/openziti"
   prune: true

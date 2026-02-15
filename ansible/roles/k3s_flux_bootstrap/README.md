@@ -16,23 +16,16 @@ You can automatically create the required secret placeholders using the provided
 
 Then update the values in 1Password. See [docs/SECRETS.md](../../../docs/SECRETS.md) for more details.
 
-### 1. GitHub App Credentials (`GitHub_Flux_App`)
-- Item Name: `GitHub_Flux_App`
+### 1. GitHub Personal Access Token (`GitHub_Flux_Token`)
+- Item Name: `GitHub_Flux_Token`
 - Vault: `infra-bootstrap-tools`
-- Field `username`: Your GitHub App ID.
-- Field `password`: Your GitHub App Installation ID.
-
-### 2. GitHub App Private Key (`GitHub_Flux_App_Private_Key`)
-- Item Name: `GitHub_Flux_App_Private_Key`
-- Vault: `infra-bootstrap-tools`
-- Field `notesPlain`: The contents of your GitHub App's private key (`.pem` file).
+- Field `password`: Your GitHub Personal Access Token with required scopes: `read:packages` (to pull OCI artifacts from GHCR).
 
 ## Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `k3s_flux_bootstrap_github_user` | `xnok` | GitHub username or organization content. |
+| `k3s_flux_bootstrap_github_user` | `xnok` | GitHub username or organization. |
 | `k3s_flux_bootstrap_github_repo` | `infra-bootstrap-tools` | Repository name to reconcile. |
 | `k3s_flux_bootstrap_cluster_name` | `k3s-openziti` | Folder in the repo to sync (`kubernetes/clusters/<name>`). |
-| `k3s_flux_bootstrap_github_app_id` | *(lookup)* | GitHub App ID (from `GitHub_Flux_App`). |
-| `k3s_flux_bootstrap_github_app_installation_id` | *(lookup)* | GitHub App Installation ID (from `GitHub_Flux_App`). |
+| `k3s_flux_bootstrap_github_token` | *(lookup)* | GitHub Personal Access Token (from `GitHub_Flux_Token`). |

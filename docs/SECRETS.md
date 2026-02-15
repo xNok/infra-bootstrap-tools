@@ -7,7 +7,7 @@ This repository uses 1Password for managing secrets required by Ansible playbook
 The following items are expected to exist in the `infra-bootstrap-tools` vault.
 
 | Item Title | Field | Description | Used By |
-| text | text | text | text |
+| --- | --- | --- | --- |
 | `GitHub_Flux_Token` | `password` | GitHub Personal Access Token | `roles/k3s_flux_bootstrap` |
 | `CADDY_GITHUB_APP` | `username` | GitHub OAuth Client ID | `roles/docker_swarm_app_caddy` |
 | `CADDY_GITHUB_APP` | `credential` | GitHub OAuth Client Secret | `roles/docker_swarm_app_caddy` |
