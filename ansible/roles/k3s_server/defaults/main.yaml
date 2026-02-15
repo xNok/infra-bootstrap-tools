@@ -8,10 +8,5 @@ k3s_server_openziti_tls_san: "k3s.ziti"
 k3s_server_openziti_bind_address: "0.0.0.0"
 
 # Extra arguments (logic in tasks/main.yaml will construct this if not overridden)
-k3s_server_extra_args: >-
-  --write-kubeconfig-mode {{ k3s_server_kubeconfig_mode }}
-  {% if k3s_server_use_openziti_dark %}
-  --tls-san {{ k3s_server_openziti_tls_san }}
-  --bind-address {{ k3s_server_openziti_bind_address }}
-  --disable traefik
-  {% endif %}
+# Now managed via config.yaml, so keep this minimal or empty unless specific overrides needed
+k3s_server_extra_args: ""
