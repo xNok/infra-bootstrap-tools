@@ -42,7 +42,7 @@ jobs:
 
       - name: Publish manifests
         env:
-          OCI_REPO: "ghcr.io/${{ github.repository_owner }}/manifests/${{ matrix.cluster }}"
+          OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/${{ matrix.cluster }}"
         run: |
           flux push artifact $OCI_REPO:$(git rev-parse --short HEAD) \
               --path="/tmp/manifests/kubernetes" \
@@ -51,6 +51,6 @@ jobs:
 
       - name: Tag latest
         env:
-          OCI_REPO: "ghcr.io/${{ github.repository_owner }}/manifests/${{ matrix.cluster }}"
+          OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/${{ matrix.cluster }}"
         run: |
-          flux tag artifact $OCI_REPO:$(git rev-parse --short HEAD) --tag latest
+          flux tag artifact $OCI_REPO --tag $(git rev-parse --short HEAD) --tag latest
