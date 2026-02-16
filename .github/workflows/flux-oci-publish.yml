@@ -44,7 +44,7 @@ jobs:
         env:
           OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/${{ matrix.cluster }}"
         run: |
-          flux push artifact $OCI_REPO:$(git rev-parse --short HEAD) \
+          flux push artifact $OCI_REPO --tag $(git rev-parse --short HEAD) \
               --path="/tmp/manifests/kubernetes" \
               --source="${{ github.event.repository.html_url }}" \
               --revision="$(git rev-parse HEAD)"
