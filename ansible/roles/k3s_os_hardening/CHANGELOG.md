@@ -1,6 +1,6 @@
-# ansible-collection-infra-bootstrap-tools
+# k3s_os_hardening
 
-## 1.0.7
+## 1.0.1
 
 ### Patch Changes
 
@@ -9,24 +9,3 @@
   - **k3s_flux_bootstrap**: Fixed `FluxInstance` spec to use `kind: OCIRepository` and added `path: "."` for OCI-based bootstrap.
   - **k3s_os_hardening**: Added UFW rules to restrict K3s API access to a specific CIDR and ensure secure defaults.
   - **ansible-collection**: General updates to coordinate the new roles and configuration.
-
-## 1.0.6
-
-### Patch Changes
-
-- Updated dependencies [356cd1f]
-  - ansible-role-docker@0.0.2
-  - ansible-role-utils-affected-roles@0.0.2
-
-## 1.0.5
-
-### Patch Changes
-
-- 00ac27d: feat: Implement changeset release workflow for Ansible
-
-## 1.0.4
-
-### Patch Changes
-
-- Updated dependencies [1dc6cf5]
-  - ansible-role-terraform-digitalocean@0.1.0
