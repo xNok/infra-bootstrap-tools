@@ -10,6 +10,23 @@ ERRORS=0
 echo "🔍 Validating PARA cross-references..."
 echo ""
 
+# Initialize cache for file existence
+# Key format: "target_dir/item"
+declare -A file_cache
+
+# Populate cache for all potential target directories
+for dir in "$PARA_DIR"/*/; do
+    dir_name=$(basename "$dir")
+    for f in "$dir"/*.md; do
+        if [ -f "$f" ]; then
+            # Extract basename without .md using string manipulation
+            bn="${f##*/}"
+            item="${bn%.md}"
+            file_cache["$dir_name/$item"]=1
+        fi
+    done
+done
+
 # Extract related items from frontmatter
 check_references() {
     local file="$1"
@@ -31,22 +48,10 @@ check_references() {
     echo "📄 Checking $file ($type)..."
     
     for item in $items; do
-        # Check if a matching file exists
+        # Check if a matching file exists using the cache
         local found=0
-        local search_pattern="$PARA_DIR/$target_dir/*.md"
-        
-        # Check if any .md files exist first
-        if compgen -G "$search_pattern" > /dev/null; then
-            for target_file in $search_pattern; do
-                if [ ! -f "$target_file" ]; then
-                    continue
-                fi
-                local basename=$(basename "$target_file" .md)
-                if [ "$basename" = "$item" ]; then
-                    found=1
-                    break
-                fi
-            done
+        if [[ ${file_cache["$target_dir/$item"]:-} ]]; then
+            found=1
         fi
         
         if [ $found -eq 0 ]; then
