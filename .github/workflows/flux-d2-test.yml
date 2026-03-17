@@ -22,19 +22,15 @@ jobs:
       - name: Install Flux in Kind
         run: flux install
 
-      # To test Gitless deployment we need an OCI registry
-      # GitHub packages could be used, but for PR tests a local registry is better.
-      # kind-action supports local registry if configured, but for simplicity
-      # we can run a local docker registry and push there.
       - name: Start local registry
         run: |
           docker run -d -p 5000:5000 --name registry registry:2
           docker network connect "kind" "registry" || true
 
-      - name: Push Fleet as OCI
+      - name: Push Repository as OCI
         run: |
-          flux push artifact oci://localhost:5000/fleet:latest \
-            --path="./kubernetes/fleet" \
+          flux push artifact oci://localhost:5000/flux-system:latest \
+            --path="./kubernetes" \
             --source="${{ github.event.repository.html_url }}" \
             --revision="${{ github.sha }}"
 
@@ -44,12 +40,11 @@ jobs:
           apiVersion: source.toolkit.fluxcd.io/v1
           kind: OCIRepository
           metadata:
-            name: fleet
+            name: flux-system
             namespace: flux-system
           spec:
             interval: 1m
-            # the url must be reachable from within the kind cluster, so use the registry container name
-            url: oci://registry:5000/fleet
+            url: oci://registry:5000/flux-system
             ref:
               tag: latest
             insecure: true
@@ -63,10 +58,10 @@ jobs:
             interval: 1m
             sourceRef:
               kind: OCIRepository
-              name: fleet
-            path: "./"
+              name: flux-system
+            path: "./fleet/k3s-openziti"
             prune: true
           KUSTOMIZE
 
-          kubectl wait --for=condition=ready ocirepository/fleet -n flux-system --timeout=1m
+          kubectl wait --for=condition=ready ocirepository/flux-system -n flux-system --timeout=1m
           kubectl wait --for=condition=ready ks/fleet -n flux-system --timeout=2m
