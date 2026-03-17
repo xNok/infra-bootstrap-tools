@@ -12,8 +12,18 @@ Key takeaways:
 - **Dynamic/Static Inputs:** Used via ResourceSet to substitute values (like `tenant` or `environment`) during reconciliation.
 - **Keyless signing:** OCI artifacts are signed via GitHub Actions id-token and cosign.
 
-In our repo, we currently have:
-- `kubernetes/clusters/k3s-openziti/infrastructure.yaml` (which references `OCIRepository` named `flux-system` but our current setup seems to be a mix of git and generic setup).
-- Base infra is at `kubernetes/infra-base`.
+## Concrete Implementation Decision
 
-We need to start adopting a similar structure. First step could be to test an OCI-based Flux bootstrap with a local Kind cluster.
+We don't want or use multiple repositories, thus we are adapting the D2 recommendation as a mono-repo.
+
+- **Monorepo Mapping:**
+  - `kubernetes/fleet`: Acts as `d2-fleet`. Reconciles our cluster delivery components.
+  - `kubernetes/infra`: Acts as `d2-infra`. Contains our base infrastructure addons (cert-manager, openziti, etc).
+  - `kubernetes/apps`: Acts as `d2-apps`. Will hold our applications deployed to the clusters.
+
+- **Experimentation First:**
+  As `infra-bootstrap-tools` is first and foremost about experiments, we assume that different clusters can represent different experiments, but some elements (like `infra`) can and should be shared.
+  - By organizing our folders cleanly into `fleet`, `infra`, and `apps`, we can easily push specific folders as OCI artifacts.
+  - For example, `infra` can be packaged as `oci://ghcr.io/.../infra` and consumed by multiple experiment clusters defined in `fleet`.
+
+We have also established a GitHub Actions workflow (`.github/workflows/flux-d2-test.yml`) to test this pipeline automatically via a local Kind cluster and Docker registry.

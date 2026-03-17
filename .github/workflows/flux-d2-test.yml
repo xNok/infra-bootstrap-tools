@@ -1,0 +1,72 @@
+name: "Test Flux D2 Bootstrap"
+on:
+  pull_request:
+    paths:
+      - 'kubernetes/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: flux-d2-test
+
+      - name: Setup Flux CLI
+        uses: fluxcd/flux2/action@main
+
+      - name: Install Flux in Kind
+        run: flux install
+
+      # To test Gitless deployment we need an OCI registry
+      # GitHub packages could be used, but for PR tests a local registry is better.
+      # kind-action supports local registry if configured, but for simplicity
+      # we can run a local docker registry and push there.
+      - name: Start local registry
+        run: |
+          docker run -d -p 5000:5000 --name registry registry:2
+          docker network connect "kind" "registry" || true
+
+      - name: Push Fleet as OCI
+        run: |
+          flux push artifact oci://localhost:5000/fleet:latest \
+            --path="./kubernetes/fleet" \
+            --source="${{ github.event.repository.html_url }}" \
+            --revision="${{ github.sha }}"
+
+      - name: Bootstrap cluster from OCI
+        run: |
+          cat <<KUSTOMIZE | kubectl apply -f -
+          apiVersion: source.toolkit.fluxcd.io/v1beta2
+          kind: OCIRepository
+          metadata:
+            name: fleet
+            namespace: flux-system
+          spec:
+            interval: 1m
+            # the url must be reachable from within the kind cluster, so use the registry container name
+            url: oci://registry:5000/fleet
+            ref:
+              tag: latest
+            insecure: true
+          ---
+          apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+          kind: Kustomization
+          metadata:
+            name: fleet
+            namespace: flux-system
+          spec:
+            interval: 1m
+            sourceRef:
+              kind: OCIRepository
+              name: fleet
+            path: "./"
+            prune: true
+          KUSTOMIZE
+
+          kubectl wait --for=condition=ready oci/fleet -n flux-system --timeout=1m
+          kubectl wait --for=condition=ready ks/fleet -n flux-system --timeout=2m
