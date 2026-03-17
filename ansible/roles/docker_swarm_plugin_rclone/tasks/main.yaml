@@ -9,19 +9,19 @@
 ###
 - name: Install required system packages
   apt:
-    name: "{{ item }}"
+    name:
+      - fuse
     state: present
     update_cache: true
-  loop: ['fuse']
 
 - name: Creates directory rclone
   file:
     path: "{{ item }}"
     state: directory
-    mode: '0644'
+    mode: '0755'
   loop:
-  - '/var/lib/docker-plugins/rclone/config'
-  - '/var/lib/docker-plugins/rclone/cache'
+    - '/var/lib/docker-plugins/rclone/config'
+    - '/var/lib/docker-plugins/rclone/cache'
 
 - name: Copy Config file(s) to remote server
   template:
@@ -29,7 +29,7 @@
     dest: '/var/lib/docker-plugins/rclone/config'
     mode: '0644'
   with_fileglob:
-  - "{{ docker_swarm_plugin_rclone_assets_path }}/rclone.conf"
+    - "{{ docker_swarm_plugin_rclone_assets_path }}/rclone.conf"
 
 - name: Install rclone plugin
   community.docker.docker_plugin:

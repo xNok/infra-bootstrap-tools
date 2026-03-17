@@ -11,7 +11,11 @@
 ###
 - name: Install required system packages
   apt:
-    name: "{{ item }}"
+    name:
+      - pipx
+      - python3-setuptools
+      - python3-jsondiff
+      - python3-passlib
+      - python3-docker
     state: present
     update_cache: true
-  loop: ['pipx', 'python3-setuptools', 'python3-jsondiff', 'python3-passlib', 'python3-docker']
