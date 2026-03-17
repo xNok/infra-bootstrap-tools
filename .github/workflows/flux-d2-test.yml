@@ -68,5 +68,5 @@ jobs:
             prune: true
           KUSTOMIZE
 
-          kubectl wait --for=condition=ready oci/fleet -n flux-system --timeout=1m
+          kubectl wait --for=condition=ready ocirepository/fleet -n flux-system --timeout=1m
           kubectl wait --for=condition=ready ks/fleet -n flux-system --timeout=2m
