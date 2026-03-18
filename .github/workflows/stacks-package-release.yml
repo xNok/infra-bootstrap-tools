@@ -1,14 +1,35 @@
 name: Package and Release Stacks
 
 on:
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      release_tag:
+        description: 'Release tag to publish (e.g., stacks@1.0.3)'
+        required: true
+        type: string
+      stacks_dir:
+        description: 'Directory containing stacks to zip'
+        default: 'stacks'
+        type: string
+      dry_run:
+        description: 'Run build without publishing'
+        default: false
+        type: boolean
+
   workflow_dispatch:
     inputs:
       release_tag:
         description: 'Release tag to publish (e.g., infra-bootstrap-tools-stacks@1.0.3)'
         required: true
         type: string
+      stacks_dir:
+        description: 'Directory containing stacks to zip'
+        default: 'stacks'
+        type: string
+      dry_run:
+        description: 'Run build without publishing'
+        default: false
+        type: boolean
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -16,10 +37,10 @@ jobs:
   package-and-release:
     name: Package Stacks and Upload to Release
     runs-on: ubuntu-latest
-    # Only run if the release tag matches the stacks package pattern
     if: |
+      github.event_name == 'workflow_call' ||
       github.event_name == 'workflow_dispatch' ||
-      startsWith(github.event.release.tag_name, 'infra-bootstrap-tools-stacks@')
+      contains(github.event.release.tag_name, '@')
     permissions:
       contents: write
       packages: write
@@ -27,28 +48,30 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || inputs.release_tag }}
+          ref: ${{ inputs.release_tag || github.event.release.tag_name || github.event.inputs.release_tag }}
 
       - name: Extract version from tag
         id: version
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            TAG="${{ inputs.release_tag }}"
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] || [ "${{ github.event_name }}" == "workflow_call" ]; then
+            TAG="${{ inputs.release_tag || github.event.inputs.release_tag }}"
           else
             TAG="${{ github.event.release.tag_name }}"
           fi
-          # Extract version from tag (format: infra-bootstrap-tools-stacks@1.0.3)
-          VERSION=$(echo "$TAG" | sed 's/infra-bootstrap-tools-stacks@//')
+          # Extract version from tag (format: stacks@1.0.3)
+          VERSION=$(echo "$TAG" | sed 's/^.*@//')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
 
       - name: Create stack archives
         run: |
+          DIR="${{ inputs.stacks_dir || github.event.inputs.stacks_dir || 'stacks' }}"
           VERSION="${{ steps.version.outputs.version }}"
           mkdir -p dist
           
           # Create individual stack archives
-          for stack in stacks/*/; do
+          for stack in "$DIR"/*/; do
             if [ -d "$stack" ] && [ "$(basename "$stack")" != "node_modules" ]; then
               stack_name=$(basename "$stack")
               echo "Creating archive for $stack_name"
@@ -58,20 +81,16 @@ jobs:
           
           # Create a complete stacks archive
           echo "Creating complete stacks archive"
-          (cd stacks && zip -r "../dist/infra-bootstrap-tools-stacks-${VERSION}.zip" . -x "node_modules/*" "*.git/*" "*/node_modules/*")
+          (cd "$DIR" && zip -r "../dist/infra-bootstrap-tools-stacks-${VERSION}.zip" . -x "node_modules/*" "*.git/*" "*/node_modules/*")
           
           ls -lh dist/
 
       - name: Upload archives to release
+        if: ${{ !(inputs.dry_run || github.event.inputs.dry_run) }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            TAG="${{ inputs.release_tag }}"
-          else
-            TAG="${{ github.event.release.tag_name }}"
-          fi
+          TAG="${{ steps.version.outputs.tag }}"
           
           # Upload package artifacts to the release
           gh release upload "$TAG" \
