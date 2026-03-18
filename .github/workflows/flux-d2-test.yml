@@ -29,25 +29,7 @@ jobs:
           helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
             --namespace flux-system --create-namespace
 
-          cat <<FLUXINSTANCE | kubectl apply -f -
-          apiVersion: fluxcd.controlplane.io/v1
-          kind: FluxInstance
-          metadata:
-            name: flux
-            namespace: flux-system
-          spec:
-            distribution:
-              version: "2.x"
-              registry: "ghcr.io/fluxcd"
-              artifact: "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests"
-            components:
-              - source-controller
-              - kustomize-controller
-              - helm-controller
-              - notification-controller
-          FLUXINSTANCE
-
-          kubectl wait --for=condition=ready fluxinstance/flux -n flux-system --timeout=2m
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=flux-operator -n flux-system --timeout=2m
 
       - name: Push Repository as OCI
         run: |
@@ -58,20 +40,13 @@ jobs:
 
       - name: Bootstrap cluster from OCI
         run: |
-          # Use flux CLI to create the resources instead of kubectl apply
-          flux create source oci flux-system \
-            --url=oci://registry:5000/flux-system \
-            --tag=latest \
-            --insecure \
-            --interval=1m \
-            --namespace=flux-system
+          # Apply the FluxInstance directly from the git repo
+          # so that the cluster manages itself after bootstrap
+          kubectl apply -f kubernetes/fleet/k3s-openziti/flux-instance.yaml
 
-          flux create kustomization fleet \
-            --source=OCIRepository/flux-system \
-            --path="./fleet/k3s-openziti" \
-            --prune=true \
-            --interval=1m \
-            --namespace=flux-system
+          # Wait for the operator to reconcile and bring up Flux and sync
+          kubectl wait --for=condition=ready fluxinstance/flux -n flux-system --timeout=2m
 
+          # The operator should create an OCIRepository and Kustomization automatically based on the sync block
           kubectl wait --for=condition=ready ocirepository/flux-system -n flux-system --timeout=1m
-          kubectl wait --for=condition=ready ks/fleet -n flux-system --timeout=2m
+          kubectl wait --for=condition=ready kustomization/flux-system -n flux-system --timeout=2m
