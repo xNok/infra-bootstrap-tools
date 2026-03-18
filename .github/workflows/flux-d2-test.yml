@@ -19,13 +19,35 @@ jobs:
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@main
 
-      - name: Install Flux in Kind
-        run: flux install
-
       - name: Start local registry
         run: |
           docker run -d -p 5000:5000 --name registry registry:2
           docker network connect "kind" "registry" || true
+
+      - name: Install Flux Operator
+        run: |
+          helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
+            --namespace flux-system --create-namespace
+
+          cat <<FLUXINSTANCE | kubectl apply -f -
+          apiVersion: fluxcd.controlplane.io/v1
+          kind: FluxInstance
+          metadata:
+            name: flux
+            namespace: flux-system
+          spec:
+            distribution:
+              version: "2.x"
+              registry: "ghcr.io/fluxcd"
+              artifact: "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests"
+            components:
+              - source-controller
+              - kustomize-controller
+              - helm-controller
+              - notification-controller
+          FLUXINSTANCE
+
+          kubectl wait --for=condition=ready fluxinstance/flux -n flux-system --timeout=2m
 
       - name: Push Repository as OCI
         run: |
@@ -36,32 +58,20 @@ jobs:
 
       - name: Bootstrap cluster from OCI
         run: |
-          cat <<KUSTOMIZE | kubectl apply -f -
-          apiVersion: source.toolkit.fluxcd.io/v1
-          kind: OCIRepository
-          metadata:
-            name: flux-system
-            namespace: flux-system
-          spec:
-            interval: 1m
-            url: oci://registry:5000/flux-system
-            ref:
-              tag: latest
-            insecure: true
-          ---
-          apiVersion: kustomize.toolkit.fluxcd.io/v1
-          kind: Kustomization
-          metadata:
-            name: fleet
-            namespace: flux-system
-          spec:
-            interval: 1m
-            sourceRef:
-              kind: OCIRepository
-              name: flux-system
-            path: "./fleet/k3s-openziti"
-            prune: true
-          KUSTOMIZE
+          # Use flux CLI to create the resources instead of kubectl apply
+          flux create source oci flux-system \
+            --url=oci://registry:5000/flux-system \
+            --tag=latest \
+            --insecure \
+            --interval=1m \
+            --namespace=flux-system
+
+          flux create kustomization fleet \
+            --source=OCIRepository/flux-system \
+            --path="./fleet/k3s-openziti" \
+            --prune=true \
+            --interval=1m \
+            --namespace=flux-system
 
           kubectl wait --for=condition=ready ocirepository/flux-system -n flux-system --timeout=1m
           kubectl wait --for=condition=ready ks/fleet -n flux-system --timeout=2m
