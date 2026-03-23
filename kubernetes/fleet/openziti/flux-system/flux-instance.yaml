@@ -13,11 +13,13 @@ spec:
     - kustomize-controller
     - helm-controller
     - notification-controller
+    - image-reflector-controller
+    - image-automation-controller
   sync:
     kind: OCIRepository
     url: "oci://registry:5000/flux-system"
     ref: "latest"
-    path: "./fleet/k3s-openziti"
+    path: "./fleet/openziti"
   kustomize:
     patches:
       # Patch the generated OCIRepository to allow insecure registry for local testing

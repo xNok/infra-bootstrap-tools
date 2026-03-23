@@ -1,0 +1,43 @@
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: openziti-controller
+  namespace: flux-system
+spec:
+  image: ghcr.io/openziti/ziti-controller
+  interval: 12h
+  provider: generic
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: openziti-controller
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: openziti-controller
+  policy:
+    semver:
+      range: ">=0.0.1"
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageRepository
+metadata:
+  name: openziti-router
+  namespace: flux-system
+spec:
+  image: ghcr.io/openziti/ziti-router
+  interval: 12h
+  provider: generic
+---
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImagePolicy
+metadata:
+  name: openziti-router
+  namespace: flux-system
+spec:
+  imageRepositoryRef:
+    name: openziti-router
+  policy:
+    semver:
+      range: ">=0.0.1"
