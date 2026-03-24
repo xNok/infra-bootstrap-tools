@@ -17,7 +17,7 @@ spec:
     - image-automation-controller
   sync:
     kind: OCIRepository
-    url: "oci://registry:5000/flux-system"
+    url: "oci://kind-registry:5000/flux-system"
     ref: "latest"
     path: "./fleet/openziti"
   kustomize:

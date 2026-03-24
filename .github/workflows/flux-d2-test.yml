@@ -1,13 +1,12 @@
-name: "Test Kubernetes Fleets"
-
-
+name: "Test Flux D2 Bootstrap"
 on:
   pull_request:
     paths:
       - 'kubernetes/**'
       - 'bin/tests/flux-d2/test.sh'
-      - 'bin/kind/**'
-      - '.github/workflows/kubernetes-fleets-test.yml'
+      - 'bin/setup-kind-local-registry.sh'
+      - 'bin/kind/config/**'
+      - '.github/workflows/flux-d2-test.yml'
   workflow_dispatch:
 
 jobs:
@@ -17,10 +16,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Create k8s Kind Cluster
-        uses: helm/kind-action@v1.14.0
+        uses: helm/kind-action@v1.12.0
         with:
           cluster_name: flux-d2-test
-          registry: true
 
       - name: Setup Flux CLI
         uses: fluxcd/flux2/action@main

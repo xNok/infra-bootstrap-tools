@@ -26,14 +26,9 @@ wait_ready() {
   kubectl wait --for=condition=ready "${resource}" -n "${namespace}" --timeout="${timeout}"
 }
 
-# Check if Kind cluster already exists
-if ! kind get clusters | grep -q "^${CLUSTER_NAME}$"; then
-  echo "Setting up local Kind cluster and registry..."
-  CLUSTER_NAME="${CLUSTER_NAME}" REGISTRY_NAME="${REGISTRY_NAME}" REGISTRY_PORT="${REGISTRY_PORT}" \
-    "${ROOT_DIR}/bin/kind/setup-with-local-registry.sh"
-else
-  echo "Kind cluster already exists: ${CLUSTER_NAME}"
-fi
+echo "Setting up local Kind cluster and registry..."
+CLUSTER_NAME="${CLUSTER_NAME}" REGISTRY_NAME="${REGISTRY_NAME}" REGISTRY_PORT="${REGISTRY_PORT}" \
+  "${ROOT_DIR}/bin/setup-kind-local-registry.sh"
 
 echo "Installing Flux Operator via Helm..."
 helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
@@ -56,6 +51,11 @@ echo "Bootstrapping cluster from OCI..."
 kubectl apply -f "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}/flux-system/flux-instance.yaml"
 
 echo "Waiting for FluxInstance to become ready..."
+echo "Dumping Operator logs in case of failure..."
+
+kubectl logs -n flux-system -l app.kubernetes.io/name=flux-operator || true
+
+kubectl get fluxinstance flux -n flux-system -o yaml || true
 wait_ready "fluxinstance/flux" "flux-system" "2m"
 
 echo "Waiting for generated OCIRepository to become ready..."
