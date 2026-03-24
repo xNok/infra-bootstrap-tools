@@ -1,12 +1,13 @@
-name: "Test Flux D2 Bootstrap"
+name: "Test Kubernetes Fleets"
+
+
 on:
   pull_request:
     paths:
       - 'kubernetes/**'
       - 'bin/tests/flux-d2/test.sh'
-      - 'bin/setup-kind-local-registry.sh'
-      - 'bin/kind/config/**'
-      - '.github/workflows/flux-d2-test.yml'
+      - 'bin/kind/**'
+      - '.github/workflows/kubernetes-fleets-test.yml'
   workflow_dispatch:
 
 jobs:
