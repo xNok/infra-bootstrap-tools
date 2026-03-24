@@ -26,9 +26,14 @@ wait_ready() {
   kubectl wait --for=condition=ready "${resource}" -n "${namespace}" --timeout="${timeout}"
 }
 
-echo "Setting up local Kind cluster and registry..."
-CLUSTER_NAME="${CLUSTER_NAME}" REGISTRY_NAME="${REGISTRY_NAME}" REGISTRY_PORT="${REGISTRY_PORT}" \
-  "${ROOT_DIR}/bin/setup-kind-local-registry.sh"
+# Check if Kind cluster already exists
+if ! kind get clusters | grep -q "^${CLUSTER_NAME}$"; then
+  echo "Setting up local Kind cluster and registry..."
+  CLUSTER_NAME="${CLUSTER_NAME}" REGISTRY_NAME="${REGISTRY_NAME}" REGISTRY_PORT="${REGISTRY_PORT}" \
+    "${ROOT_DIR}/bin/kind/setup-with-local-registry.sh"
+else
+  echo "Kind cluster already exists: ${CLUSTER_NAME}"
+fi
 
 echo "Installing Flux Operator via Helm..."
 helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
