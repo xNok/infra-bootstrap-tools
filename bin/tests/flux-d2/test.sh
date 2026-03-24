@@ -56,6 +56,11 @@ echo "Dumping Operator logs in case of failure..."
 kubectl logs -n flux-system -l app.kubernetes.io/name=flux-operator || true
 
 kubectl get fluxinstance flux -n flux-system -o yaml || true
+echo "Dumping Operator logs in case of failure..."
+
+kubectl logs -n flux-system -l app.kubernetes.io/name=flux-operator || true
+
+kubectl get fluxinstance flux -n flux-system -o yaml || true
 wait_ready "fluxinstance/flux" "flux-system" "2m"
 
 echo "Waiting for generated OCIRepository to become ready..."
