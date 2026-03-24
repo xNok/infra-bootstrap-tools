@@ -1,0 +1,33 @@
+name: "Test Flux D2 Bootstrap"
+on:
+  pull_request:
+    paths:
+      - 'kubernetes/**'
+      - 'bin/tests/flux-d2/test.sh'
+      - 'bin/setup-kind-local-registry.sh'
+      - 'bin/kind/config/**'
+      - '.github/workflows/flux-d2-test.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.12.0
+        with:
+          cluster_name: flux-d2-test
+
+      - name: Setup Flux CLI
+        uses: fluxcd/flux2/action@main
+
+      - name: Run Test Script
+        env:
+          CLUSTER_NAME: flux-d2-test
+          FLEET_NAME: openziti
+          SOURCE_URL: ${{ github.event.repository.html_url }}
+          REVISION: ${{ github.sha }}
+        run: |
+          ./bin/tests/flux-d2/test.sh

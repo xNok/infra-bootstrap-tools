@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cluster: ["k3s-openziti"]
+        cluster: ["openziti"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,18 +34,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Prepare manifests
-        run: |
-          mkdir -p /tmp/manifests/kubernetes
-          cp -r ./kubernetes/infra-base /tmp/manifests/kubernetes/
-          cp -r ./kubernetes/clusters/${{ matrix.cluster }} /tmp/manifests/kubernetes/clusters/
-
       - name: Publish manifests
         env:
           OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/${{ matrix.cluster }}"
         run: |
           flux push artifact $OCI_REPO --tag $(git rev-parse --short HEAD) \
-              --path="/tmp/manifests/kubernetes" \
+              --path="./kubernetes" \
               --source="${{ github.event.repository.html_url }}" \
               --revision="$(git rev-parse HEAD)"
 

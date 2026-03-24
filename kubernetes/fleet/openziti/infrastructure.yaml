@@ -1,0 +1,72 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-sources
+  namespace: flux-system
+spec:
+  interval: 1h
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: "./infra/sources"
+  prune: true
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-cert-manager
+  namespace: flux-system
+spec:
+  interval: 1h
+  dependsOn:
+    - name: infra-sources
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: "./infra/cert-manager"
+  prune: true
+---
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  name: infra-components
+  namespace: flux-system
+spec:
+  inputs:
+    - tenant: openziti
+      path: ./infra/openziti
+  resources:
+    - apiVersion: kustomize.toolkit.fluxcd.io/v1
+      kind: Kustomization
+      metadata:
+        name: infra-<< inputs.tenant >>
+        namespace: flux-system
+      spec:
+        interval: 1h
+        dependsOn:
+          - name: infra-cert-manager
+          - name: infra-sources
+        sourceRef:
+          kind: OCIRepository
+          name: flux-system
+        path: "<< inputs.path >>"
+        prune: true
+        postBuild:
+          substituteFrom:
+            - kind: ConfigMap
+              name: flux-runtime-info
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-update-policies
+  namespace: flux-system
+spec:
+  interval: 1h
+  dependsOn:
+    - name: infra-sources
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: "./infra/update-policies"
+  prune: true
