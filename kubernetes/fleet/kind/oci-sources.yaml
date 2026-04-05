@@ -1,0 +1,11 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: OCIRepository
+metadata:
+  name: infra-addons
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: oci://ghcr.io/xnok/infra-bootstrap-tools/infra-addons
+  ref:
+    semver: ">=0.0.0"

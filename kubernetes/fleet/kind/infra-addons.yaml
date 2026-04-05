@@ -5,19 +5,23 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
+  prune: true
+
+  # Where does the config comes from?
+  # Base is a minimal config share by all clusters, then components are added on top.
   sourceRef:
     kind: OCIRepository
-    name: flux-system
-  path: "./fleet/kind/infra-addons"
-  prune: true
+    name: infra-addons
+  path: "./fleet/kind/infra-addons/base"
+
+  # components are relative to the base path
+  components:
+    - ../components/cert-manager
+    - ../components/openziti
+
+  # Substitute cluster-specific values (e.g. CLUSTER_NAME) into the manifests before applying.
   postBuild:
     substituteFrom:
       - kind: ConfigMap
         name: flux-runtime-info
-
-        prune: true
-        postBuild:
-          substituteFrom:
-            - kind: ConfigMap
-              name: flux-runtime-info
 

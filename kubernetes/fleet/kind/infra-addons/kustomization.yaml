@@ -1,7 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-# Select which infra-addons to install on this cluster.
-# Add or remove components to opt-in/out of addons.
-components:
-  - ../../../infra-addons/cert-manager
-  - ../../../infra-addons/openziti
