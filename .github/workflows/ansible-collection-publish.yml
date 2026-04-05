@@ -25,6 +25,10 @@ on:
         description: 'Release tag to publish (e.g., v1.0.0)'
         required: true
         type: string
+      collection_dir:
+        description: 'Directory containing the Ansible collection'
+        default: 'ansible'
+        type: string
       dry_run:
         description: 'Run build without publishing'
         default: false
@@ -52,7 +56,13 @@ jobs:
           cache: 'pip'
 
       - name: Install Ansible dependencies
-        run: pip install ansible-core yq
+        run: pip install ansible-core
+
+      - name: Install mikefarah/yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq \
+            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
 
       - name: Extract version from tag
         id: get_version
@@ -95,6 +105,10 @@ jobs:
             TAG="${{ github.ref_name }}"
           fi
           
-          gh release upload "$TAG" \
-            ${{ steps.build.outputs.TARBALL }} \
-            --clobber
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" \
+              ${{ steps.build.outputs.TARBALL }} \
+              --clobber
+          else
+            echo "No GitHub Release found for tag $TAG, skipping upload"
+          fi

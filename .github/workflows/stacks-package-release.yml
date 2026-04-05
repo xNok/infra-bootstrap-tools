@@ -68,22 +68,23 @@ jobs:
         run: |
           DIR="${{ inputs.stacks_dir || github.event.inputs.stacks_dir || 'stacks' }}"
           VERSION="${{ steps.version.outputs.version }}"
-          mkdir -p dist
+          DIST_DIR="$GITHUB_WORKSPACE/dist"
+          mkdir -p "$DIST_DIR"
           
           # Create individual stack archives
           for stack in "$DIR"/*/; do
             if [ -d "$stack" ] && [ "$(basename "$stack")" != "node_modules" ]; then
               stack_name=$(basename "$stack")
               echo "Creating archive for $stack_name"
-              (cd "$(dirname "$stack")" && zip -r "../dist/${stack_name}-${VERSION}.zip" "$stack_name" -x "*/node_modules/*" "*.git/*")
+              (cd "$(dirname "$stack")" && zip -r "$DIST_DIR/${stack_name}-${VERSION}.zip" "$stack_name" -x "*/node_modules/*" "*.git/*")
             fi
           done
           
           # Create a complete stacks archive
           echo "Creating complete stacks archive"
-          (cd "$DIR" && zip -r "../dist/infra-bootstrap-tools-stacks-${VERSION}.zip" . -x "node_modules/*" "*.git/*" "*/node_modules/*")
+          (cd "$DIR" && zip -r "$DIST_DIR/infra-bootstrap-tools-stacks-${VERSION}.zip" . -x "node_modules/*" "*.git/*" "*/node_modules/*")
           
-          ls -lh dist/
+          ls -lh "$DIST_DIR/"
 
       - name: Upload archives to release
         if: ${{ !(inputs.dry_run || github.event.inputs.dry_run) }}
@@ -91,8 +92,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ steps.version.outputs.tag }}"
+          DIST_DIR="$GITHUB_WORKSPACE/dist"
           
-          # Upload package artifacts to the release
-          gh release upload "$TAG" \
-            dist/*.zip \
-            --clobber
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" \
+              "$DIST_DIR"/*.zip \
+              --clobber
+          else
+            echo "No GitHub Release found for tag $TAG, skipping upload"
+          fi

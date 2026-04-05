@@ -6,21 +6,25 @@ on:
   push:
     tags:
       - 'v*'
+      - '*@*'
+
+permissions:
+  contents: write
 
 jobs:
   publish-agentic:
-    if: contains(github.event.release.tag_name, 'infra-bootstrap-tools-agentic@')
+    if: contains(github.ref_name, 'infra-bootstrap-tools-agentic@')
     uses: ./.github/workflows/python-package-publish.yml
     with:
-      release_tag: ${{ github.event.release.tag_name }}
+      release_tag: ${{ github.ref_name }}
       package_dir: 'agentic'
       package_name: 'infra-bootstrap-tools-agentic'
 
   publish-stacks:
-    if: contains(github.event.release.tag_name, 'infra-bootstrap-tools-stacks@')
+    if: contains(github.ref_name, 'infra-bootstrap-tools-stacks@')
     uses: ./.github/workflows/stacks-package-release.yml
     with:
-      release_tag: ${{ github.event.release.tag_name }}
+      release_tag: ${{ github.ref_name }}
       stacks_dir: 'stacks'
 
   publish-ansible:

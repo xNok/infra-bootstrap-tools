@@ -13,7 +13,7 @@ To ensure our release infrastructure is robust, we need to test the publishing w
 - **Docker**: Run `docker build` without the `--push` flag, or push to a local/ephemeral registry.
 
 ## Using `workflow_call` for Testing
-By converting our publish workflows to `workflow_call` reusable templates, we can invoke them from PR-triggered testing workflows (`pull_request`) by passing a dummy version and setting an `is-dry-run` flag.
+By converting our publish workflows to `workflow_call` reusable templates, we can invoke them from PR-triggered testing workflows (`pull_request`) by passing a dummy version and setting a `dry_run` flag.
 
 ```yaml
 on:
