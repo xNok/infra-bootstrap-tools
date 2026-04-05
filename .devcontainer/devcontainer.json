@@ -6,6 +6,7 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
+      "installAdditionalPackages": "git-lfs",
       "configureZshAsDefaultShell": false,
       "installZsh": false,
       "upgradePackages": true,

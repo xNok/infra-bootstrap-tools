@@ -6,10 +6,10 @@
     # Enable Dark Stack Mode
     k3s_server_use_openziti_dark: true
   roles:
-    - k3s_os_hardening
-    - k3s_server
+    - xnok.infra_bootstrap_tools.k3s_os_hardening
+    - xnok.infra_bootstrap_tools.k3s_server
     # Requires 1Password secrets! See roles/k3s_flux_bootstrap/README.md for creating them.
-    - k3s_flux_bootstrap
+    - xnok.infra_bootstrap_tools.k3s_flux_bootstrap
 
 - name: Setup K3s Agents
   hosts: nodes
