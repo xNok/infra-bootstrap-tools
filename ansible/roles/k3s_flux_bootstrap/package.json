@@ -1,9 +1,5 @@
 {
-  "name": "k3s_flux_bootstrap",
-  "version": "1.0.1",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "xNok",
-  "license": "MIT"
+  "name": "ansible-role-k3s-flux-bootstrap",
+  "private": true,
+  "version": "1.0.1"
 }
