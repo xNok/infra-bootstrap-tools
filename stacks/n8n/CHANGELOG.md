@@ -1,5 +1,11 @@
 # docker-stack-n8n
 
+## 0.0.3
+
+### Patch Changes
+
+- 3a7a5fd: bump patches to test the new release process, no changes
+
 ## 0.0.2
 
 ### Patch Changes

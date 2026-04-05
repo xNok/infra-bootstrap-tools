@@ -1,0 +1,118 @@
+name: Publish Python Package
+
+on:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: 'Release tag to publish (e.g., package@1.0.0)'
+        required: true
+        type: string
+      package_dir:
+        description: 'Directory containing the python package'
+        default: 'agentic'
+        type: string
+      package_name:
+        description: 'Name of the package in pyproject.toml to override'
+        default: 'infra-bootstrap-tools-agentic'
+        type: string
+      dry_run:
+        description: 'Run build without publishing'
+        default: false
+        type: boolean
+    secrets:
+      PYPI_API_TOKEN:
+        required: false
+
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to publish (e.g., infra-bootstrap-tools-agentic@0.1.1)'
+        required: true
+        type: string
+      package_dir:
+        description: 'Directory containing the python package'
+        default: 'agentic'
+        type: string
+      package_name:
+        description: 'Name of the package in pyproject.toml to override'
+        default: 'infra-bootstrap-tools-agentic'
+        type: string
+      dry_run:
+        description: 'Run build without publishing'
+        default: false
+        type: boolean
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  publish:
+    name: Build and Publish Python Package
+    runs-on: ubuntu-latest
+    # Run if it's workflow_call or manual dispatch. If release, run if the tag contains @ (Changesets workspace style).
+    if: |
+      github.event_name == 'workflow_call' ||
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.release.tag_name, '@')
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.release_tag || github.event.release.tag_name || github.event.inputs.release_tag }}
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] || [ "${{ github.event_name }}" == "workflow_call" ]; then
+            TAG="${{ inputs.release_tag || github.event.inputs.release_tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          # Extract version from tag (format: package@1.0.0)
+          VERSION=$(echo "$TAG" | sed 's/^.*@//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Update version in pyproject.toml
+        run: |
+          DIR="${{ inputs.package_dir || github.event.inputs.package_dir || 'agentic' }}"
+          NAME="${{ inputs.package_name || github.event.inputs.package_name || 'infra-bootstrap-tools-agentic' }}"
+          cd "$DIR"
+          VERSION="${{ steps.version.outputs.version }}"
+          # Update version in pyproject.toml
+          sed -i "s/^version = .*/version = \"$VERSION\"/" pyproject.toml
+          # Update package name if needed
+          sed -i "s/^name = .*/name = \"$NAME\"/" pyproject.toml
+
+      - name: Build package
+        run: |
+          DIR="${{ inputs.package_dir || github.event.inputs.package_dir || 'agentic' }}"
+          cd "$DIR"
+          python -m build
+
+      - name: Upload package to release
+        if: ${{ !(inputs.dry_run || github.event.inputs.dry_run) }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DIR="${{ inputs.package_dir || github.event.inputs.package_dir || 'agentic' }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          
+          # Upload package artifacts to the release
+          gh release upload "$TAG" \
+            "$DIR"/dist/* \
+            --clobber

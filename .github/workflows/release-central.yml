@@ -1,0 +1,37 @@
+name: Central Publish Workflow
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - 'v*'
+      - '*@*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish-agentic:
+    if: contains(github.ref_name, 'infra-bootstrap-tools-agentic@')
+    uses: ./.github/workflows/release-python.yml
+    with:
+      release_tag: ${{ github.ref_name }}
+      package_dir: 'agentic'
+      package_name: 'infra-bootstrap-tools-agentic'
+
+  publish-stacks:
+    if: contains(github.ref_name, 'infra-bootstrap-tools-stacks@')
+    uses: ./.github/workflows/release-stacks.yml
+    with:
+      release_tag: ${{ github.ref_name }}
+      stacks_dir: 'stacks'
+
+  publish-ansible:
+    if: startsWith(github.ref, 'refs/tags/v')
+    uses: ./.github/workflows/release-ansible.yml
+    with:
+      release_tag: ${{ github.ref_name }}
+      collection_dir: 'ansible'
+    secrets:
+      GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
