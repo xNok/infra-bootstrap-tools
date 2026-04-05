@@ -88,10 +88,17 @@ success "Flux Operator is ready."
 
 info "Pushing the local kubernetes/ folder as an OCI artifact to the local registry..."
 flux push artifact "oci://localhost:${REGISTRY_PORT}/flux-system:latest" \
-  --path="${ROOT_DIR}/kubernetes" \
+  --path="${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}" \
   --source="${SOURCE_URL}" \
   --revision="${REVISION}"
-success "OCI artifact pushed."
+success "Fleet OCI artifact pushed."
+
+info "Pushing infra-addons/ as a separate OCI artifact to the local registry..."
+flux push artifact "oci://localhost:${REGISTRY_PORT}/infra-addons:latest" \
+  --path="${ROOT_DIR}/kubernetes/infra-addons" \
+  --source="${SOURCE_URL}" \
+  --revision="${REVISION}"
+success "infra-addons OCI artifact pushed."
 
 info "Validating local Kustomize entrypoints..."
 kubectl kustomize "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}" > /dev/null

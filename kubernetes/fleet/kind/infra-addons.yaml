@@ -12,9 +12,9 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: infra-addons
-  path: "./fleet/kind/infra-addons/base"
+  path: "./base"
 
-  # components are relative to the base path
+  # components are relative to the source root (infra-addons OCI root)
   components:
     - ../components/cert-manager
     - ../components/openziti

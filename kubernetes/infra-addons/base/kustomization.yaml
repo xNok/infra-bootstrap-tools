@@ -1,4 +1,5 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
-# Root kustomization — selects all addons for validation purposes.
+# Empty base — no addons installed by default.
+# Clusters opt-in to addons via spec.components in their Flux Kustomization.
+# See: kubernetes/fleet/<cluster>/infra-addons.yaml
