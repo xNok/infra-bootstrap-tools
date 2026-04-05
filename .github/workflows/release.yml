@@ -28,7 +28,7 @@ jobs:
       stacks_dir: 'stacks'
 
   publish-ansible:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref_name, 'ansible-collection-infra-bootstrap-tools@')
     uses: ./.github/workflows/templates/release-ansible.yml
     with:
       release_tag: ${{ github.ref_name }}
