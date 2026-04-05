@@ -1,5 +1,13 @@
 # docker-stack-collection-infra-bootstrap-tools
 
+## 1.0.4
+
+### Patch Changes
+
+- 3a7a5fd: bump patches to test the new release process, no changes
+- Updated dependencies [3a7a5fd]
+  - docker-stack-n8n@0.0.3
+
 ## 1.0.3
 
 ### Patch Changes
