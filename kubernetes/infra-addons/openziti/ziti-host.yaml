@@ -15,11 +15,12 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: ziti-router
-  namespace: openziti
+  namespace: flux-system
 spec:
+  targetNamespace: openziti
   dependsOn:
     - name: ziti-controller
-      namespace: openziti
+      namespace: flux-system
   chart:
     spec:
       chart: ziti-router
@@ -31,13 +32,16 @@ spec:
   interval: 1h
   install:
     createNamespace: true
+  valuesFrom:
+    - kind: ConfigMap
+      name: ${CLUSTER_NAME}-ziti-router-values
+      optional: true
+    - kind: Secret
+      name: ziti-router-enrollment
+      valuesKey: enrollmentJwt
+      targetPath: enrollmentJwt
   values:
     edge:
       advertisedHost: "ziti-router.openziti.svc.cluster.local"
     ctrl:
       endpoint: "ziti-controller.openziti.svc.cluster.local:6262"
-  valuesFrom:
-    - kind: Secret
-      name: ziti-router-enrollment
-      valuesKey: enrollmentJwt
-      targetPath: enrollmentJwt

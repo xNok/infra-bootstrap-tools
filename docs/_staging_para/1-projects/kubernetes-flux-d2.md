@@ -29,6 +29,27 @@ We don't want or use multiple repositories, thus we are adapting the D2 recommen
 
 We have also established a GitHub Actions workflow (`.github/workflows/flux-d2-test.yml`) to test this pipeline automatically via a local Kind cluster and Docker registry. It uses the `flux-operator` Helm chart and bootstraps the cluster from the local `kubernetes/fleet/kind/flux-system/flux-instance.yaml` definition.
 
+## 2026-04-05 50-Cluster Fleet Architecture — Adoption Analysis
+
+### Key principles from the external reference architecture
+
+1. **OCI-Driven, Gitless GitOps**: CI packages addons as OCI artifacts; clusters poll OCI not Git.
+2. **Kustomize Components for opt-in addon selection**: each addon has `kind: Component`; clusters opt-in via `components:` list.
+3. **`valuesFrom` with optional ConfigMaps**: HelmReleases use `${CLUSTER_NAME}-<addon>-values` ConfigMaps (optional: true) so they are stateless; cluster-specific ConfigMaps live in `fleet/<cluster>/values/`.
+4. **All HelmReleases in `flux-system`**: so `valuesFrom` ConfigMaps share a single namespace; charts install to their correct namespace via `targetNamespace`.
+5. **`postBuild.substituteFrom`** on every Flux Kustomization so `${CLUSTER_NAME}` is resolved in all applied manifests, including `valuesFrom.name` in HelmRelease specs.
+
+### Monorepo adaptation decisions
+
+- Structure stays (`fleet/`, `infra/`, `apps/`) — no restructure to `addons/`, `tenants/`, `clusters/`.
+- OCI push of the whole `kubernetes/` directory is kept (single artifact, not split addons/tenants).
+- Kustomize Component conversion is **deferred**: the ResourceSet in `infrastructure.yaml` already provides per-cluster opt-in via `inputs:` — that's sufficient for now.
+- **Implemented changes**:
+  - All `HelmRelease` objects moved to `namespace: flux-system` with `targetNamespace` for chart installation.
+  - `valuesFrom` with `${CLUSTER_NAME}-<addon>-values` optional ConfigMaps added to every HelmRelease.
+  - `postBuild.substituteFrom: flux-runtime-info` added to `infra-sources` and `infra-cert-manager` Kustomizations.
+  - `fleet/kind/values/` directory created with cluster-specific ConfigMaps for cert-manager, trust-manager, ziti-controller, and ziti-router.
+
 ## 2026-04-05 Kind Rename + Codespaces Enablement
 
 Goal of this pass: finish the fleet test-cluster rename to `kind`, make the integration script default to the renamed fleet, and document a reliable GitHub Codespaces path for running the same test locally in a browser-hosted dev environment.

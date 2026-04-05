@@ -95,7 +95,7 @@ success "OCI artifact pushed."
 
 info "Validating local Kustomize entrypoints..."
 kubectl kustomize "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}" > /dev/null
-kubectl kustomize "${ROOT_DIR}/kubernetes/infra" > /dev/null
+kubectl kustomize "${ROOT_DIR}/kubernetes/infra-addons" > /dev/null
 success "Kustomize entrypoints valid."
 
 info "Bootstrapping cluster from OCI..."
@@ -106,13 +106,7 @@ wait_ready "fluxinstance/flux" "flux-system" "2m"
 wait_ready "ocirepository/flux-system" "flux-system" "1m"
 wait_ready "kustomization/flux-system" "flux-system" "2m"
 
-info "Validating D2 fleet resources..."
-require_resource "resourceset/infra-components" "flux-system"
-wait_ready "resourceset/infra-components" "flux-system" "2m"
-
-info "Waiting for infra Kustomizations to become ready..."
-wait_ready "kustomization/infra-sources" "flux-system" "2m"
-wait_ready "kustomization/infra-cert-manager" "flux-system" "3m"
-wait_ready "kustomization/infra-openziti" "flux-system" "3m"
+info "Waiting for infra-addons Kustomization to become ready..."
+wait_ready "kustomization/infra-addons" "flux-system" "5m"
 
 echo -e "\n${GREEN}${BOLD}  ✔  Flux D2 bootstrap test completed successfully!${RESET}\n"

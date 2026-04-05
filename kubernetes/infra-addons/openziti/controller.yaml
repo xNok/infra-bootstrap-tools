@@ -2,8 +2,9 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: ziti-controller
-  namespace: openziti
+  namespace: flux-system
 spec:
+  targetNamespace: openziti
   chart:
     spec:
       chart: ziti-controller
@@ -15,6 +16,10 @@ spec:
   interval: 1h
   install:
     createNamespace: true
+  valuesFrom:
+    - kind: ConfigMap
+      name: ${CLUSTER_NAME}-ziti-controller-values
+      optional: true
   values:
     clientApi:
       advertisedHost: "ziti-controller.openziti.svc.cluster.local"

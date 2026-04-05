@@ -2,15 +2,16 @@ apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: trust-manager
-  namespace: cert-manager
+  namespace: flux-system
 spec:
+  targetNamespace: cert-manager
   dependsOn:
     - name: cert-manager
-      namespace: cert-manager
+      namespace: flux-system
   chart:
     spec:
       chart: trust-manager
-      version: "v0.9.0" # Verify latest version
+      version: "v0.22.0"
       sourceRef:
         kind: HelmRepository
         name: jetstack
@@ -18,6 +19,10 @@ spec:
   interval: 1h
   install:
     createNamespace: true
+  valuesFrom:
+    - kind: ConfigMap
+      name: ${CLUSTER_NAME}-trust-manager-values
+      optional: true
   values:
     app:
       trust:

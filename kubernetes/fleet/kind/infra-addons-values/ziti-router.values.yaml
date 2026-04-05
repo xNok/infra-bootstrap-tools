@@ -1,0 +1,4 @@
+edge:
+  advertisedHost: "ziti-router.openziti.svc.cluster.local"
+ctrl:
+  endpoint: "ziti-controller.openziti.svc.cluster.local:6262"
