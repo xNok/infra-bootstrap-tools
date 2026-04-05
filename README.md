@@ -4,10 +4,6 @@
 
 This repository provides Ansible playbooks to set up a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects. I made this repository a place to **Learn** about DevOps and Cloud Infrastructure. You have all the tutorial you need to get started.
 
-Features:
-* docker-swarm
-* Caddy
-* Portainer
 
 ## Development Environment Setup
 

@@ -15,12 +15,14 @@
     "ghcr.io/devcontainers/features/nix:1": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
+  "postCreateCommand": "nix profile install .#full",
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-kubernetes-tools.vscode-kubernetes-tools",
         "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "bbenoist.Nix"
       ]
     }
   }
