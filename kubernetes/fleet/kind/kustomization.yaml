@@ -3,5 +3,5 @@ kind: Kustomization
 resources:
   - flux-system
   - oci-sources.yaml
-  - infra-addons-values
+  - infra-addons-values.yaml
   - infra-addons.yaml

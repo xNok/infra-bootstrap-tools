@@ -17,7 +17,7 @@ spec:
     kind: OCIRepository
     url: "oci://kind-registry:5000/flux-system"
     ref: "latest"
-    path: "./fleet/kind"
+    path: "."
   kustomize:
     patches:
       # Patch the generated OCIRepository to allow insecure registry for local testing
@@ -32,18 +32,3 @@ spec:
         target:
           kind: OCIRepository
           name: flux-system
-      # Override infra-addons OCIRepository to use local registry for local testing
-      - patch: |
-          apiVersion: source.toolkit.fluxcd.io/v1
-          kind: OCIRepository
-          metadata:
-            name: infra-addons
-            namespace: flux-system
-          spec:
-            url: oci://kind-registry:5000/infra-addons
-            insecure: true
-            ref:
-              tag: latest
-        target:
-          kind: OCIRepository
-          name: infra-addons

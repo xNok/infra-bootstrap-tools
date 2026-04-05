@@ -1,5 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-# Empty base — no addons installed by default.
+# Base — always applied to every cluster regardless of which addons are selected.
+# Contains only shared resources (HelmRepositories used by multiple components).
 # Clusters opt-in to addons via spec.components in their Flux Kustomization.
 # See: kubernetes/fleet/<cluster>/infra-addons.yaml
+resources:
+  - helm-repos.yaml

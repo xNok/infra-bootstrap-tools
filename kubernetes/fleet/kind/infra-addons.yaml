@@ -7,6 +7,10 @@ spec:
   interval: 1h
   prune: true
 
+  # Ensure cluster-specific values ConfigMaps are applied before addons reconcile.
+  dependsOn:
+    - name: infra-addons-values
+
   # Where does the config comes from?
   # Base is a minimal config share by all clusters, then components are added on top.
   sourceRef:

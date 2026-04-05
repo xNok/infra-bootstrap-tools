@@ -3,6 +3,5 @@ kind: Component
 
 resources:
   - namespace.yaml
-  - helm-repo.yaml
   - controller.yaml
   - ziti-host.yaml
