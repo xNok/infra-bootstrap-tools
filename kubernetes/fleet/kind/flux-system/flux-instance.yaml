@@ -13,13 +13,11 @@ spec:
     - kustomize-controller
     - helm-controller
     - notification-controller
-    - image-reflector-controller
-    - image-automation-controller
   sync:
     kind: OCIRepository
     url: "oci://kind-registry:5000/flux-system"
     ref: "latest"
-    path: "./fleet/openziti"
+    path: "./fleet/kind"
   kustomize:
     patches:
       # Patch the generated OCIRepository to allow insecure registry for local testing

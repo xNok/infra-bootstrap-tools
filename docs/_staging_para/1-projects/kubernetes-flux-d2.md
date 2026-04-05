@@ -18,16 +18,36 @@ Key takeaways:
 We don't want or use multiple repositories, thus we are adapting the D2 recommendation as a mono-repo.
 
 - **Monorepo Mapping:**
-  - `kubernetes/fleet`: Acts as `d2-fleet`. Reconciles our cluster delivery components. Each cluster has its own folder here (e.g., `kubernetes/fleet/openziti`), which contains the `FluxInstance` resource specifying its bootstrap source.
+  - `kubernetes/fleet`: Acts as `d2-fleet`. Reconciles our cluster delivery components. Each cluster has its own folder here (e.g., `kubernetes/fleet/kind`), which contains the `FluxInstance` resource specifying its bootstrap source.
   - `kubernetes/infra`: Acts as `d2-infra`. Contains our base infrastructure addons (cert-manager, openziti, etc). These are usually referenced by the clusters inside `fleet/`.
   - `kubernetes/apps`: Acts as `d2-apps`. Will hold our applications deployed to the clusters.
 
 - **Experimentation First:**
   As `infra-bootstrap-tools` is first and foremost about experiments, we assume that different clusters can represent different experiments, but some elements (like `infra`) can and should be shared.
   - By organizing our folders cleanly into `fleet`, `infra`, and `apps`, we can easily push the whole `kubernetes` directory as a single OCI artifact.
-  - For example, a cluster named `openziti` will initialize itself by applying `kubernetes/fleet/openziti/flux-system/flux-instance.yaml`. The Flux Operator then takes over, pulls the `kubernetes` artifact, and deploys the cluster-specific `infrastructure.yaml` which seamlessly references resources under `infra/`.
+  - For example, the local Kind test cluster initializes itself by applying `kubernetes/fleet/kind/flux-system/flux-instance.yaml`. The Flux Operator then takes over, pulls the `kubernetes` artifact, and deploys the cluster-specific `infrastructure.yaml` which seamlessly references resources under `infra/`.
 
-We have also established a GitHub Actions workflow (`.github/workflows/flux-d2-test.yml`) to test this pipeline automatically via a local Kind cluster and Docker registry. It uses the `flux-operator` Helm chart and bootstraps the cluster from the local `kubernetes/fleet/openziti/flux-system/flux-instance.yaml` definition.
+We have also established a GitHub Actions workflow (`.github/workflows/flux-d2-test.yml`) to test this pipeline automatically via a local Kind cluster and Docker registry. It uses the `flux-operator` Helm chart and bootstraps the cluster from the local `kubernetes/fleet/kind/flux-system/flux-instance.yaml` definition.
+
+## 2026-04-05 Kind Rename + Codespaces Enablement
+
+Goal of this pass: finish the fleet test-cluster rename to `kind`, make the integration script default to the renamed fleet, and document a reliable GitHub Codespaces path for running the same test locally in a browser-hosted dev environment.
+
+Observed gaps:
+- The repo only contains `kubernetes/fleet/kind`, but the Flux D2 test still defaulted to `CLUSTER_NAME=flux-d2-test` and `FLEET_NAME=openziti`.
+- The renamed fleet manifest still bootstrapped Flux from `./fleet/openziti`, which would break a default test run.
+- The runtime info config map still labeled the cluster as `openziti`.
+- The current branch has removed the `kubernetes/infra/update-policies` layer, but the test script and root `kubernetes/infra/kustomization.yaml` still referenced it.
+- There was no checked-in Codespaces/devcontainer setup that matched the preferred Nix-shell workflow while still ensuring Docker access and the required CLIs (`kind`, `kubectl`, `helm`, `flux`) were present.
+
+Completed:
+- Updated the local Flux D2 test script and Kind helper to default to `kind`.
+- Added fast-fail dependency checks and a clearer Docker/Codespaces error path to `bin/tests/flux-d2/test.sh`.
+- Updated the Flux D2 CI workflow to create and target the `kind` cluster and fleet.
+- Fixed the renamed fleet manifest to bootstrap from `./fleet/kind` and updated runtime metadata to `CLUSTER_NAME=kind`.
+- Removed stale `update-policies` validation from the test and the root `kubernetes/infra/kustomization.yaml` entry so the current manifest tree builds again.
+- Added the Flux D2 test CLIs to the shared Nix shell so local development and Codespaces use the same toolchain.
+- Updated `.devcontainer/devcontainer.json` to install Nix and Docker support, then warm the flake shell instead of relying on `setup.sh`.
 
 ## 2026-03-23 Migration/Validation Pass
 
@@ -82,18 +102,14 @@ Local bootstrap helper (reproduces Kind+registry setup used by CI):
 
 What this script validates end-to-end:
 - Local `kubernetes` artifact push to `oci://localhost:5000/flux-system:latest`.
-- `FluxInstance` bootstrap from `kubernetes/fleet/openziti/flux-system/flux-instance.yaml`.
+- `FluxInstance` bootstrap from `kubernetes/fleet/kind/flux-system/flux-instance.yaml`.
 - Generated source and root sync become ready (`OCIRepository/flux-system`, `Kustomization/flux-system`).
 - D2-style fleet `ResourceSet` exists and is ready (`resourceset/infra-components`).
-- Infra reconciliation chain becomes ready (`infra-sources`, `infra-cert-manager`, `infra-openziti`, `infra-update-policies`).
-- Image automation resources exist (`ImageRepository` and `ImagePolicy` for OpenZiti controller and router).
-- Image repositories become ready, proving scan/access works for policy input data.
+- Infra reconciliation chain becomes ready (`infra-sources`, `infra-cert-manager`, `infra-openziti`).
 
 Expected key resources after success:
 - `resourceset/infra-components` in `flux-system`.
 - `kustomization/infra-openziti` in `flux-system` (generated from `ResourceSet` inputs).
-- `imagerepository/openziti-controller` and `imagerepository/openziti-router` in `flux-system`.
-- `imagepolicy/openziti-controller` and `imagepolicy/openziti-router` in `flux-system`.
 
 CI entrypoint:
 - `.github/workflows/flux-d2-test.yml` runs `bin/tests/flux-d2/test.sh` for pull requests touching Kubernetes/Flux D2 files.
@@ -101,8 +117,11 @@ CI entrypoint:
 Manual local usage:
 ```bash
 # 1) Setup local Kind cluster + local registry wiring
-CLUSTER_NAME=flux-d2-test REGISTRY_PORT=5000 ./bin/setup-kind-local-registry.sh
+CLUSTER_NAME=kind REGISTRY_PORT=5000 ./bin/setup-kind-local-registry.sh
 
 # 2) Run full D2 validation
-CLUSTER_NAME=flux-d2-test FLEET_NAME=openziti REGISTRY_PORT=5000 ./bin/tests/flux-d2/test.sh
+CLUSTER_NAME=kind FLEET_NAME=kind REGISTRY_PORT=5000 ./bin/tests/flux-d2/test.sh
+
+# 3) In GitHub Codespaces, enter the Flux-focused flake environment
+nix develop .#flux
 ```

@@ -1,3 +1,5 @@
+{ shell ? "default" }:
+
 let
   nixpkgs = import <nixpkgs> {
     config = (import ./common.nix { pkgs = nixpkgs; }).nixpkgsConfig;
@@ -5,6 +7,4 @@ let
   common = import ./common.nix { pkgs = nixpkgs; };
 in
 
-nixpkgs.mkShell {
-  inherit (common) buildInputs shellHook;
-}
+nixpkgs.mkShell common.shells.${shell}

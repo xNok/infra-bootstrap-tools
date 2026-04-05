@@ -212,6 +212,15 @@ Modern, reproducible approach:
 nix develop
 ```
 
+Named task shells are now the preferred way to avoid one oversized environment:
+
+```bash
+nix develop .#ansible
+nix develop .#flux
+nix develop .#docs
+nix develop .#full
+```
+
 ### Traditional Nix Shell
 
 ```bash
@@ -226,6 +235,11 @@ Both Nix approaches automatically:
 3. Install Python dependencies from `requirements.txt` and `agentic/requirements.txt`
 4. Install Ansible Galaxy roles/collections from `requirements.yml`
 5. Install pre-commit hooks
+
+Update 2026-04-05:
+- `default` is now a lighter general-purpose shell.
+- `ansible`, `flux`, `docs`, and `full` are exposed as separate task-focused shells.
+- Traditional `nix-shell` can select the same shell variants via `--argstr shell <name>`.
 
 ### Provided Tools
 

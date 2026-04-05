@@ -64,23 +64,44 @@ Nix Flakes provide a more modern and reproducible approach (note: flakes are sti
 # Enable flakes if not already enabled (add to ~/.config/nix/nix.conf or /etc/nix/nix.conf):
 # experimental-features = nix-command flakes
 
-# Enter the development environment
+# Enter the default general-purpose development environment
 nix develop
+```
+
+Task-focused shells are also available:
+
+```bash
+# Infrastructure / Ansible work
+nix develop .#ansible
+
+# Flux / Kind / Kubernetes work
+nix develop .#flux
+
+# Website / Hugo work
+nix develop .#docs
+
+# Full kitchen-sink environment
+nix develop .#full
 ```
 
 #### Option 2: Using Traditional Nix Shell
 
 ```bash
 nix-shell bin/nix/shell.nix
+
+# Or select a specific shell
+nix-shell bin/nix/shell.nix --argstr shell flux
 ```
 
-Both options automatically install and configure all required tools and dependencies upon entry, including:
-- Essential tools: Python, pip, Ansible, 1Password CLI, Go, Hugo, pre-commit, Git, Docker
-- Python dependencies from `requirements.txt` and `agentic/requirements.txt` (installed in a virtual environment)
-- Ansible Galaxy roles and collections from `requirements.yml`
-- Pre-commit hooks
+Shell overview:
+- `default`: general development shell with Python, Docker, Git, and pre-commit
+- `ansible`: adds Ansible tooling and installs Galaxy dependencies
+- `flux`: adds `jq`, `kubectl`, `helm`, `kind`, and `flux` for Kubernetes/Flux work
+- `docs`: adds Hugo and Go for website/documentation work
+- `full`: includes everything when you need the broadest environment
 
-The environment is ready to use instantly after the initial setup completes. Python packages are installed in a local virtual environment (`.venv`) to avoid conflicts with the Nix-provided Python.
+The shells are ready to use after their hooks complete. Python-based shells create and activate a local virtual environment (`.venv`) to avoid conflicts with the Nix-provided Python.
+
 
 ### Gitpod
 

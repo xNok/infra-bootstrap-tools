@@ -16,9 +16,7 @@
         common = import ./bin/nix/common.nix { inherit pkgs; };
       in
       {
-        devShells.default = pkgs.mkShell {
-          inherit (common) buildInputs shellHook;
-        };
+        devShells = pkgs.lib.mapAttrs (_: shell: pkgs.mkShell shell) common.shells;
       }
     );
 }

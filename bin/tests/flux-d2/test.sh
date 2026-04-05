@@ -4,12 +4,47 @@ set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT_DIR=$(cd "${SCRIPT_DIR}/../../.." && pwd)
 
-CLUSTER_NAME=${CLUSTER_NAME:-"flux-d2-test"}
+CLUSTER_NAME=${CLUSTER_NAME:-"kind"}
 SOURCE_URL=${SOURCE_URL:-"https://github.com/xNok/infra-bootstrap-tools"}
 REVISION=${REVISION:-"local"}
-FLEET_NAME=${FLEET_NAME:-"openziti"}
+FLEET_NAME=${FLEET_NAME:-"kind"}
 REGISTRY_NAME=${REGISTRY_NAME:-"kind-registry"}
 REGISTRY_PORT=${REGISTRY_PORT:-"5000"}
+
+need_cmd() {
+  local cmd="$1"
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "Missing required command: $cmd" >&2
+    exit 1
+  fi
+}
+
+require_docker() {
+  if docker info >/dev/null 2>&1; then
+    return
+  fi
+
+  cat >&2 <<'EOF'
+Docker is required for the Flux D2 integration test.
+
+If you are running in GitHub Codespaces, reopen the repository in the provided devcontainer so Docker-outside-of-Docker is enabled, then enter the Flux shell:
+  nix develop .#flux
+EOF
+  exit 1
+}
+
+dump_debug_state() {
+  echo "Dumping Operator logs in case of failure..."
+  kubectl logs -n flux-system -l app.kubernetes.io/name=flux-operator || true
+  kubectl get fluxinstance flux -n flux-system -o yaml || true
+}
+
+for cmd in docker kubectl helm flux; do
+  need_cmd "$cmd"
+done
+
+require_docker
+trap dump_debug_state ERR
 
 require_resource() {
   local resource="$1"
@@ -51,16 +86,6 @@ echo "Bootstrapping cluster from OCI..."
 kubectl apply -f "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}/flux-system/flux-instance.yaml"
 
 echo "Waiting for FluxInstance to become ready..."
-echo "Dumping Operator logs in case of failure..."
-
-kubectl logs -n flux-system -l app.kubernetes.io/name=flux-operator || true
-
-kubectl get fluxinstance flux -n flux-system -o yaml || true
-echo "Dumping Operator logs in case of failure..."
-
-kubectl logs -n flux-system -l app.kubernetes.io/name=flux-operator || true
-
-kubectl get fluxinstance flux -n flux-system -o yaml || true
 wait_ready "fluxinstance/flux" "flux-system" "2m"
 
 echo "Waiting for generated OCIRepository to become ready..."
@@ -77,19 +102,5 @@ echo "Waiting for infra Kustomizations to become ready..."
 wait_ready "kustomization/infra-sources" "flux-system" "2m"
 wait_ready "kustomization/infra-cert-manager" "flux-system" "3m"
 wait_ready "kustomization/infra-openziti" "flux-system" "3m"
-wait_ready "kustomization/infra-update-policies" "flux-system" "2m"
-
-echo "Validating image automation policy resources..."
-require_resource "imagerepository/openziti-controller" "flux-system"
-require_resource "imagepolicy/openziti-controller" "flux-system"
-require_resource "imagerepository/openziti-router" "flux-system"
-require_resource "imagepolicy/openziti-router" "flux-system"
-
-echo "Waiting for image repositories to become ready..."
-wait_ready "imagerepository/openziti-controller" "flux-system" "3m"
-wait_ready "imagerepository/openziti-router" "flux-system" "3m"
-
-echo "Debug snapshot of image policies..."
-kubectl get imagepolicy -n flux-system -o wide
 
 echo "Flux D2 bootstrap test completed successfully!"

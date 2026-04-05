@@ -10,7 +10,7 @@ metadata:
     kustomize.toolkit.fluxcd.io/ssa: "Merge"
 data:
   ARTIFACT_TAG: latest
-  CLUSTER_NAME: openziti
+  CLUSTER_NAME: kind
   ENVIRONMENT: staging
   ARTIFACT_SUBJECT_WORKFLOW: push-artifact
   ARTIFACT_SUBJECT_GIT_REF: refs/heads/main

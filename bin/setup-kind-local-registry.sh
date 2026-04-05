@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CLUSTER_NAME=${CLUSTER_NAME:-"flux-d2-test"}
+CLUSTER_NAME=${CLUSTER_NAME:-"kind"}
 REGISTRY_NAME=${REGISTRY_NAME:-"kind-registry"}
 REGISTRY_PORT=${REGISTRY_PORT:-"5000"}
 KIND_NODE_IMAGE=${KIND_NODE_IMAGE:-""}

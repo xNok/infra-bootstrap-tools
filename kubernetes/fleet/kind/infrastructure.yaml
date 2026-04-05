@@ -55,18 +55,4 @@ spec:
           substituteFrom:
             - kind: ConfigMap
               name: flux-runtime-info
----
-apiVersion: kustomize.toolkit.fluxcd.io/v1
-kind: Kustomization
-metadata:
-  name: infra-update-policies
-  namespace: flux-system
-spec:
-  interval: 1h
-  dependsOn:
-    - name: infra-sources
-  sourceRef:
-    kind: OCIRepository
-    name: flux-system
-  path: "./infra/update-policies"
-  prune: true
+
