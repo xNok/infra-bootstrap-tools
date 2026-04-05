@@ -14,7 +14,7 @@ permissions:
 jobs:
   publish-agentic:
     if: contains(github.ref_name, 'infra-bootstrap-tools-agentic@')
-    uses: ./.github/workflows/python-package-publish.yml
+    uses: ./.github/workflows/release-python.yml
     with:
       release_tag: ${{ github.ref_name }}
       package_dir: 'agentic'
@@ -22,14 +22,14 @@ jobs:
 
   publish-stacks:
     if: contains(github.ref_name, 'infra-bootstrap-tools-stacks@')
-    uses: ./.github/workflows/stacks-package-release.yml
+    uses: ./.github/workflows/release-stacks.yml
     with:
       release_tag: ${{ github.ref_name }}
       stacks_dir: 'stacks'
 
   publish-ansible:
     if: startsWith(github.ref, 'refs/tags/v')
-    uses: ./.github/workflows/ansible-collection-publish.yml
+    uses: ./.github/workflows/release-ansible.yml
     with:
       release_tag: ${{ github.ref_name }}
       collection_dir: 'ansible'
