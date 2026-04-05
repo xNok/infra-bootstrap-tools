@@ -18,6 +18,10 @@
         "ansible-role-utils-affected-roles": "0.0.2",
         "ansible-role-utils-rotate-docker-configs": "0.0.1",
         "ansible-role-utils-rotate-docker-secrets": "0.0.1",
-        "ansible-role-utils-ssh-add": "0.0.1"
+        "ansible-role-utils-ssh-add": "0.0.1",
+        "ansible-role-k3s-agent": "0.1.2",
+        "ansible-role-k3s-flux-bootstrap": "0.1.0",
+        "ansible-role-k3s-os-hardening": "0.1.0",
+        "ansible-role-k3s-server": "0.1.2"
     }
 }
