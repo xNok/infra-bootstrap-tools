@@ -6,12 +6,12 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
-      "installAdditionalPackages": "git-lfs",
       "configureZshAsDefaultShell": false,
       "installZsh": false,
       "upgradePackages": true,
       "username": "codespace"
     },
+    "ghcr.io/devcontainers/features/git-lfs:1": {},
     "ghcr.io/devcontainers/features/nix:1": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
