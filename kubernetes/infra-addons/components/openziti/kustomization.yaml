@@ -6,22 +6,21 @@ resources:
   - controller.yaml
   - ziti-host.yaml
   - router-enrollment-job.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    reconcile.fluxcd.io/watch: Enabled
 configMapGenerator:
   - name: ziti-router-enroll-script
     namespace: openziti
-    options:
-      disableNameSuffixHash: true
     files:
       - enroll-router.sh
   - name: default-ziti-controller-values
     namespace: flux-system
-    options:
-      disableNameSuffixHash: true
     files:
       - values.yaml=default-ziti-controller.values.yaml
   - name: default-ziti-router-values
     namespace: flux-system
-    options:
-      disableNameSuffixHash: true
     files:
       - values.yaml=default-ziti-router.values.yaml

@@ -145,6 +145,100 @@ The component default (`default-trust-manager.values.yaml`) ships `app.trust.nam
 4. **Webhook timing**: trust-manager's validating webhook causes `connection refused` on install if the pod isn't fully ready. Remedy: `dependsOn: trust-manager` on any HelmRelease using `Bundle` resources, or accept one reconcile retry.
 5. **OCI artifact per concern**: keeping fleet (cluster-specific) and infra-addons (shared) as separate OCI artifacts means the shared layer can be promoted independently without re-pushing all cluster configurations.
 
+## 2026-04-06 Runtime Debugging — OpenZiti Enrollment & Flux ConfigMap Watch
+
+### ConfigMap watch annotation required for immediate HelmRelease reconciliation
+
+Without the annotation `reconcile.fluxcd.io/watch: Enabled` on `valuesFrom` ConfigMaps, a HelmRelease only reconciles on its `interval` timer — it does **not** react to ConfigMap changes immediately. This means updating a default values file will silently wait up to `interval` before taking effect.
+
+**Fix**: add the annotation to every ConfigMap used as a `valuesFrom` source. Use `generatorOptions` at the kustomization level to apply it globally:
+
+```yaml
+# kustomization.yaml (Component or Kustomization)
+generatorOptions:
+  disableNameSuffixHash: true
+  annotations:
+    reconcile.fluxcd.io/watch: Enabled
+configMapGenerator:
+  - name: default-cert-manager-values
+    namespace: flux-system
+    files:
+      - values.yaml=default-cert-manager.values.yaml
+```
+
+Apply this pattern in:
+- `components/cert-manager/kustomization.yaml`
+- `components/openziti/kustomization.yaml`
+- `fleet/kind/infra-addons-values/kustomization.yaml`
+
+Reference: https://github.com/fluxcd/flux2/issues/5446
+
+### Flux `postBuild` substitution consumes shell variables in ConfigMap-mounted scripts
+
+When a shell script is stored as a ConfigMap via `configMapGenerator` and the Kustomization has `postBuild.substituteFrom`, Flux **substitutes all `${VAR}` patterns** in every resource it applies — including ConfigMap data values. Shell variables like `${SA_TOKEN}`, `${APISERVER}`, etc. are replaced with empty strings if they are not defined in the substitution source.
+
+**Fix**: escape shell variables with `$$` in the source file. Kustomize/Flux outputs `$$VAR` as `${VAR}` in the final ConfigMap, preserving shell semantics:
+
+```sh
+# In enroll-router.sh — use $$ for shell variables, not $
+SA_TOKEN=$$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+JWT_B64=$$(echo -n "$${JWT}" | base64 -w 0)
+```
+
+### Python version in container images
+
+The `openziti/ziti-controller` image ships `python3.11` but not `python3`. Scripts that call `python3` will fail with `not found`. Use the explicit binary:
+
+```sh
+python3.11 -c "import sys, json; ..."
+```
+
+### advertisedHost must match the actual Kubernetes service name
+
+The `clientApi.advertisedHost` value in the ziti-controller chart becomes the `iss` (issuer) field embedded in enrollment JWTs. The router validates this URL when consuming a JWT. If the hostname in the JWT does not resolve in-cluster, enrollment fails with:
+
+```
+failed to parse JWT: could not contact remote server [https://<hostname>:<port>]
+```
+
+The chart generates the client service as `<release>-ziti-controller-client` (with ALPN, ctrl-plane shares this same service by default). Set:
+
+```yaml
+# default-ziti-controller.values.yaml
+clientApi:
+  advertisedHost: "openziti-ziti-controller-client.openziti.svc.cluster.local"
+  advertisedPort: 1280
+ctrlPlane:
+  advertisedHost: "openziti-ziti-controller-client.openziti.svc.cluster.local"
+  advertisedPort: 1280   # ctrl-plane shares client port via ALPN (ctrlPlane.service.enabled: false by default)
+```
+
+And the router:
+
+```yaml
+# default-ziti-router.values.yaml
+ctrl:
+  endpoint: "openziti-ziti-controller-client.openziti.svc.cluster.local:1280"
+```
+
+### Helm upgrade does not restart pods when only ConfigMap data changes
+
+If the controller pod was already running before the ConfigMap was corrected, a `flux reconcile helmrelease` / Helm upgrade will not restart the pod because the Deployment spec hash hasn't changed. The controller config (mounted as a ConfigMap) will remain stale until the pod is restarted.
+
+**Remedy**: `kubectl rollout restart deployment <name> -n <namespace>` after updating a values ConfigMap that affects config files mounted into the controller.
+
+### ziti-controller ctrlPlane service is disabled by default
+
+`ctrlPlane.service.enabled: false` is the chart default — the ctrl-plane listener shares the same port as `clientApi` via ALPN. There is no separate `openziti-ziti-controller-ctrl` service unless explicitly enabled. Do not reference a `*-ctrl` service hostname in router configs.
+
+### Edge router enrollment idempotency
+
+The enrollment Job must handle the case where:
+1. The router was created in a previous run but the enrollment JWT was consumed (router shows `enrollmentJwt: null`).
+2. Deleting and immediately recreating the router fails with `name must be unique` because the API is eventually consistent.
+
+**Pattern**: delete the stale router, poll until `list edge-routers` returns empty, then create fresh.
+
 ## 2026-04-05 Kind Rename + Codespaces Enablement
 
 Goal of this pass: finish the fleet test-cluster rename to `kind`, make the integration script default to the renamed fleet, and document a reliable GitHub Codespaces path for running the same test locally in a browser-hosted dev environment.

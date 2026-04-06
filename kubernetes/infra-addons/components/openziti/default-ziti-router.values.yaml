@@ -1,6 +1,4 @@
 edge:
   advertisedHost: "ziti-router.openziti.svc.cluster.local"
 ctrl:
-  endpoint: "ziti-controller.openziti.svc.cluster.local:6262"
-enrollmentJwtFromSecret: true
-enrollmentJwtSecretName: "ziti-router-enrollment"
+  endpoint: "openziti-ziti-controller-client.openziti.svc.cluster.local:1280"

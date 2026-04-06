@@ -3,6 +3,8 @@ kind: Kustomization
 
 generatorOptions:
   disableNameSuffixHash: true
+  annotations:
+    reconcile.fluxcd.io/watch: Enabled
 
 configMapGenerator:
   - name: kind-cert-manager-values
