@@ -111,7 +111,7 @@ jobs:
         run: |
           DIR="${{ inputs.package_dir || github.event.inputs.package_dir || 'agentic' }}"
           TAG="${{ steps.version.outputs.tag }}"
-          
+
           # Upload package artifacts to the release
           gh release upload "$TAG" \
             "$DIR"/dist/* \

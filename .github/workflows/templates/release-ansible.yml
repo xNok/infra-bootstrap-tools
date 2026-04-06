@@ -104,7 +104,7 @@ jobs:
           else
             TAG="${{ github.ref_name }}"
           fi
-          
+
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" \
               ${{ steps.build.outputs.TARBALL }} \

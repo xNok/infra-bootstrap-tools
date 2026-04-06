@@ -73,7 +73,18 @@ wait_ready() {
   local namespace="$2"
   local timeout="$3"
   info "Waiting for readiness: ${BOLD}${resource}${RESET}${CYAN} (ns=${namespace}, timeout=${timeout})"
-  kubectl wait --for=condition=ready "${resource}" -n "${namespace}" --timeout="${timeout}"
+  if ! kubectl wait --for=condition=ready "${resource}" -n "${namespace}" --timeout="${timeout}"; then
+    echo "=== DEBUG LOGS ==="
+    kubectl get events -n flux-system
+    kubectl get fluxinstances -n flux-system -o yaml || true
+
+    echo "ERROR: Timed out waiting for ${resource} in ${namespace}"
+    kubectl describe fluxinstances -n flux-system
+    kubectl describe ocirepository -n flux-system
+    kubectl get kustomization -n flux-system -o yaml
+    kubectl logs -n flux-system -l app.kubernetes.io/name=flux-operator
+    exit 1
+  fi
   success "Ready: ${resource}"
 }
 

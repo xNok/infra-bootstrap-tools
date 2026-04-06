@@ -6,4 +6,3 @@ kind: Kustomization
 components:
   - components/cert-manager
   - components/openziti
-
