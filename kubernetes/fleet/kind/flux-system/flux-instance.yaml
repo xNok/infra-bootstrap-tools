@@ -1,0 +1,34 @@
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxInstance
+metadata:
+  name: flux
+  namespace: flux-system
+spec:
+  distribution:
+    version: "2.x"
+    registry: "ghcr.io/fluxcd"
+    artifact: "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests"
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+  sync:
+    kind: OCIRepository
+    url: "oci://kind-registry:5000/flux-system"
+    ref: "latest"
+    path: "."
+  kustomize:
+    patches:
+      # Patch the generated OCIRepository to allow insecure registry for local testing
+      - patch: |
+          apiVersion: source.toolkit.fluxcd.io/v1
+          kind: OCIRepository
+          metadata:
+            name: flux-system
+            namespace: flux-system
+          spec:
+            insecure: true
+        target:
+          kind: OCIRepository
+          name: flux-system

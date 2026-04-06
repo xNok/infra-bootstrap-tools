@@ -1,0 +1,12 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: infra-addons
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: oci://kind-registry:5000/infra-addons
+  insecure: true
+  ref:
+    tag: latest

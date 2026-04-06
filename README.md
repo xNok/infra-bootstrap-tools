@@ -4,10 +4,6 @@
 
 This repository provides Ansible playbooks to set up a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects. I made this repository a place to **Learn** about DevOps and Cloud Infrastructure. You have all the tutorial you need to get started.
 
-Features:
-* docker-swarm
-* Caddy
-* Portainer
 
 ## Development Environment Setup
 
@@ -56,31 +52,72 @@ ibt tools dasb --version
 
 For a fully automated and reproducible development environment using Nix, you have two options:
 
-#### Option 1: Using Nix Flakes (Recommended)
+#### Option 1: Using Traditional Nix Shell (Most Compatible)
 
-Nix Flakes provide a more modern and reproducible approach (note: flakes are still experimental but widely adopted):
+Use this option if `nix develop` fails with `experimental Nix feature 'nix-command' is disabled`.
+
+```bash
+nix-shell bin/nix/shell.nix
+
+# Or select a specific shell
+nix-shell bin/nix/shell.nix --argstr shell flux
+```
+
+Shell overview:
+- `default`: general development shell with Python, Docker, Git, and pre-commit
+- `ansible`: adds Ansible tooling and installs Galaxy dependencies
+- `flux`: adds `jq`, `kubectl`, `helm`, `kind`, and `flux` for Kubernetes/Flux work
+- `docs`: adds Hugo and Go for website/documentation work
+- `full`: includes everything when you need the broadest environment
+
+The shells are ready to use after their hooks complete. Python-based shells create and activate a local virtual environment (`.venv`) to avoid conflicts with the Nix-provided Python.
+
+#### Option 2: Using Nix Flakes (Optional)
+
+Nix Flakes provide a more modern and reproducible approach, but require the `nix-command` and `flakes` experimental features:
 
 ```bash
 # Enable flakes if not already enabled (add to ~/.config/nix/nix.conf or /etc/nix/nix.conf):
 # experimental-features = nix-command flakes
 
-# Enter the development environment
+# Enter the default general-purpose development environment
 nix develop
 ```
 
-#### Option 2: Using Traditional Nix Shell
+Task-focused shells are also available:
+
+```bash
+# Infrastructure / Ansible work
+nix develop .#ansible
+
+# Flux / Kind / Kubernetes work
+nix develop .#flux
+
+# Website / Hugo work
+nix develop .#docs
+
+# Full kitchen-sink environment
+nix develop .#full
+```
+
+### GitHub Codespaces
+
+The repository includes a `.devcontainer/devcontainer.json` that keeps the current base image (`mcr.microsoft.com/devcontainers/base:ubuntu-24.04`), installs Nix by default, and enables flakes (`nix-command flakes`) out of the box. Docker access is enabled as well.
+
+You can use:
+
+```bash
+nix develop
+nix develop .#ansible
+nix develop .#flux
+```
+
+If you are in a different environment where flakes are not enabled, use:
 
 ```bash
 nix-shell bin/nix/shell.nix
 ```
 
-Both options automatically install and configure all required tools and dependencies upon entry, including:
-- Essential tools: Python, pip, Ansible, 1Password CLI, Go, Hugo, pre-commit, Git, Docker
-- Python dependencies from `requirements.txt` and `agentic/requirements.txt` (installed in a virtual environment)
-- Ansible Galaxy roles and collections from `requirements.yml`
-- Pre-commit hooks
-
-The environment is ready to use instantly after the initial setup completes. Python packages are installed in a local virtual environment (`.venv`) to avoid conflicts with the Nix-provided Python.
 
 ### Gitpod
 

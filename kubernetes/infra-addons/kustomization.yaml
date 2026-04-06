@@ -1,0 +1,8 @@
+# Root kustomization — selects ALL addons for local validation only.
+# Clusters do NOT reference this. They use fleet/<cluster>/infra-addons.yaml
+# with spec.components to opt-in to specific addons.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+components:
+  - components/cert-manager
+  - components/openziti

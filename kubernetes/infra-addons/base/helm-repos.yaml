@@ -1,0 +1,23 @@
+# Shared HelmRepositories — defined once here, referenced by any component.
+# Convention:
+#   - Add a repo here when two or more components use it (e.g. bitnami, prometheus-community).
+#   - Keep a repo inside the component's own helm-repo.yaml when only that component uses it.
+#   - Components MUST NOT redefine a repo already listed here; reference it by name only.
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: jetstack
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.jetstack.io
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: openziti
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://openziti.io/helm-charts/

@@ -70,7 +70,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           DIST_DIR="$GITHUB_WORKSPACE/dist"
           mkdir -p "$DIST_DIR"
-          
+
           # Create individual stack archives
           for stack in "$DIR"/*/; do
             if [ -d "$stack" ] && [ "$(basename "$stack")" != "node_modules" ]; then
@@ -79,11 +79,11 @@ jobs:
               (cd "$(dirname "$stack")" && zip -r "$DIST_DIR/${stack_name}-${VERSION}.zip" "$stack_name" -x "*/node_modules/*" "*.git/*")
             fi
           done
-          
+
           # Create a complete stacks archive
           echo "Creating complete stacks archive"
           (cd "$DIR" && zip -r "$DIST_DIR/infra-bootstrap-tools-stacks-${VERSION}.zip" . -x "node_modules/*" "*.git/*" "*/node_modules/*")
-          
+
           ls -lh "$DIST_DIR/"
 
       - name: Upload archives to release
@@ -93,7 +93,7 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.tag }}"
           DIST_DIR="$GITHUB_WORKSPACE/dist"
-          
+
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" \
               "$DIST_DIR"/*.zip \

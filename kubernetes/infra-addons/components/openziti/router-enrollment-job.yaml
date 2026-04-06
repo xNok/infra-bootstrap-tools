@@ -1,0 +1,94 @@
+---
+# ServiceAccount + RBAC for the enrollment Job to write the router enrollment Secret
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ziti-router-enroller
+  namespace: openziti
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ziti-router-enroller
+  namespace: openziti
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["ziti-router-enrollment"]
+    verbs: ["get", "create", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ziti-router-enroller
+  namespace: openziti
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ziti-router-enroller
+subjects:
+  - kind: ServiceAccount
+    name: ziti-router-enroller
+    namespace: openziti
+---
+# Job: runs after controller is ready, creates edge router, stores enrollment JWT as a Secret.
+# The Job is idempotent: if the secret already exists it exits 0 without changing it.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ziti-router-enroll
+  namespace: openziti
+  annotations:
+    # Re-run via: kubectl delete job ziti-router-enroll -n openziti
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      serviceAccountName: ziti-router-enroller
+      restartPolicy: OnFailure
+      initContainers:
+        # Wait for the controller management API to be healthy before logging in
+        - name: wait-for-controller
+          image: docker.io/curlimages/curl:8.7.1
+          command:
+            - sh
+            - -c
+            - |
+              until curl -sk https://openziti-ziti-controller-client.openziti.svc.cluster.local:1280/edge/client/v1/version > /dev/null 2>&1; do
+                echo "waiting for ziti-controller API..."
+                sleep 5
+              done
+              echo "controller ready"
+      containers:
+        - name: enroller
+          image: docker.io/openziti/ziti-controller:1.7.2
+          env:
+            - name: ZITI_CTRL_EDGE_ADVERTISED_HOST
+              value: "openziti-ziti-controller-client.openziti.svc.cluster.local"
+            - name: ZITI_CTRL_EDGE_ADVERTISED_PORT
+              value: "1280"
+            - name: ZITI_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: openziti-ziti-controller-admin-secret
+                  key: admin-user
+            - name: ZITI_ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: openziti-ziti-controller-admin-secret
+                  key: admin-password
+          command: ["sh", "/scripts/enroll-router.sh"]
+          volumeMounts:
+            - name: enroll-script
+              mountPath: /scripts
+      volumes:
+        - name: enroll-script
+          configMap:
+            name: ziti-router-enroll-script
+            defaultMode: 0755

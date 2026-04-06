@@ -27,5 +27,5 @@ Then update the values in 1Password. See [docs/SECRETS.md](../../../docs/SECRETS
 |----------|---------|-------------|
 | `k3s_flux_bootstrap_github_user` | `xnok` | GitHub username or organization. |
 | `k3s_flux_bootstrap_github_repo` | `infra-bootstrap-tools` | Repository name to reconcile. |
-| `k3s_flux_bootstrap_cluster_name` | `k3s-openziti` | Folder in the repo to sync (`kubernetes/clusters/<name>`). |
+| `k3s_flux_bootstrap_cluster_name` | `openziti` | Folder in the repo to sync (`kubernetes/fleet/<name>`). |
 | `k3s_flux_bootstrap_github_token` | *(lookup)* | GitHub Personal Access Token (from `GitHub_Flux_Token`). |

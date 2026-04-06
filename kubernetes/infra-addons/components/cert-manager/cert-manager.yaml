@@ -1,9 +1,10 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta2
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: cert-manager
-  namespace: cert-manager
+  namespace: flux-system
 spec:
+  targetNamespace: cert-manager
   chart:
     spec:
       chart: cert-manager
@@ -16,6 +17,9 @@ spec:
   install:
     createNamespace: true
     crds: CreateReplace
-  values:
-    prometheus:
-      enabled: false
+  valuesFrom:
+    - kind: ConfigMap
+      name: default-cert-manager-values
+    - kind: ConfigMap
+      name: ${CLUSTER_NAME}-cert-manager-values
+      optional: true

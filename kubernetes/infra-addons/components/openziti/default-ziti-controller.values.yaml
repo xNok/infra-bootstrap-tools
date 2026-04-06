@@ -1,0 +1,6 @@
+clientApi:
+  advertisedHost: "openziti-ziti-controller-client.openziti.svc.cluster.local"
+  advertisedPort: 1280
+ctrlPlane:
+  advertisedHost: "openziti-ziti-controller-client.openziti.svc.cluster.local"
+  advertisedPort: 1280
