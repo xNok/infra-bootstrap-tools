@@ -14,6 +14,9 @@ spec:
         name: openziti
         namespace: flux-system
   interval: 1h
+  dependsOn:
+    - name: trust-manager
+      namespace: flux-system
   install:
     createNamespace: true
   valuesFrom:

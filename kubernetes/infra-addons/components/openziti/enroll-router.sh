@@ -26,7 +26,7 @@ ziti edge login \
 get_router_field() {
   FIELD="$${1}"
   ziti edge list edge-routers 'name="ziti-router"' -j 2>/dev/null | \
-    python3 -c "
+    python3.11 -c "
 import sys, json
 d = json.load(sys.stdin).get('data', [])
 if d:
@@ -36,11 +36,13 @@ else:
 " 2>/dev/null || echo ""
 }
 
-# Delete existing router if it has no JWT (already enrolled or stale)
+# Check if router already exists
 ROUTER_ID=$$(get_router_field id)
 if [ -n "$${ROUTER_ID}" ]; then
   JWT=$$(get_router_field enrollmentJwt)
-  if [ -z "$${JWT}" ]; then
+  if [ -n "$${JWT}" ]; then
+    echo "Router id=$${ROUTER_ID} exists with a valid enrollment JWT — using it directly."
+  else
     echo "Router id=$${ROUTER_ID} exists but enrollment JWT is gone — deleting to recreate..."
     set +e
     ziti edge delete edge-router "$${ROUTER_ID}"

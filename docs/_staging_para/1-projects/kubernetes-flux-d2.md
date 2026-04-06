@@ -143,6 +143,7 @@ The component default (`default-trust-manager.values.yaml`) ships `app.trust.nam
 2. **trust-manager trust namespace**: trust-manager can only read Bundle secrets from one namespace (`--trust-namespace`). Plan which namespace holds your CA secrets and configure accordingly — it is not `cert-manager` by default for every use case.
 3. **cert-manager CRDs**: use `installCRDs: true` (or `install.crds: CreateReplace`) in values — do not rely on a separate CRD install step in GitOps.
 4. **Webhook timing**: trust-manager's validating webhook causes `connection refused` on install if the pod isn't fully ready. Remedy: `dependsOn: trust-manager` on any HelmRelease using `Bundle` resources, or accept one reconcile retry.
+5. **`Bundle` CRD install ordering**: the `ziti-controller` chart creates a `trust.cert-manager.io/v1alpha1 Bundle` resource. On a fresh cluster this fails with `no matches for kind "Bundle"` if trust-manager hasn't installed its CRDs yet. Always add `dependsOn: trust-manager` to the `ziti-controller` HelmRelease.
 5. **OCI artifact per concern**: keeping fleet (cluster-specific) and infra-addons (shared) as separate OCI artifacts means the shared layer can be promoted independently without re-pushing all cluster configurations.
 
 ## 2026-04-06 Runtime Debugging — OpenZiti Enrollment & Flux ConfigMap Watch
