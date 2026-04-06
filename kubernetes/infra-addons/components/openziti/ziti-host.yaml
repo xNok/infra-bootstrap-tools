@@ -1,15 +1,3 @@
-# NOTE: The Secret 'ziti-router-enrollment' must be created manually.
-# 
-# Workflow:
-# 1. Apply this file initially - the ziti-router HelmRelease will fail but ziti-controller will start
-# 2. Once ziti-controller is running, obtain the enrollment JWT token from it
-# 3. Create the Secret with the JWT:
-#      kubectl create secret generic ziti-router-enrollment \
-#        --namespace=openziti \
-#        --from-literal=enrollmentJwt=<your-jwt-token>
-# 4. Flux will automatically retry and reconcile the ziti-router HelmRelease
-#
-# The dependsOn ensures the controller starts first, but manual Secret creation is still required.
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -24,7 +12,7 @@ spec:
   chart:
     spec:
       chart: ziti-router
-      version: "0.0.12" # Verify latest version or remove to track latest
+      version: "2.1.0"
       sourceRef:
         kind: HelmRepository
         name: openziti
@@ -34,14 +22,7 @@ spec:
     createNamespace: true
   valuesFrom:
     - kind: ConfigMap
+      name: default-ziti-router-values
+    - kind: ConfigMap
       name: ${CLUSTER_NAME}-ziti-router-values
       optional: true
-    - kind: Secret
-      name: ziti-router-enrollment
-      valuesKey: enrollmentJwt
-      targetPath: enrollmentJwt
-  values:
-    edge:
-      advertisedHost: "ziti-router.openziti.svc.cluster.local"
-    ctrl:
-      endpoint: "ziti-controller.openziti.svc.cluster.local:6262"

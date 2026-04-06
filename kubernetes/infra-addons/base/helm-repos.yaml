@@ -20,4 +20,4 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
-  url: https://charts.openziti.io
+  url: https://openziti.io/helm-charts/

@@ -19,8 +19,7 @@ spec:
     crds: CreateReplace
   valuesFrom:
     - kind: ConfigMap
+      name: default-cert-manager-values
+    - kind: ConfigMap
       name: ${CLUSTER_NAME}-cert-manager-values
       optional: true
-  values:
-    prometheus:
-      enabled: false

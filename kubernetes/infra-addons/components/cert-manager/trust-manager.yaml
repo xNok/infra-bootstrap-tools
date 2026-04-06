@@ -21,9 +21,7 @@ spec:
     createNamespace: true
   valuesFrom:
     - kind: ConfigMap
+      name: default-trust-manager-values
+    - kind: ConfigMap
       name: ${CLUSTER_NAME}-trust-manager-values
       optional: true
-  values:
-    app:
-      trust:
-        namespace: cert-manager

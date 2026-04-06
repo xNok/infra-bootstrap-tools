@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: ziti-controller
-      version: "0.0.12"  # Verify latest version or remove to track latest
+      version: "3.1.1"
       sourceRef:
         kind: HelmRepository
         name: openziti
@@ -18,13 +18,7 @@ spec:
     createNamespace: true
   valuesFrom:
     - kind: ConfigMap
+      name: default-ziti-controller-values
+    - kind: ConfigMap
       name: ${CLUSTER_NAME}-ziti-controller-values
       optional: true
-  values:
-    clientApi:
-      advertisedHost: "ziti-controller.openziti.svc.cluster.local"
-      advertisedPort: 1280
-    ctrlPlane:
-      advertisedHost: "ziti-controller.openziti.svc.cluster.local"
-      advertisedPort: 6262
-    # Add persistence and other config as needed

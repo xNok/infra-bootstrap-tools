@@ -29,26 +29,121 @@ We don't want or use multiple repositories, thus we are adapting the D2 recommen
 
 We have also established a GitHub Actions workflow (`.github/workflows/flux-d2-test.yml`) to test this pipeline automatically via a local Kind cluster and Docker registry. It uses the `flux-operator` Helm chart and bootstraps the cluster from the local `kubernetes/fleet/kind/flux-system/flux-instance.yaml` definition.
 
-## 2026-04-05 50-Cluster Fleet Architecture — Adoption Analysis
+## 2026-04-06 Final Architecture — Implemented Design
 
-### Key principles from the external reference architecture
+### Two OCI artifacts
 
-1. **OCI-Driven, Gitless GitOps**: CI packages addons as OCI artifacts; clusters poll OCI not Git.
-2. **Kustomize Components for opt-in addon selection**: each addon has `kind: Component`; clusters opt-in via `components:` list.
-3. **`valuesFrom` with optional ConfigMaps**: HelmReleases use `${CLUSTER_NAME}-<addon>-values` ConfigMaps (optional: true) so they are stateless; cluster-specific ConfigMaps live in `fleet/<cluster>/values/`.
-4. **All HelmReleases in `flux-system`**: so `valuesFrom` ConfigMaps share a single namespace; charts install to their correct namespace via `targetNamespace`.
-5. **`postBuild.substituteFrom`** on every Flux Kustomization so `${CLUSTER_NAME}` is resolved in all applied manifests, including `valuesFrom.name` in HelmRelease specs.
+The monorepo publishes two separate OCI artifacts on every push:
 
-### Monorepo adaptation decisions
+| Artifact | Path | Content |
+|---|---|---|
+| `oci://.../manifests/kubernetes/fleet/<cluster>` | `kubernetes/fleet/<cluster>/` | Cluster-specific: `FluxInstance`, `OCIRepository` sources, `Kustomization` objects, per-cluster values |
+| `oci://.../manifests/kubernetes/infra-addons` | `kubernetes/infra-addons/` | Shared: Kustomize Components for addons, base HelmRepositories, default values |
 
-- Structure stays (`fleet/`, `infra/`, `apps/`) — no restructure to `addons/`, `tenants/`, `clusters/`.
-- OCI push of the whole `kubernetes/` directory is kept (single artifact, not split addons/tenants).
-- Kustomize Component conversion is **deferred**: the ResourceSet in `infrastructure.yaml` already provides per-cluster opt-in via `inputs:` — that's sufficient for now.
-- **Implemented changes**:
-  - All `HelmRelease` objects moved to `namespace: flux-system` with `targetNamespace` for chart installation.
-  - `valuesFrom` with `${CLUSTER_NAME}-<addon>-values` optional ConfigMaps added to every HelmRelease.
-  - `postBuild.substituteFrom: flux-runtime-info` added to `infra-sources` and `infra-cert-manager` Kustomizations.
-  - `fleet/kind/values/` directory created with cluster-specific ConfigMaps for cert-manager, trust-manager, ziti-controller, and ziti-router.
+### Directory layout
+
+```
+kubernetes/
+  fleet/
+    kind/                        # one folder per cluster
+      flux-system/
+        flux-instance.yaml       # FluxInstance — bootstraps the cluster
+      kustomization.yaml         # root kustomization: flux-system, oci-sources, values, infra-addons
+      oci-sources.yaml           # OCIRepository/infra-addons (cluster-specific URL/tag)
+      infra-addons-values.yaml   # Flux Kustomization managing cluster-specific override ConfigMaps
+      infra-addons.yaml          # Flux Kustomization for shared addons
+      infra-addons-values/       # per-cluster override ConfigMaps
+        kustomization.yaml       # configMapGenerator for all override files
+        cert-manager.values.yaml
+        trust-manager.values.yaml
+        ziti-controller.values.yaml
+        ziti-router.values.yaml
+  infra-addons/
+    base/
+      kustomization.yaml         # always-applied resources: HelmRepositories
+      helm-repos.yaml            # shared HelmRepositories (jetstack, openziti)
+    components/
+      cert-manager/              # Kustomize Component (kind: Component)
+        kustomization.yaml       # configMapGenerator for default-cert-manager-values
+        default-cert-manager.values.yaml
+        default-trust-manager.values.yaml
+        cert-manager.yaml
+        trust-manager.yaml
+        namespace.yaml
+      openziti/                  # Kustomize Component (kind: Component)
+        kustomization.yaml       # configMapGenerator for default-ziti-*-values
+        default-ziti-controller.values.yaml
+        default-ziti-router.values.yaml
+        controller.yaml
+        ziti-host.yaml
+        namespace.yaml
+```
+
+### Flux Kustomization dependency chain
+
+```
+flux-system (OCIRepository: fleet/kind)
+  └─ infra-addons-values   (applies per-cluster ConfigMaps from ./infra-addons-values)
+       └─ infra-addons      (applies shared addons from OCIRepository: infra-addons)
+```
+
+### Values layering strategy (most important design rule)
+
+**Never use `spec.values` in HelmRelease.** It cannot be overridden by `valuesFrom` — values in `spec.values` always win.
+
+Instead, use exclusively `valuesFrom` with two layers:
+
+```yaml
+valuesFrom:
+  - kind: ConfigMap
+    name: default-<addon>-values          # component default — always present, ships with infra-addons
+  - kind: ConfigMap
+    name: ${CLUSTER_NAME}-<addon>-values  # cluster override — optional, ships with fleet/<cluster>
+    optional: true
+```
+
+- **Default ConfigMaps** (`default-<addon>-values`) live in each component and are generated by `configMapGenerator` in the component's `kustomization.yaml`. They define opinionated defaults that work for most clusters.
+- **Cluster override ConfigMaps** (`${CLUSTER_NAME}-<addon>-values`) live in `fleet/<cluster>/infra-addons-values/` and are generated by `configMapGenerator` there. They are `optional: true` — missing means "use defaults".
+- `${CLUSTER_NAME}` is resolved via `postBuild.substituteFrom: flux-runtime-info` on the `infra-addons` Kustomization.
+
+### All HelmReleases in `flux-system` namespace
+
+```yaml
+metadata:
+  namespace: flux-system   # Flux manages it here
+spec:
+  targetNamespace: <app>   # chart installs resources here
+```
+
+This ensures `valuesFrom` ConfigMaps are always co-located in `flux-system` regardless of which namespace the chart targets.
+
+### Kustomize Components for opt-in addon selection
+
+Each addon is `kind: Component` (not `kind: Kustomization`). The `infra-addons.yaml` Flux Kustomization selects which components to activate:
+
+```yaml
+spec:
+  path: "./base"
+  components:
+    - ../components/cert-manager
+    - ../components/openziti
+```
+
+To add a cluster without openziti, simply omit `../components/openziti` from that cluster's `infra-addons.yaml`.
+
+### trust-manager: trust namespace = addon namespace
+
+trust-manager reads Bundle sources from its `--trust-namespace`. The ziti-controller chart creates the `edge-signer-secret` in `openziti`, so trust-manager must be configured with `app.trust.namespace: openziti` for clusters running OpenZiti.
+
+The component default (`default-trust-manager.values.yaml`) ships `app.trust.namespace: cert-manager` (safe baseline). Clusters running OpenZiti override this with `trust-manager.values.yaml` in their fleet values folder.
+
+### Key lessons learned
+
+1. **`spec.values` vs `valuesFrom` priority**: `spec.values` in a HelmRelease always wins over `valuesFrom`. Never put defaults in `spec.values` if you intend per-cluster overrides.
+2. **trust-manager trust namespace**: trust-manager can only read Bundle secrets from one namespace (`--trust-namespace`). Plan which namespace holds your CA secrets and configure accordingly — it is not `cert-manager` by default for every use case.
+3. **cert-manager CRDs**: use `installCRDs: true` (or `install.crds: CreateReplace`) in values — do not rely on a separate CRD install step in GitOps.
+4. **Webhook timing**: trust-manager's validating webhook causes `connection refused` on install if the pod isn't fully ready. Remedy: `dependsOn: trust-manager` on any HelmRelease using `Bundle` resources, or accept one reconcile retry.
+5. **OCI artifact per concern**: keeping fleet (cluster-specific) and infra-addons (shared) as separate OCI artifacts means the shared layer can be promoted independently without re-pushing all cluster configurations.
 
 ## 2026-04-05 Kind Rename + Codespaces Enablement
 
