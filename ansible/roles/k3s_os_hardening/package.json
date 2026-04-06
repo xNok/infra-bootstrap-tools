@@ -1,5 +1,5 @@
 {
-  "name": "k3s_os_hardening",
+  "name": "ansible-role-k3s-os-hardening",
   "private": true,
   "version": "0.1.0"
 }
