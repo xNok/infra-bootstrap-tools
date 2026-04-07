@@ -5,3 +5,7 @@
 ## 2024-05-19 - [Prefect] Avoid blocking the event loop
 **Learning:** Initializing MCP toolset in Prefect workflows using `FastMCPToolset` performs synchronous I/O. If called synchronously inside an `async def` Prefect task/flow, it will block the event loop and hurt concurrency.
 **Action:** Wrap synchronous I/O operations inside `asyncio.to_thread()` and await them when inside async functions in Prefect workflows.
+
+## 2024-05-20 - [Frontend] Memoize caches.open in Service Workers
+**Learning:** In Service Workers, repeatedly calling `caches.open(cacheName)` inside the `fetch` event handler triggers redundant asynchronous lookups to IndexedDB, slowing down intercept performance.
+**Action:** Memoize the cache lookup by assigning the result of `caches.open()` to a globally scoped promise variable (e.g. `const cachePromise = caches.open(cacheName);`) and awaiting it within the event handlers.
