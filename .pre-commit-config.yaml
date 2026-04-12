@@ -13,6 +13,7 @@ repos:
     rev: v25.9.0
     hooks:
       - id: ansible-lint
+        always_run: false
         args:
           - "ansible"
         files: ^ansible/.*\.ya?ml$
