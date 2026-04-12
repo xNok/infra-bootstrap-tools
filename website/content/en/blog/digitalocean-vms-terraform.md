@@ -11,67 +11,141 @@ tags:
   - Infrastructure as Code
 ---
 
-# How to Provision VMs on DigitalOcean with Terraform
+Terraform is now the most popular tool to build and manage infrastructure in an organized way. While it is tempting to jump to DigitalOcean UI and create whatever you need. Using Terraform will make your project much more maintainable and even save you money as you can destroy and recreate everything with the click of a button.
+In this article, we'll go through provisioning VM on DigitalOcean using terraform scripts.
 
-DigitalOcean provides affordable, reliable cloud infrastructure. Combined with Terraform, you can provision and manage Droplets (VMs) as code, making your infrastructure reproducible and maintainable.
+## Provisioning the droplet with Terraform
+We will start with the basics this is what every terraform project needs
+- **backend.tf**: Where do you want to terraform the state
+- **version.tf**: List all the provider’s versions you are using in your project
+- **main.tf**: This is your actual terraform script/configuration starts
+- **variables.tf**: this is where you are going to define the variables you need
+- **env.tfvars**: these are the actual variables for the dev environment
+let’s get started with each of these files on by one.
+### **backend.tf**
+I will be using terraform cloud because it is a free remote backend option as well as an amazing UI to manage in a tailor-made interface your terraform plans and apply. Here the the remote backend definition:
+```python
+terraform {
+  backend "remote" {
+    hostname = "app.terraform.io"
+    organization = "nokwebspace"
 
-## Why DigitalOcean and Terraform?
+    workspaces {
+      name = "infra-bootstrap-tools-digitalocean"
+    }
+  }
+}
+```
+Creating a workspace is very easy, you only need a git repository and a couple clicks in the UI.
+![](/images/blog/digitalocean-vms-terraform_c40906ae0f.gif)
 
-**Cost-Effective**: DigitalOcean offers competitive pricing perfect for small projects and homelabs.
-
-**Simple API**: Clean, well-documented API that Terraform handles beautifully.
-
-**Fast Provisioning**: Droplets spin up quickly for rapid iteration.
-
-**Global Presence**: Deploy in multiple regions worldwide.
-
-## Prerequisites
-
-- DigitalOcean account with API token
-- Terraform installed locally
-- SSH key pair for server access
-
-## Basic Terraform Configuration
-
-```hcl
+Now you need to log in your Terraform cloud using an API key
+```python
+terraform login
+```
+Here is how to find your token:
+![](/images/blog/digitalocean-vms-terraform_f3733ff349.gif)
+### **versions.tf**
+This file is used to tell Terraform what version of the provider you wanna use.
+```python
 terraform {
   required_providers {
     digitalocean = {
-      source  = "digitalocean/digitalocean"
-      version = "~> 2.0"
+      source = "digitalocean/digitalocean"
+      version = "2.17.1"
     }
   }
 }
 
 provider "digitalocean" {
-  token = var.do_token
-}
-
-resource "digitalocean_droplet" "web" {
-  image  = "ubuntu-22-04-x64"
-  name   = "web-server"
-  region = "nyc3"
-  size   = "s-1vcpu-1gb"
+  # Configuration options
+  # We use the env variable DIGITALOCEAN_ACCESS_TOKEN
 }
 ```
+You need to add the DigitalOcean token to Terraform Cloud. If you chose not to use Terraform Cloud don’t forget to export the token to your console
+```python
+export DIGITALOCEAN_ACCESS_TOKEN=
+```
+Below is how you can add the variable to Terraform Cloud. I used variable set as you can reuse the variable in multiple workspace which is very handy.
+![](/images/blog/digitalocean-vms-terraform_92d85182ea.png)
+### **main.tf**
+Now you are going to start writing some Terraform code. Your goal is to create one or more droplets for your project. On top of the droplet, we need to fetch a reference to an [SSH key registered in DigitalOcean](https://docs.digitalocean.com/products/droplets/how-to/add-ssh-keys/). 
+![](/images/blog/digitalocean-vms-terraform_5c70819975.png)
+Plus you want to keep everything organized so let's create a project and add every created droplet to that project. Here is the code:
+```python
+/**
+ * # DigitalOcean Project
+ *
+ * Projects let you organize your DigitalOcean resources 
+ * (like Droplets, Spaces, and load balancers) into groups.
+ */
+resource "digitalocean_project" "infra-bootstrap-tools" {
+  name        = "infra-bootstrap-tools"
+  description = "Startup infra for small self-hosted project"
+  purpose     = "IoT"
+  environment = "Development"
+  resources = digitalocean_droplet.node.*.urn
+}
 
-## Key Features
+/**
+ * This SSH key regietere via the UI
+ */
+data "digitalocean_ssh_key" "test" {
+  name = "test"
+}
 
-- **Multiple Droplets**: Create entire clusters with count or for_each
-- **SSH Key Management**: Upload and assign SSH keys automatically
-- **Firewall Rules**: Define security groups as code
-- **Load Balancers**: Provision and configure load balancers
-- **Block Storage**: Attach volumes for persistent data
+/**
+ * Create one or more droplets
+ */
+resource "digitalocean_droplet" "node" {
+  count = var.worker_count
 
-## Best Practices
+  image  = "ubuntu-20-04-x64"
+  name   = "node${count.index}"
+  region = "lon1"
+  size   = "s-1vcpu-1gb"
 
-1. **Use Variables**: Keep tokens and sensitive data in variables
-2. **Remote State**: Store state in DigitalOcean Spaces or Terraform Cloud
-3. **Modules**: Create reusable modules for common patterns
-4. **Tags**: Organize resources with tags for better management
+  ssh_keys = [data.digitalocean_ssh_key.test.id]
+}
 
-## Integration with Ansible
+/**
+ * Useful to log in to the VM later
+ */
+output "nodes_ip" {
+  value = digitalocean_droplet.node.*.ipv4_address
+}
+```
+### [**variables.tf**](http://variables.tf)
+We are using those variables to make the Terraform scripts configurable. For instance, we want to define how many instances we need.
+```javascript
+variable "worker_count" {
+  type = number
+  default = 1
+}
+```
+You set a default value so you don’t really need to pass variable files for this example.
+### All done you are good to go
+Run the plan 👶
+```python
+terraform plan
+```
+If everything looks good go and apply 😄
+```javascript
+terraform apply
+```
+## What to do Next?
+Creating VM is like the baby steps of cloud engineering there are so many opportunities after that. 
+I created this tutorial to be part of a set of Q&A series where the goal is to help you build your next Cloud project. Here are the Question I already answered:
 
-After provisioning with Terraform, use Ansible for configuration management. Terraform can generate Ansible inventory automatically, creating a smooth workflow from infrastructure to application deployment.
+🌍 How to configure GitHub Environments with Terraform?
+🏭 How to provision VM on digitalocean with Terraform?
+🔏 How to create SSH keys with Terraform?
+👩‍🍳 How to run an Ansible playbook using GitHub Action?
 
-Read the full article on Medium: [How to provision VM on Digital Ocean with Terraform](https://faun.pub/how-to-provision-vms-on-digitalocean-with-terraform-898515a0dbbc)
+You can find more code and knowledge in the dedicated Github repository
+
+
+
+
+## References
+[https://learn.hashicorp.com/tutorials/terraform/digitalocean-provider?in=terraform/applications](https://learn.hashicorp.com/tutorials/terraform/digitalocean-provider?in=terraform/applications)

@@ -11,7 +11,7 @@ tags:
   - Open Source
 ---
 
-# Intentional Releases: Why I Chose Changesets over Semantic-Release
+# Intentional Releases: Why Chose Changesets over Semantic-Release
 
 In the world of DevOps, sometimes maybe I automate a little bit too much. I aim for a smooth and continuous deployment process where I automate builds, testing, deployment, and versioning. The gold standard is probably tools like `semantic-release`—utilities that parse your git history, look for keywords like "feat" or "fix" prefixes, and automatically bump versions and generate changelogs (this is called semantic release by conventional commits).
 
@@ -74,7 +74,7 @@ This process forces a level of quality that "automated" commit parsing simply ca
 - **Value Proposition**: You can explain *why* a new feature is exciting.
 - **Explicit Versioning**: You avoid accidental major bumps caused by a mislabeled commit.
 
-<!-- PLACEHOLDER FOR SCREENSHOT: "Changeset bot commenting on a Pull Request reminding the developer to add a changeset" -->
+![alt text](image.png)
 
 ## Scaling to a Polyglot Monorepo
 
@@ -155,7 +155,7 @@ jobs:
 
 Whenever the Changesets GitHub Action (`changesets/action@v1`) sees unprocessed `.changeset` markdown files in the `main` branch, it executes a "versioning" step automatically. The action gathers all the new changesets, bumps the versions of the corresponding sub-projects accordingly, updates all the individual `CHANGELOG.md` files, and consumes (deletes) those changesets. Instead of instantly publishing, the CI creates a Pull Request titled **"Version Packages"**.
 
-<!-- PLACEHOLDER FOR SCREENSHOT: "The automated 'Version Packages' Pull Request created by the Changeset action" -->
+![alt text](image-1.png)
 
 This Pull Request acts as a final gateway, grouping everything that has been implemented since the previous release. I believe this is really where the Changeset release process shines you could have a prr-release or prodcution checklist to volidate the releaseon tha merge this specific PR to officially cut the release once all the validation passeses. I have envitsion many workflows, from staging/rc release and integration testing hookes to this release workflow to add evendenting to the release but this is a story for another time.
 
@@ -193,7 +193,7 @@ jobs:
 
 This dispatcher pattern is incredibly powerful for a polyglot monorepo. By combining a single entry point with reusable GitHub Action templates, we can easily maintain standard publishing pipelines (e.g., Python packages to PyPI, Ansible collections to Galaxy) without duplicating the CI logic for every single package. It keeps the repository exceptionally clean while scaling beautifully.
 
-<!-- PLACEHOLDER FOR SCREENSHOT: "Successful GitHub Release created and custom publish pipelines running via the Central Publish Workflow" -->
+![alt text](image-2.png)
 
 ### Bonus: Reusing Publishing Workflows
 
