@@ -79,7 +79,7 @@ npx changeset version --snapshot
 ### Internal Documentation
 - [Changeset Release Management Project](../1-projects/changeset-release-mgmt.md)
 - [Root RELEASE.md](../../RELEASE.md)
-- [Blog: Intentional Releases](./intentional-releases-changesets.md)
+- [Blog: Intentional Releases](../../website/content/en/blog/intentional-releases-changesets.md)
 
 ### External Links
 - [Official Changesets Repository](https://github.com/changesets/changesets)
