@@ -37,14 +37,14 @@ terraform {
 }
 ```
 Creating a workspace is very easy, you only need a git repository and a couple clicks in the UI.
-![](/images/blog/digitalocean-vms-terraform_c40906ae0f.gif)
+![](digitalocean-vms-terraform_c40906ae0f.gif)
 
 Now you need to log in your Terraform cloud using an API key
 ```python
 terraform login
 ```
 Here is how to find your token:
-![](/images/blog/digitalocean-vms-terraform_f3733ff349.gif)
+![](digitalocean-vms-terraform_f3733ff349.gif)
 ### **versions.tf**
 This file is used to tell Terraform what version of the provider you wanna use.
 ```python
@@ -67,10 +67,10 @@ You need to add the DigitalOcean token to Terraform Cloud. If you chose not to u
 export DIGITALOCEAN_ACCESS_TOKEN=
 ```
 Below is how you can add the variable to Terraform Cloud. I used variable set as you can reuse the variable in multiple workspace which is very handy.
-![](/images/blog/digitalocean-vms-terraform_92d85182ea.png)
+![](digitalocean-vms-terraform_92d85182ea.png)
 ### **main.tf**
 Now you are going to start writing some Terraform code. Your goal is to create one or more droplets for your project. On top of the droplet, we need to fetch a reference to an [SSH key registered in DigitalOcean](https://docs.digitalocean.com/products/droplets/how-to/add-ssh-keys/). 
-![](/images/blog/digitalocean-vms-terraform_5c70819975.png)
+![](digitalocean-vms-terraform_5c70819975.png)
 Plus you want to keep everything organized so let's create a project and add every created droplet to that project. Here is the code:
 ```python
 /**

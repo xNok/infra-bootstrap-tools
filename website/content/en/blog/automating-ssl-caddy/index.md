@@ -113,4 +113,4 @@ vagrant halt
 ## Conclusion
 You are ready to start working on your next infrastructure provisioning project. Having a disposable test environment is essential and Vagrant will soon become your favorite tool. 
 You can check my Github repository [https://github.com/xNok/infra-bootstrap-tools](https://github.com/xNok/infra-bootstrap-tools) to find more tutorials and build the following infrastructure.
-![](/images/blog/automating-ssl-caddy_d22af972ed.png)
+![](automating-ssl-caddy_d22af972ed.png)

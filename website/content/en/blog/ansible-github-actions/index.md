@@ -34,12 +34,12 @@ You may already have a playbook you wanna run automatically, but let's start sma
 ## Configure GitHub Action to validate your Ansible code
 Our playbook is ready, and we need to create the Workflow configuration.
 Let’s create a new GitHub Action workflow. Go to the action tab and select [set up a workflow yourself](https://github.com/xNok/infra-bootstrap-tools/new/main?filename=.github%2Fworkflows%2Fmain.yml&workflow_template=blank).
-![](/images/blog/ansible-github-actions_110c6c488a.png)
+![](ansible-github-actions_110c6c488a.png)
 Search in the marketplace for Ansible. This makes GitHub Action so powerful that you always have dozens of ready-to-use Actions at your fingertips.
 Let's start with some linting. You want your ansible code to be the best possible before executing it into production. Select the ansible-lint module as it is the one used by Ansible Galaxy (official Ansible repository) to attribute quality scores to the role pushed there. As a result, ansible-lint is considered the default linter for Ansible.
-![](/images/blog/ansible-github-actions_3ba7c04603.png)
+![](ansible-github-actions_3ba7c04603.png)
 The other advantage of Github Action is the [annotation feature](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message). Actions can very simply annotate your code in this case, you `ansible-lint`, and annotation whenever he is not happy with your code.
-![](/images/blog/ansible-github-actions_5d0d48c86e.png)
+![](ansible-github-actions_5d0d48c86e.png)
 At this point, some initial cleanup is maybe if, like me, you have other playbooks in your projects. 
 You will probably also need to fine-tune `ansible-lint` using a configuration file. You can find more about configuring `ansible-lint` [here](https://ansible-lint.readthedocs.io/en/latest/configuring/#configuration-file). For instance, I ignore the `fqcn-builtins` as it forces you to write `ansible.builtin.copy` instead of `copy` . In my opinion, the built-in function should be short and nice, so this rule concept bothers me.
 ```yaml
@@ -143,7 +143,7 @@ Last by not least running your playbook. This step is as simple as running the `
           ansible-playbook -i inventory ansible/hello-world.yaml
 ```
 The only thing left to do is running the pipeline
-![](/images/blog/ansible-github-actions_5dbee21193.png)
+![](ansible-github-actions_5dbee21193.png)
 
 ## What to do next?
 Running an hello-wold playbook is fun by how about deploying an complete infrastructure and automatically provision the infrastructure with Terraform? If you are tempted by the adventure here is a learning path for you

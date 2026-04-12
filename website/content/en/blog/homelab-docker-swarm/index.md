@@ -14,7 +14,7 @@ tags:
 
 Experimenting with Docker Swarm and having only a single node is a bit sad 😞. Luckily in my previous tutorial, you learn how to create [**A Disposable Local Test Environment using Vagrant and Ansible**](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0)**. **If you followed along you know a little bit more about Vagrant and Ansible** but nothing worth showing off **🤯**, **so let up our game and create a multi-VM Docker Swarm cluster.
 This involves using **Vagrant **to create multiple VM, then using **Ansible **to install docker on each machine, before creating a Docker Swarm cluster with all our nodes. On this is in place you have a solid foundation to experiment with Docker
-![](/images/blog/homelab-docker-swarm_b84302fa15.png)
+![](homelab-docker-swarm_b84302fa15.png)
 Photo by [Ben White](https://unsplash.com/@benwhitephotography?utm_source=medium&utm_medium=referral) on [Unsplash](https://unsplash.com/?utm_source=medium&utm_medium=referral)
 I want to remind you that the goal of this tutorial series is to document what I consider the bare minimum for a small self-hosted side project. I invite you to visit my repository for more information: [https://github.com/xNok/infra-bootstrap-tools](https://github.com/xNok/infra-bootstrap-tools). At this point, we are doing the groundwork of setting up a server to host the application we will deploy later as docker containers.
 # Provisioning Multiple VMs with Vagrant
@@ -90,7 +90,7 @@ yjy282nbmzcr5gx90rvvacla2     ubuntu2004.localdomain   Ready     Active         
 # Conclusion
 Quickly setting up VMs and creating Ansible roles is the fastest way for me to test a simple setup at no cost. This is why Vagrant and Ansible make such a great team to create a **Disposable Local Test Environment**.
 As of now, your Docker Swarm is totally empty. In future tutorials let’s create a simple stack you can reuse for almost all your projects. You can check my Github repository [https://github.com/xNok/infra-bootstrap-tools](https://github.com/xNok/infra-bootstrap-tools) to find more tutorials and build the following infrastructure.
-![](/images/blog/homelab-docker-swarm_0c67014774.png)
+![](homelab-docker-swarm_0c67014774.png)
 Infrastructure for small self-hosted project
 # Resolving common problems
 Sometimes when provisioning multiple machine issues occur. You should not restart everything from ground zero but use the power of Ansible and Vagrant to resume operation from where the problem occurred.
@@ -107,5 +107,5 @@ vagrant reload node1
 - [https://github.com/ruanbekker/ansible-docker-swarm](https://github.com/ruanbekker/ansible-docker-swarm)
 - [https://github.com/atosatto/ansible-dockerswarm](https://github.com/atosatto/ansible-dockerswarm)
 - [https://stackoverflow.com/questions/58232506/docker-swarm-module-join-token-parameter-for-ansible-not-working](https://stackoverflow.com/questions/58232506/docker-swarm-module-join-token-parameter-for-ansible-not-working)
-![](/images/blog/homelab-docker-swarm_2703f48ba9.png)
+![](homelab-docker-swarm_2703f48ba9.png)
 **If this post was helpful, please click the clap 👏 button below a few times to show your support for the author 👇**
