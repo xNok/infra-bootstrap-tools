@@ -58,6 +58,7 @@ let
   pythonPackages = with pkgs; [
     python3
     python3Packages.pip
+    python3Packages.yamllint
   ];
 
   ansiblePackages = with pkgs; [
