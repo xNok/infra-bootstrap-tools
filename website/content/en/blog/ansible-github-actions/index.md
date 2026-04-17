@@ -15,11 +15,14 @@ tags:
 Done playing around with Ansible and configuring things from your laptop?
 Let’s move to the next level and leverage Github Action to create a deployment pipeline for your playbooks. This will greatly improve your workflow and make sure all the steps you are taking are reproducible.
 This tutorial aims to walk you through the steps of setting up a Github Action Workflow to validate your configuration and run your playbook against your inventory. This will allow us to set up an automated pipeline that can be triggered by a commit or pull request on GitHub with minimal overhead to manage your infrastructure.
+
 ## Quick reminders
 [Ansible](https://www.ansible.com/) is a popular configuration management tool used to configure the state of your infrastructure. [Ansible Playbooks](https://docs.ansible.com/ansible/latest/user_guide/playbooks.html) are a series of tasks you would like to execute on servers to create the desired state. The playbook will typically call [modules](https://docs.ansible.com/ansible/2.9/modules/list_of_all_modules.html) which then perform one or more actions, depending on what we have defined inside them.
 A [GitHub Action](https://github.com/features/actions) an automation tool built-in into Github used for triggering builds, deploying code, and automation in general. Github Action nicely interfaces with every element of Github, such as pushing commits to a branch, creating pull requests, creating issues, etc.
+
 ## Basic Ansible Playbook to get started
 You may already have a playbook you wanna run automatically, but let's start small with a hello-world playbook. Create the following file and let’s call it `hello-world.yaml` in a folder called `ansible` :
+
 ```javascript
 - name: This is a hello-world example
   hosts: all
@@ -30,7 +33,9 @@ You may already have a playbook you wanna run automatically, but let's start sma
         content: hello-world
         dest: /tmp/testfile.txt
         mode: 0644
+
 ```
+
 ## Configure GitHub Action to validate your Ansible code
 Our playbook is ready, and we need to create the Workflow configuration.
 Let’s create a new GitHub Action workflow. Go to the action tab and select [set up a workflow yourself](https://github.com/xNok/infra-bootstrap-tools/new/main?filename=.github%2Fworkflows%2Fmain.yml&workflow_template=blank).
@@ -42,13 +47,19 @@ The other advantage of Github Action is the [annotation feature](https://docs.gi
 ![](ansible-github-actions_5d0d48c86e.png)
 At this point, some initial cleanup is maybe if, like me, you have other playbooks in your projects. 
 You will probably also need to fine-tune `ansible-lint` using a configuration file. You can find more about configuring `ansible-lint` [here](https://ansible-lint.readthedocs.io/en/latest/configuring/#configuration-file). For instance, I ignore the `fqcn-builtins` as it forces you to write `ansible.builtin.copy` instead of `copy` . In my opinion, the built-in function should be short and nice, so this rule concept bothers me.
+
 ```yaml
+
 # This makes linter to ignore rules/tags listed below fully
 skip_list:
   - 'fqcn-builtins'
+
 ```
+
 Here is the GitHub Action workflow at this stage.
+
 ```yaml
+
 # This is a basic workflow to help you get started with Actions
 
 name: Ansible Docker Swarm
@@ -81,13 +92,16 @@ jobs:
         uses: ansible-community/ansible-lint-action@v6.0.2
         with:
           args: "ansible" # my ansible files in a folder
+
 ```
+
 > Are you done with linting? All your code is impeccable? 
 
 ## Running your playbook with GitHub Action.
 Let’s go back to that [GitHub Action Marketplace](https://github.com/marketplace?type=actions) to find what you need. Unfortunately, there is no easy and flexible solution this time.
 However, I want you to have that reflex to check the Marketplace first and challenge the solution. 
 Ansible is a Python Application, so we need to set up a Python environment in our workflow. You will create a new job called `run-playbook` that runs after `validate` (use the `needs` property for that). 
+
 ```yaml
 run-playbook:
     # The type of runner that the job will run on
@@ -109,23 +123,32 @@ run-playbook:
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; fi
+
 ```
+
 Setting up a Python environment is pretty standard, your are going to use `requirements.txt` to lest all the dependences you need including Ansible:
+
 ```yaml
 ansible==2.10.7
 ansible-lint==6.0.2
 jsondiff==2.0.0
 passlib==1.7.4
 PyYAML==6.0
+
 ```
+
 Then you need an inventory file for Ansible. Inventory is sensitive information, so I used secrets to store my inventory file. All is left, is writing the value of the secret to a file and Ansible will be able to read from it.
+
 ```javascript
     - name: write inventory to file
         env:
           INVENTORY: ${{ secrets.INVENTORY }}
         run: 'echo "$INVENTORY" > inventory'
+
 ```
+
 Next, to communicate to your servers, you need SSH key pairs. The best way to manage SSH key is via this `ssh-agent` . Lucky for us, there is an action to do just that. All values here are sensitive so they are stored in secrets.
+
 ```javascript
 - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
@@ -135,13 +158,18 @@ Next, to communicate to your servers, you need SSH key pairs. The best way to ma
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
           # config: ${{ secrets.CONFIG }} # ssh_config; optional
           if_key_exists: fail # replace / ignore / fail; optional (defaults to fail)
+
 ```
+
 Last by not least running your playbook. This step is as simple as running the `ansible-playbook` command with your inventory file as a parameter.
+
 ```javascript
 - name: run playbook
         run: |
           ansible-playbook -i inventory ansible/hello-world.yaml
+
 ```
+
 The only thing left to do is running the pipeline
 ![](ansible-github-actions_5dbee21193.png)
 

@@ -34,6 +34,7 @@ So I can have semantic versioning and "release" said version without conventiona
 I don't like this naming for the tool (`semantic-release`), because to me, as long as my release is using semantic versioning, it should be a semantic release regardless of whether I use conventional commits or not. But due to the popularity of `semantic-release`, people pretty much unilaterally assume that semantic release means using the conventional commit specification.
 
 Here I am still striving to use semantic versioning, meaning that each version number is composed of a triplet x.y.z where x is the major version, y is the minor version, and z is the patch version. Each of those numbers reflecting the divergence of the codebase from the previous version. For instance:
+
 - x is the major version, and it is incremented when I make breaking changes, meaning this version is not backward compatible with the previous version.
 - y is the minor version, and it is incremented when I add new features, but it is backward compatible with the previous version.
 - z is the patch version, and it is incremented when I fix bugs, but it is backward compatible with the previous version, and no new features are introduced.
@@ -70,6 +71,7 @@ The most powerful part of the Changeset workflow isn't the automation; it's the 
 When you write a changeset, you aren't just describing code (technically you should already be done with the implementation), you are communicating with your user base. You are saying: *"I have made this change, I believe it warrants a new version, and here is how it affects you."*
 
 This process forces a level of quality that "automated" commit parsing simply can't match:
+
 - **Migration Guides**: You can explain *how* to upgrade from a breaking change right in the changeset.
 - **Value Proposition**: You can explain *why* a new feature is exciting.
 - **Explicit Versioning**: You avoid accidental major bumps caused by a mislabeled commit.
@@ -81,6 +83,7 @@ This process forces a level of quality that "automated" commit parsing simply ca
 Changesets would be a straightforward adoption for Node.js users in a monorepo managed with npm, yarn, pnpm or (any future package manager that would come up), but for other users, using Changesets might not even cross your mind. So let me give you a quick overview of how I use it in my `infra-bootstrap-tools` repository.
 
 In `infra-bootstrap-tools` I manage all my self-hosted POCs and tools in a single monorepo, with a diverse set of technologies:
+
 - **Ansible Collections** (YAML)
 - **Python Packages** (Python/Agentic)
 - **Docker Stacks** (YAML/Shell)
@@ -149,6 +152,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
 ```
 
 *(Note that `yarn release` is simply configured in my root `package.json` to execute `changeset version && changeset publish`, which handles the version bumping, changelog generation, and tag creation without automatically pushing to an npm registry).*
@@ -189,6 +193,7 @@ jobs:
     with:
       release_tag: ${{ github.ref_name }}
       collection_dir: 'ansible'
+
 ```
 
 This dispatcher pattern is incredibly powerful for a polyglot monorepo. By combining a single entry point with reusable GitHub Action templates, we can easily maintain standard publishing pipelines (e.g., Python packages to PyPI, Ansible collections to Galaxy) without duplicating the CI logic for every single package. It keeps the repository exceptionally clean while scaling beautifully.
@@ -217,6 +222,7 @@ jobs:
       collection_dir: 'ansible'
     secrets:
       GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
+
 ```
 
 This drastically reduces CI/CD configuration overhead. You can pin the workflows to a specific branch, tag, or commit SHA to ensure stability over time.

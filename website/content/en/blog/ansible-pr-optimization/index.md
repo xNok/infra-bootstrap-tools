@@ -52,6 +52,7 @@ First, we need to identify the **current branch** in the playbook. This is impor
 
 - debug: 
     msg: "{{ branch.stdout }}"
+
 ```
 
 The issue with the code above is that GitHub Action runs on **a detached head**. This works fine locally, but we need to make some adjustments for CI/CD jobs. Most CI/CD allow access to the current branch associated with a Pull Request. Thus, we will assume we have set the variable `BRANCH_NAME` in the CI. That way, the task will be CI/CD agnostic.
@@ -64,6 +65,7 @@ The issue with the code above is that GitHub Action runs on **a detached head**.
     fi
     echo $BRANCH_NAME
   register: branch
+
 ```
 
 Here is how we set the `BRANCH_NAME` variable in GitHub Action:
@@ -74,6 +76,7 @@ Here is how we set the `BRANCH_NAME` variable in GitHub Action:
     ansible-playbook -i inventory ansible/docker-swarm-portainer-caddy.yml
   env:
     BRANCH_NAME: ${{ github.head_ref }}
+
 ```
 
 ### Detecting Changes Using Git Diff
@@ -87,6 +90,7 @@ Next, we’ll use `git diff` to identify the files that have changed between the
 
 - debug: 
     msg: "{{ diff.stdout_lines }}"
+
 ```
 
 We have to tell git diff that we want to make the diff against the `origin` because GitHub Action is doing a Shallow clone for both references `main` and `{{ branch.stdout }}` are not available and thus would trigger errors in the CI.
@@ -99,6 +103,7 @@ We then extract the folders from the diff output to identify which directories c
 - name: Extract folders from the diff
   set_fact:
     changed_folders: "{{ diff.stdout_lines | map('regex_replace', '^(.*/).*$' , '\\1') | unique }}"
+
 ```
 
 The `regex_replace` and `unique` filters help us get a list of unique folders that have been modified.
@@ -112,6 +117,7 @@ We filter out the folders within the roles directory to focus on the roles that 
   set_fact:
     roles_with_changes: "{{ changed_folders | select('match', '^' + roles_folder + '/') | map('regex_replace', '^' + roles_folder + '/([^/]+)/.*$', '\\1') | unique }}"
   when: branch.stdout != default_branch
+
 ```
 
 This step ensures that we only consider the modified roles. Here you go—those are all the tasks we need!
@@ -128,6 +134,7 @@ roles/
   role1/
   role2/
   role3/
+
 ```
 
 You can find the completed code here in the repository under `ansible/roles/utils-affected-roles/tasks/main.yaml`.
@@ -159,6 +166,7 @@ Now, we can integrate the `affected_roles` role into the main playbook to includ
       include_role:
         name: role_3
       when: "'role_3' in hostvars['localhost']['roles_with_changes']"
+
 ```
 
 This main playbook runs the `affected_roles` role to determine the roles with changes and then conditionally include other roles (`role_1`, `role_2`, and `role_3`) based on the `roles_with_changes` variable.

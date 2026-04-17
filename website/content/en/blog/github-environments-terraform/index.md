@@ -14,6 +14,7 @@ tags:
 Did you know that GitHub Actions supports the notion of the environment?
 Environments are a great option to manage and tack provisioning and deployment workflow in GitHub Action. You can create any number of environments for a given repo/project. You could be `dev`, `staging`, and `production` for instance. But you are not restrained to those options. For my experiments, I like to configure an `aws` and `digitalocean` environment.
 The environment in GitHub action brings three advantages:
+
 - Define environment-specific variable
 - Create Protection rules to prevent unauthorized deployments
 - Keep a history of all your deployments easily accessible from the repository main page
@@ -22,6 +23,7 @@ Here is a diagram to give you an idea of how everything flows:
 ![](github-environments-terraform_17f1eeffcf.png)
 If you are using Terraform you may be provisioning your environment in a separate workflow or using Terraform Cloud as I do. The issue is that any environment always contains some variable or secrets that are only known once the Terraform configuration is applied. This could be the list of server IPs, the name of an SQS queue, the URL of a cloud service, etc.
 Since we want to automate this as much as possible why not also configure the GitHub environment on the fly using Terraform? Lucky to use GitHub have a Terraform provider so in this article I will walk you through the step to set up your repository environment using Terraform.
+
 ## Authentication
 The first step is to configure terraform GitHub provider and generate a personal access token so the Terraform can interact with GitHub APIs.
 To create a new personal access token go to [https://github.com/settings/tokens/new](https://github.com/settings/tokens/new)
@@ -29,13 +31,16 @@ To create a new personal access token go to [https://github.com/settings/tokens/
 > **Note: **the Personal Access token is fin for a simple test on your personal GitHub account but is limited in terms of security. The recommended option would be to create a [GitHub App](https://docs.github.com/en/developers/apps/getting-started-with-apps/about-apps) for this purpose. This is definitely something worth looking at in a future article.
 ![Personal Access Token vs OAuth App](github-environments-terraform_3c828f4068.png)
 Now you need to set the `GITHUB_TOKEN` environment variable in your terminal or add it up to the Terraform Cloud Environnement
-```yaml
+
+```bash
 export GITHUB_TOKEN=<your new token>
+
 ```
 
 ## Using the GitHub Terraform Provider To Provisions Secrets
 Create a Terraform configuration [`version.tf`](http://version.tf) 
-```yaml
+
+```hcl
 terraform {
   required_providers {
     github = {
@@ -48,11 +53,14 @@ terraform {
 provider "github" {
   # use`GITHUB_TOKEN`
 }
+
 ```
+
 Create your Terraform configuration file dedicated to GitHub [`github.tf`](http://github.tf) .  In this file, we use `data` to get info about our repository. Then define two resources, the GitHub environment itself and a test secret to demonstrating how it works.
 > **It is important to know that secret will be visible in the Terraform state file**. This option may not be ideal for very sensitive secrets, however, this option is created to pass configs from Terraform to GitHub Action. Always make sure your state files are secure. 
 In my case, I rely on Terraform Cloud, which is a great free option to manage securely your state files.
-```yaml
+
+```hcl
 /**
  * # Github Repository
  *
@@ -75,19 +83,26 @@ resource "github_actions_environment_secret" "test_secret" {
   secret_name      = "test_secret_name"
   encrypted_value  = "%s"
 }
+
 ```
+
 Last, create a variable definition file `variable.tf` that way this script will be easily reusable and could event become a module to keep your configuration DRY.
-```yaml
+
+```hcl
 variable "repo_name" {
   type = string
   default = "xNok/infra-bootstrap-tools"
 }
+
 ```
+
 Finally, plan and apply your configuration and you should see your newly created environment in Settings \> Environments with our test secret setup.
 ![](github-environments-terraform_46270ead35.png)
+
 ## Using provisioned Secrets in a GitHub Action workflow
 In a workflow definition, any `job` can use the property `environment`. Setting the `environment` property has two effects. The first is to allow the job to read the secrets of that environment. The second is to define this job as a deployment task and keep track of it in the deployment history.
 In the below example I use the secret `INVENTORY` defined in the environment `digitalocean` . In this example, I generated my Ansible inventory with Terraform and can now use Ansible within my Github workflow.
+
 ```yaml
 run-playbook:
     # The type of runner that the job will run on
@@ -116,7 +131,9 @@ run-playbook:
         env:
           INVENTORY: ${{ secrets.INVENTORY }}
         run: 'echo "$INVENTORY" > inventory'
+
 ```
+
 ## Using the GitHub Terraform Provider To Configure Permissions
 The branch you use for deployment needs to implement some checks to make sure that you are not deploying something by mistake. GitHub has a lot of options to validate commits and pull-request and enforce that the selected workflow is respected by all contributors.
 Configuring protection rules manually in every repository can be tedious. But you now manage part of the configuration with Terraform so let’s keep going and configure the protection rules.
@@ -124,7 +141,8 @@ You can start by adding a deployment reviewer. This feature will pose the workfl
 In any case, this option is great to prevent mistakes and add a manual step to a workflow. This could be useful for a terraform workflow with a plan/apply workflow where you want a review of the plan before running the application.
 ![Deployment Review Notification](github-environments-terraform_8860ad7e00.png)
 Regardless of your use case here is how you would configure deployment reviewers:
-```yaml
+
+```hcl
 data "github_user" "deployement_approver" {
   username = var.deployement_approver
 }
@@ -137,10 +155,13 @@ resource "github_repository_environment" "digitalocean_environment" {
     # teams = [] an entire team can be approver
   }
 } 
+
 ```
+
 Next, it would be best to make sure the branch used for deployment enforces best practices such as contributing via pull-request, being validated by workflow (linting, check, tests), preventing force push, etc. 
 We can also configure this using GitHub Terraform provider
-```yaml
+
+```hcl
 resource "github_repository_environment" "digitalocean_environment" {
   repository       = data.github_repository.repo.name
   environment      = "digitalocean"
@@ -173,23 +194,27 @@ resource "github_branch_protection" "main" {
     contexts = ["validate"] #this is a github action I defined
   }
 }
+
 ```
+
 Based on the option you select you to need to add permissions to your GitHub token. In my case I needed to add **`['read:org', 'read:discussion']`****. **Most likely your first Terraform apply will fail and tell you what are the missing scope. I think this is the best option for the least privileged access with Terraform. ** It is also important to know that some options like **`push_restrictions` are only available for organizations so you may not be able to use them.
 ![Protected deployment](github-environments-terraform_08f7a9df32.png)
+
 ## Deployment history
 This option is granted as soon as you start using environments in your workflow. As you can see you get a full history of when was a deployment job run.
 ![](github-environments-terraform_e92125aff6.png)
+
 ## Conclusion
 When using multiple tools you want to reduce the number of manual operations. Github Terraform provider lets you do just that. Since you are provisioning your environment using Terraform it makes the most sense to also configure your Github repository and Github Environnement using Terraform. That way you make sure that proper protections are in place and then require environment variables are automatically added and ready to use in GitHub action with manual interventions.
 
 This article is part of a bigger project about using Terraform, Ansible, and Github for small self-hosted projects. An answering question along these lines:
-🌍 How to configure GitHub Environments with Terraform?
-🏭 How to provision VM on @digitalocean with #Terraform?
-🔏 How to create SSH keys with Terraform?
-🗺️ How to create #Ansible Inventory with Terraform?
-👩‍🍳  How to run an Ansible playbook using GitHub Action?
-<unknown url="https://www.notion.so/84b593f0ff8b49d791aeb326011b2a01#a149a3894b2a433a9fde94c3e4d7f303" alt="bookmark"/>
 
+- 🌍 How to configure GitHub Environments with Terraform?
 
+- 🏭 How to provision VM on @digitalocean with #Terraform?
 
+- 🔏 How to create SSH keys with Terraform?
 
+- 🗺️ How to create #Ansible Inventory with Terraform?
+
+- 👩‍🍳  How to run an Ansible playbook using GitHub Action?
