@@ -16,8 +16,11 @@ const staticAssets = [
     '/infra-bootstrap-tools/js/docs.min.*.js',
 ];
 
+// Memoize the cache promise to avoid redundant IndexedDB lookups on every fetch
+const cachePromise = caches.open(cacheName);
+
 self.addEventListener('install', async e => {
-    const cache = await caches.open(cacheName);
+    const cache = await cachePromise;
     await cache.addAll(staticAssets);
     return self.skipWaiting();
 });
@@ -38,13 +41,13 @@ self.addEventListener('fetch', async e => {
 });
 
 async function cacheFirst(req) {
-    const cache = await caches.open(cacheName);
+    const cache = await cachePromise;
     const cached = await cache.match(req);
     return cached || fetch(req);
 }
 
 async function networkFirst(req) {
-    const cache = await caches.open(cacheName);
+    const cache = await cachePromise;
     try {
         const fresh = await fetch(req);
         cache.put(req, fresh.clone());
