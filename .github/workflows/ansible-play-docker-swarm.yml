@@ -39,11 +39,12 @@ jobs:
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
-      - name: Install collection locally
-        run: nix develop .#ansible --command make install-collection
-
       - name: Run ansible-lint
-        run: nix develop .#ansible --command ansible-lint ansible
+        run: |
+          nix develop .#ansible --command bash -c "
+            make install-collection
+            ansible-lint ansible
+          "
 
   lock:
     # The type of runner that the job will run on
