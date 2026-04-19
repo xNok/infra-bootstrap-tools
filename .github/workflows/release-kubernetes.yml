@@ -53,4 +53,4 @@ jobs:
               --revision="$(git rev-parse HEAD)"
           
           # Tag with version from the git tag and latest
-          flux tag artifact $OCI_REPO/$BUNDLE_NAME --tag $(git rev-parse --short HEAD) --tag latest --tag $VERSION
+          flux tag artifact $OCI_REPO/$BUNDLE_NAME:$(git rev-parse --short HEAD) --tag latest --tag $VERSION

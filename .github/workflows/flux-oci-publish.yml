@@ -48,4 +48,4 @@ jobs:
               --path="./kubernetes/fleet/${{ matrix.cluster }}" \
               --source="${{ github.event.repository.html_url }}" \
               --revision="$(git rev-parse HEAD)"
-          flux tag artifact $OCI_REPO --tag $(git rev-parse --short HEAD) --tag latest
+          flux tag artifact $OCI_REPO:$(git rev-parse --short HEAD) --tag latest
