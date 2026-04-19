@@ -1,6 +1,6 @@
 ---
 - name: Setup K3s Server
-  hosts: managers
+  hosts: k3s_servers
   become: true
   vars:
     # Enable Dark Stack Mode
@@ -12,7 +12,7 @@
     - xnok.infra_bootstrap_tools.k3s_flux_bootstrap
 
 - name: Setup K3s Agents
-  hosts: nodes
+  hosts: k3s_agents
   become: true
   roles:
     - k3s_agent

@@ -32,6 +32,8 @@
     user: "{{ terraform_aws_inventory_user }}"
     nodes: "{{ terraform_aws_result.outputs.nodes_ips.value }}"
     managers: "{{ terraform_aws_result.outputs.managers_ips.value }}"
+    managers_group: "{{ terraform_aws_inventory_managers_group }}"
+    nodes_group: "{{ terraform_aws_inventory_nodes_group }}"
 
 - name: Delete Ansible Inventory on Destroy
   when: terraform_aws_destroy | bool

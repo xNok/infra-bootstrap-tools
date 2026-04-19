@@ -4,6 +4,8 @@ terraform_aws_backend_config: "{{ role_path }}/assets/backend.tf"
 terraform_aws_inventory_path: "{{ playbook_dir }}/inventory"
 terraform_aws_inventory_prefix: "aws-swarm"
 terraform_aws_inventory_user: "ubuntu" # Default user for EC2 instances
+terraform_aws_inventory_managers_group: docker_swarm_managers
+terraform_aws_inventory_nodes_group: docker_swarm_nodes
 
 # Destroy flag
 terraform_aws_destroy: false

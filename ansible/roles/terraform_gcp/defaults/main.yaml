@@ -4,6 +4,8 @@ terraform_gcp_backend_config: "{{ role_path }}/assets/backend.tf"
 terraform_gcp_inventory_path: "{{ playbook_dir }}/inventory"
 terraform_gcp_inventory_prefix: gcp-swarm
 terraform_gcp_inventory_user: ubuntu
+terraform_gcp_inventory_managers_group: docker_swarm_managers
+terraform_gcp_inventory_nodes_group: docker_swarm_nodes
 
 # Destroy flag
 terraform_gcp_destroy: false

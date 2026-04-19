@@ -1,12 +1,12 @@
 - name: This is the base requirement for all nodes
-  hosts: all
+  hosts: docker_swarm_managers:docker_swarm_nodes
   become: true
 
   roles:
   - xnok.infra_bootstrap_tools.docker
 
 - name: This setup the Docker Swarm Manager
-  hosts: managers
+  hosts: docker_swarm_managers
   become: true
 
   roles:
@@ -16,13 +16,13 @@
   - xnok.infra_bootstrap_tools.docker_swarm_manager    # this role is for creating the swarm and adding host as manager
 
 - name: This setup nodes to join the Swarm
-  hosts: nodes
+  hosts: docker_swarm_nodes
 
   roles:
   - xnok.infra_bootstrap_tools.docker_swarm_node # this role is for host to join the swarm
 
 - name: This install Portainer in the Swarm
-  hosts: managers[0] # Only one manager need to be hit
+  hosts: docker_swarm_managers[0] # Only one manager need to be hit
   become: true
 
   roles:
