@@ -4,7 +4,7 @@ This directory serves as the **Staging Area** for our "Docs as Code" workflow, o
 
 ## Workflow Overview
 
-We separate "Work in Progress" (Staging) from "Published Docs" (Website). This folder (`docs/_staging_para`) is where knowledge is captured and refined before publication.
+We separate "Work in Progress" (Staging) from "Published Docs" (Website). This folder (`docs`) is where knowledge is captured and refined before publication.
 
 ### 1. The Capture Phase (Drafting)
 During a Pull Request (PR) or active development:

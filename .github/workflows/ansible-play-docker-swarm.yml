@@ -65,16 +65,13 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Setup the environment 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: 'pip' # caching pip dependencies
+      # Install Nix with flakes support
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
 
-      - name: Install dependencies Including Ansible
-        run: |
-          ./bin/bash/setup.sh ansible 1password-cli
+      # Cache Nix store for faster subsequent runs
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: write extra inventory to file
         if: ${{ env.INVENTORY != '' }}
@@ -84,7 +81,9 @@ jobs:
 
       - name: run playbook
         run: |
-          ansible-playbook -i ansible/playbooks/inventory ansible/playbooks/main.yml
+          nix develop .#ansible --command \
+            ansible-playbook -i ansible/playbooks/inventory ansible/playbooks/main.yml
         env:
           BRANCH_NAME: ${{ github.head_ref }}
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+

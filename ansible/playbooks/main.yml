@@ -11,9 +11,7 @@
     AWS_SECRET_ACCESS_KEY: "{{ tf_aws_secret_access_key }}"
 
   roles:
-  - xnok.infra_bootstrap_tools.utils_ssh_add
-  - role: diodonfrost.terraform
-    become: true
+  - role: xnok.infra_bootstrap_tools.utils_ssh_add
   - role: xnok.infra_bootstrap_tools.terraform_digitalocean
   - role: xnok.infra_bootstrap_tools.utils_affected_roles
 

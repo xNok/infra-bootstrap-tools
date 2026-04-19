@@ -13,6 +13,11 @@ let
   }:
     ''
       echo "Entering ${name} development shell..."
+      
+      # Bypass Terraform PGP signature verification due to expired HashiCorp keys, rely on SHA checkout instead
+      export TENV_VALIDATION=sha
+      # Automatically install the correct version of Terraform when invoked
+      export TENV_AUTO_INSTALL=true
     ''
     + lib.optionalString withVenv ''
 
@@ -53,6 +58,7 @@ let
     git
     docker
     pre-commit
+    tenv
   ];
 
   pythonPackages = with pkgs; [
