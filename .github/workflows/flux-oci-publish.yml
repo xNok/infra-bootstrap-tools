@@ -40,9 +40,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish fleet/${{ matrix.cluster }} artifact
-        env:
-          OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/kubernetes/fleet/${{ matrix.cluster }}"
         run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          OCI_REPO="oci://ghcr.io/$OWNER_LC/manifests/kubernetes/fleet/${{ matrix.cluster }}"
+          
           flux push artifact $OCI_REPO:$(git rev-parse --short HEAD) \
               --path="./kubernetes/fleet/${{ matrix.cluster }}" \
               --source="${{ github.event.repository.html_url }}" \

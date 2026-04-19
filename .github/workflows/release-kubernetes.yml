@@ -34,11 +34,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish Artifact
-        env:
-          # Extract the pure bundle name from the package name, e.g., 'kubernetes-infra-addons' -> 'infra-addons'
-          # We use bash string manipulation below because GitHub Actions string replace is limited.
-          OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/kubernetes"
         run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          OCI_REPO="oci://ghcr.io/$OWNER_LC/manifests/kubernetes"
+
           # The tag provides the version, e.g., kubernetes-infra-addons@1.0.0
           TAG_NAME="${{ inputs.release_tag }}"
           BUNDLE_FULL_NAME="${TAG_NAME%@*}"
