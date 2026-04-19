@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
-  url: oci://ghcr.io/xnok/manifests/infra-addons
+  url: oci://ghcr.io/xnok/manifests/kubernetes/infra-addons
   ref:
     tag: latest
   provider: generic

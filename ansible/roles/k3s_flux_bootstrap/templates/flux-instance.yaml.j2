@@ -21,7 +21,7 @@ spec:
     domain: "cluster.local"
   sync:
     kind: OCIRepository
-    url: "oci://ghcr.io/{{ k3s_flux_bootstrap_github_user }}/manifests/{{ k3s_flux_bootstrap_cluster_name }}"
+    url: "oci://ghcr.io/{{ k3s_flux_bootstrap_github_user }}/manifests/kubernetes/fleet/{{ k3s_flux_bootstrap_cluster_name }}"
     ref: "latest"
     pullSecret: "flux-system"
     path: "./fleet/{{ k3s_flux_bootstrap_cluster_name }}"

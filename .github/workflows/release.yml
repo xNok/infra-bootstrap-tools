@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
   publish-agentic:
@@ -33,3 +34,11 @@ jobs:
       collection_dir: 'ansible'
     secrets:
       GALAXY_API_KEY: ${{ secrets.GALAXY_API_KEY }}
+
+  publish-kubernetes-infra-addons:
+    if: startsWith(github.ref_name, 'kubernetes-infra-addons@')
+    uses: ./.github/workflows/release-kubernetes.yml
+    with:
+      release_tag: ${{ github.ref_name }}
+      package_dir: 'kubernetes'
+      package_name: 'kubernetes-infra-addons'

@@ -13,38 +13,13 @@ permissions:
   contents: read
 
 jobs:
-  publish-infra-addons:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@main
-
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish infra-addons artifact
-        env:
-          OCI_REPO: "oci://ghcr.io/${{ github.repository_owner }}/manifests/kubernetes/infra-addons"
-        run: |
-          flux push artifact $OCI_REPO:$(git rev-parse --short HEAD) \
-              --path="./kubernetes/infra-addons" \
-              --source="${{ github.event.repository.html_url }}" \
-              --revision="$(git rev-parse HEAD)"
-          flux tag artifact $OCI_REPO --tag $(git rev-parse --short HEAD) --tag latest
-
   publish-fleet:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         cluster:
           - kind
+          - k3s
     steps:
       - name: Checkout
         uses: actions/checkout@v4

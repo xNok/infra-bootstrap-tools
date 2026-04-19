@@ -17,7 +17,7 @@ spec:
     - image-automation-controller
   sync:
     kind: OCIRepository
-    url: "oci://ghcr.io/xnok/manifests/k3s"
+    url: "oci://ghcr.io/xnok/manifests/kubernetes/fleet/k3s"
     ref: "latest"
     pullSecret: "flux-system"
     path: "./fleet/k3s"
