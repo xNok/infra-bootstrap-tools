@@ -1,0 +1,23 @@
+apiVersion: fluxcd.controlplane.io/v1
+kind: FluxInstance
+metadata:
+  name: flux
+  namespace: flux-system
+spec:
+  distribution:
+    version: "2.x"
+    registry: "ghcr.io/fluxcd"
+    artifact: "oci://ghcr.io/controlplaneio-fluxcd/flux-operator-manifests"
+  components:
+    - source-controller
+    - kustomize-controller
+    - helm-controller
+    - notification-controller
+    - image-reflector-controller
+    - image-automation-controller
+  sync:
+    kind: OCIRepository
+    url: "oci://ghcr.io/xnok/manifests/k3s"
+    ref: "latest"
+    pullSecret: "flux-system"
+    path: "./fleet/k3s"

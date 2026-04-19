@@ -8,11 +8,15 @@
 ###
 # GENERAL Setup
 ###
+- name: Get first manager host vars
+  set_fact:
+    docker_swarm_node_first_manager: >-
+      {{ hostvars[groups[docker_swarm_node_manager_inventory_group_name][0]] }}
+
 - name: Get join-token for worker nodes
   set_fact:
     docker_swarm_node_join_token_worker: >-
-      {{ hostvars[groups[docker_swarm_node_manager_inventory_group_name][0]]
-      .docker_swarm_manager_result.swarm_facts.JoinTokens.Worker }}
+      {{ docker_swarm_node_first_manager.docker_swarm_manager_result.swarm_facts.JoinTokens.Worker }}
 
 ###
 # Add Nodes

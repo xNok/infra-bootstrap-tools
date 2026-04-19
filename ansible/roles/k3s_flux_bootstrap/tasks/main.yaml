@@ -36,6 +36,14 @@
     state: present
     break_system_packages: true
 
+- name: Install Flux CLI
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -fsSL https://fluxcd.io/install.sh | bash
+  args:
+    creates: /usr/local/bin/flux
+    executable: /bin/bash
+
 - name: Install Flux Operator
   kubernetes.core.helm:
     name: flux-operator
