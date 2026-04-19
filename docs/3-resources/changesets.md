@@ -50,7 +50,7 @@ In our polyglot setup, we use `changeset publish` to generate Git tags, which th
 
 We use Changesets to coordinate releases across three distinct ecosystems:
 
-- **Ansible**: Managed via `ansible/package.json`. Triggers `v*` tags.
+- **Ansible**: Managed via `ansible/package.json`. Triggers `ansible-collection-infra-bootstrap-tools@*` tags.
 - **Python (Agentic)**: Managed via `agentic/package.json`. Triggers `infra-bootstrap-tools-agentic@*` tags.
 - **Docker Stacks**: Managed via `stacks/package.json`. Triggers `infra-bootstrap-tools-stacks@*` tags.
 

@@ -1,5 +1,5 @@
 ---
-title: "Intentional Releases: Why We Chose Changesets over Semantic-Release"
+title: "Intentional Releases: Why I Chose Changesets over Semantic-Release"
 date: 2026-04-12
 author: xNok
 summary: Automated releases are great, but they often lack human intent. Learn why Changesets is the better tool for managing releases in a complex monorepo.
@@ -74,8 +74,6 @@ This process forces a level of quality that "automated" commit parsing simply ca
 - **Value Proposition**: You can explain *why* a new feature is exciting.
 - **Explicit Versioning**: You avoid accidental major bumps caused by a mislabeled commit.
 
-<!-- PLACEHOLDER FOR SCREENSHOT: "Changeset bot commenting on a Pull Request reminding the developer to add a changeset" -->
-
 ## Scaling to a Polyglot Monorepo
 
 Changesets would be a straightforward adoption for Node.js users in a monorepo managed with npm, yarn, pnpm or (any future package manager that would come up), but for other users, using Changesets might not even cross your mind. So let me give you a quick overview of how I use it in my `infra-bootstrap-tools` repository.
@@ -93,7 +91,7 @@ Since `infra-bootstrap-tools` is not a standard npm project, I use a slightly ad
 
 The key is to define "packages" using **`package.json`** files. Even though many of those projects are not Node.js applications, we need to add a `package.json` to any directory we want Changesets to manage. The root directory also contains a master `package.json` defining the workspaces.
 
-1. **Dependency Management**: By creating `package.json` files, we can define dependencies event between non-Node modules. For example, an Ansible collection is compose of mutlipel playbook, roles and modules. If anything in the collection is upgraded, Changesets knows that the collection version also needs to be updated. This guarantees that the collecton get's updated while I focus on the individual roles.
+1. **Dependency Management**: By creating `package.json` files, we can define dependencies even between non-Node modules. For example, an Ansible collection is composed of multiple playbooks, roles, and modules. If anything in the collection is upgraded, Changesets knows that the collection version also needs to be updated. This guarantees that the collection gets updated while I focus on the individual roles.
 2. **Separation of Duties**: Changesets computes the new versions, writes the `CHANGELOG.md` files, and creates Git tags for the releases. It goes no further. 
 3. **Dedicated Publish Workflows**: When Changesets pushes those new Git tags to the repository, it triggers downstream GitHub Actions workflows (e.g., `docker-*-publish.yml` or `ansible-publish.yml`) that are listening for tag creation events. These specialized workflows handle grabbing the artifact and publishing it to Docker Hub, PyPI, Ansible Galaxy, etc.
 
@@ -104,11 +102,11 @@ When using Changeset the development workflow goes allong those lines
 1. **Develop**: work on a feature or fix in a branch.
 2. **Intent**: Before merging, run `npx changeset add` and write down what changed. This adds a markdown file to the `.changeset/` folder.
 3. **Dispatch**: The pull request is merged to `main`.
-4. **Aggregate**: Changesets groups all unprocessed intents into a single "Version Packages" pull request. Note that not all PR needs a changeset, not do you need to release a new version after each PR, you can give yourself some soaking time. Chnageset will update the Release pull request with the new versions and changelogs.
+4. **Aggregate**: Changesets groups all unprocessed intents into a single "Version Packages" pull request. Note that not all PRs need a changeset, nor do you need to release a new version after each PR—you can give yourself some soaking time. Changeset will update the release pull request with the new versions and changelogs.
 5. **Release**: When I am ready, I review the "Version Packages" PR. Merging it automatically updates the version strings, writes the changelogs, and creates Git tags.
 6. **Publish**: The newly created Git tags trigger the dedicated release workflows to publish artifacts.
 
-### Deep Dive into the Chnageset Workflow
+### Deep Dive into the Changeset Workflow
 
 Let's look at exactly how I automated this in `infra-bootstrap-tools` using GitHub Actions. Here is the crux of my `release-changeset.yaml` workflow it roles is simple to run changeset.
 
@@ -155,9 +153,8 @@ jobs:
 
 Whenever the Changesets GitHub Action (`changesets/action@v1`) sees unprocessed `.changeset` markdown files in the `main` branch, it executes a "versioning" step automatically. The action gathers all the new changesets, bumps the versions of the corresponding sub-projects accordingly, updates all the individual `CHANGELOG.md` files, and consumes (deletes) those changesets. Instead of instantly publishing, the CI creates a Pull Request titled **"Version Packages"**.
 
-<!-- PLACEHOLDER FOR SCREENSHOT: "The automated 'Version Packages' Pull Request created by the Changeset action" -->
 
-This Pull Request acts as a final gateway, grouping everything that has been implemented since the previous release. I believe this is really where the Changeset release process shines you could have a prr-release or prodcution checklist to volidate the releaseon tha merge this specific PR to officially cut the release once all the validation passeses. I have envitsion many workflows, from staging/rc release and integration testing hookes to this release workflow to add evendenting to the release but this is a story for another time.
+This Pull Request acts as a final gateway, grouping everything that has been implemented since the previous release. This is really where the Changeset release process shines: you could have a pre-release or production checklist to validate the release, then merge this specific PR to officially cut the release once all validations pass. I have envisioned many workflows—from staging/RC releases and integration testing hooks to adding event-driven notifications to the release process—but that is a story for another time.
 
 
 ### Deep Dive into the Publishing Workflow
@@ -193,7 +190,6 @@ jobs:
 
 This dispatcher pattern is incredibly powerful for a polyglot monorepo. By combining a single entry point with reusable GitHub Action templates, we can easily maintain standard publishing pipelines (e.g., Python packages to PyPI, Ansible collections to Galaxy) without duplicating the CI logic for every single package. It keeps the repository exceptionally clean while scaling beautifully.
 
-<!-- PLACEHOLDER FOR SCREENSHOT: "Successful GitHub Release created and custom publish pipelines running via the Central Publish Workflow" -->
 
 ### Bonus: Reusing Publishing Workflows
 

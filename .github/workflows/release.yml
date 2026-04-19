@@ -1,8 +1,6 @@
 name: Central Publish Workflow
 
 on:
-  release:
-    types: [published]
   push:
     tags:
       - 'v*'
