@@ -6,6 +6,11 @@ on:
       - main
     paths:
       - 'kubernetes/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'kubernetes/**'
   workflow_dispatch:
 
 permissions:
