@@ -19,10 +19,10 @@ const staticAssets = [
 // Memoize the cache promise to avoid redundant IndexedDB lookups on every fetch
 const cachePromise = caches.open(cacheName);
 
-self.addEventListener('install', e => {
-    e.waitUntil(
-        cachePromise.then(cache => cache.addAll(staticAssets)).then(() => self.skipWaiting())
-    );
+self.addEventListener('install', async e => {
+    const cache = await cachePromise;
+    await cache.addAll(staticAssets);
+    return self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
@@ -50,7 +50,7 @@ async function networkFirst(req) {
     const cache = await cachePromise;
     try {
         const fresh = await fetch(req);
-        await cache.put(req, fresh.clone());
+        cache.put(req, fresh.clone());
         return fresh;
     } catch (e) {
         const cached = await cache.match(req);
