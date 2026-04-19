@@ -28,6 +28,9 @@ jobs:
   validate:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop .#ansible --command bash -eo pipefail {0}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -41,10 +44,8 @@ jobs:
 
       - name: Run ansible-lint
         run: |
-          nix develop .#ansible --command bash -c "
-            make install-collection
-            ansible-lint ansible
-          "
+          make install-collection
+          ansible-lint ansible
 
   lock:
     # The type of runner that the job will run on
@@ -64,6 +65,9 @@ jobs:
   run-playbook:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop .#ansible --command bash -eo pipefail {0}
     # The validate Job needs to be successful
     needs: [ validate, lock ]
     # The deployment environment thus provides the secrets for that env
@@ -85,12 +89,11 @@ jobs:
         if: ${{ env.INVENTORY != '' }}
         env:
           INVENTORY: ${{ secrets.ANSIBLE_INVENTORY }}
-        run: 'echo "$INVENTORY" > inventory/extra'
+        run: echo "$INVENTORY" > inventory/extra
 
       - name: run playbook
         run: |
-          nix develop .#ansible --command \
-            ansible-playbook -i ansible/playbooks/inventory ansible/playbooks/main.yml
+          ansible-playbook -i ansible/playbooks/inventory ansible/playbooks/main.yml
         env:
           BRANCH_NAME: ${{ github.head_ref }}
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
