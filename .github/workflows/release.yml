@@ -1,8 +1,6 @@
 name: Central Publish Workflow
 
 on:
-  release:
-    types: [published]
   push:
     tags:
       - 'v*'
@@ -14,7 +12,7 @@ permissions:
 jobs:
   publish-agentic:
     if: contains(github.ref_name, 'infra-bootstrap-tools-agentic@')
-    uses: ./.github/workflows/templates/release-python.yml
+    uses: ./.github/workflows/release-python.yml
     with:
       release_tag: ${{ github.ref_name }}
       package_dir: 'agentic'
@@ -22,14 +20,14 @@ jobs:
 
   publish-stacks:
     if: contains(github.ref_name, 'infra-bootstrap-tools-stacks@')
-    uses: ./.github/workflows/templates/release-stacks.yml
+    uses: ./.github/workflows/release-stacks.yml
     with:
       release_tag: ${{ github.ref_name }}
       stacks_dir: 'stacks'
 
   publish-ansible:
     if: startsWith(github.ref_name, 'ansible-collection-infra-bootstrap-tools@')
-    uses: ./.github/workflows/templates/release-ansible.yml
+    uses: ./.github/workflows/release-ansible.yml
     with:
       release_tag: ${{ github.ref_name }}
       collection_dir: 'ansible'
