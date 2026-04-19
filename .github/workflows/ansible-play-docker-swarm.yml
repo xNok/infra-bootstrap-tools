@@ -33,10 +33,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Install collection locally
+        run: nix develop .#ansible --command make install-collection
+
       - name: Run ansible-lint
-        uses: ansible/ansible-lint@v25.9.0
-        with:
-          args: "ansible"
+        run: nix develop .#ansible --command ansible-lint ansible
 
   lock:
     # The type of runner that the job will run on
