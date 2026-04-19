@@ -45,6 +45,7 @@ The project has two parallel implementations:
 - ✅ Traditional nix-shell support
 - ✅ Automated dependency installation
 - ✅ Python virtual environment management
+- ✅ CI Integration (Ansible & lint workflows migrated to Nix)
 - 🔄 Full feature parity with bash implementation
 - 🔄 Documentation updates
 - 🔄 Migration guide
@@ -278,6 +279,21 @@ shellHook = ''
 '';
 ```
 
+## CI/CD Integration (GitHub Actions)
+
+We have successfully migrated the GitHub Actions pipelines (like Ansible linting and run-playbooks) to execute exclusively within our Nix environments. This guarantees complete parity with local development environments.
+
+**Key Learnings and Patterns:**
+1. **GitHub Actions Infrastructure**: We leverage `DeterminateSystems/nix-installer-action` alongside `magic-nix-cache-action` to handle fast, deterministic setup.
+2. **Applying Nix Shell Globals**: Instead of wrapping every `run` block in `nix develop ... --command bash -c "..."`, we set the shell natively at the GitHub Action job level via defaults:
+   ```yaml
+   defaults:
+     run:
+       shell: nix develop .#ansible --command bash -eo pipefail {0}
+   ```
+   This tells the runner to write `run` scripts to `{0}` and execute them natively inside the Nix profile. Our YAML run scripts remain simple and readable!
+3. **Seamless Linter/Tooling Context**: Replacing isolated GitHub Actions (like `ansible/ansible-lint`) with native Nix invocations means our CI linting executes with the exact local paths and module context established by our setup routines (e.g. `make install-collection`). It completely resolved elusive "collection not found" FQCN resolution issues.
+
 ## Migration Strategy
 
 ### Current Approach
@@ -433,7 +449,7 @@ python --version
 1. **Complete Nix Migration**: Achieve feature parity
 2. **Documentation**: Comprehensive migration guide
 3. **Testing**: Nix-specific test suite
-4. **CI Integration**: Use Nix in GitHub Actions
+4. ✅ **CI Integration**: Use Nix in GitHub Actions
 
 ### Long Term
 1. **Home Manager**: User-level Nix configuration
