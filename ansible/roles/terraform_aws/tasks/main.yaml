@@ -15,7 +15,7 @@
     region: "{{ terraform_aws_backend_region }}"
 
 - name: Provision AWS Infra
-  community.aws.terraform:
+  community.general.terraform:
     project_path: '{{ role_path }}/terraform'
     state: "{{ 'absent' if terraform_aws_destroy | bool else 'present' }}"
     force_init: true

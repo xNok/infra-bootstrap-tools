@@ -4,7 +4,6 @@
 ---
 
 - name: Copy Backend Configuration
-  when: not terraform_digitalocean_destroy | bool
   ansible.builtin.copy:
     src: "{{ terraform_digitalocean_backend_config }}"
     dest: "{{ role_path }}/terraform/backend.tf"
