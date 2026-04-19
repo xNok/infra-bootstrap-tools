@@ -102,18 +102,18 @@ The key is to define "packages" using **`package.json`** files. Even though many
 
 #### Day-to-Day Workflow
 
-When using Changeset the development workflow goes allong those lines
+When using Changesets the development workflow goes along these lines
 
 1. **Develop**: work on a feature or fix in a branch.
 2. **Intent**: Before merging, run `npx changeset add` and write down what changed. This adds a markdown file to the `.changeset/` folder.
 3. **Dispatch**: The pull request is merged to `main`.
-4. **Aggregate**: Changesets groups all unprocessed intents into a single "Version Packages" pull request. Note that not all PRs need a changeset, nor do you need to release a new version after each PR—you can give yourself some soaking time. Changeset will update the release pull request with the new versions and changelogs.
+4. **Aggregate**: Changesets groups all unprocessed intents into a single "Version Packages" pull request. Note that not all PRs need a changeset, nor do you need to release a new version after each PR—you can give yourself some soaking time. Changesets will update the release pull request with the new versions and changelogs.
 5. **Release**: When I am ready, I review the "Version Packages" PR. Merging it automatically updates the version strings, writes the changelogs, and creates Git tags.
 6. **Publish**: The newly created Git tags trigger the dedicated release workflows to publish artifacts.
 
 ### Deep Dive into the Changeset Workflow
 
-Let's look at exactly how I automated this in `infra-bootstrap-tools` using GitHub Actions. Here is the crux of my `release-changeset.yaml` workflow it roles is simple to run changeset.
+Let's look at exactly how I automated this in `infra-bootstrap-tools` using GitHub Actions. Here is the crux of my `release-changeset.yaml` workflow—its role is simply to run Changesets.
 
 ```yaml
 name: Changesets Release
@@ -204,7 +204,7 @@ This dispatcher pattern is incredibly powerful for a polyglot monorepo. By combi
 
 One of the best "hidden features" of adopting this standard `on: workflow_call` reusable workflow pattern is that **you** can use those worflow in other monorepos. In an organization it mean you would only need to fdefine your release workflow once and reuse it across all your repositories. It also mean that since`infra-bootstrap-tools` is public, these templates can be reused if you wanted to.
 
-If you want to use the exact same publishing strategies I use, you can call them directly from your own GitHub Actions. If some adjustments are needed you can always submit a PR, I am only looking at covering infrastucture ans cripting releasde releas workflow (not aiming to open some kind of market place)
+If you want to use the exact same publishing strategies I use, you can call them directly from your own GitHub Actions. If some adjustments are needed you can always submit a PR—I am only looking at covering infrastructure and scripting release workflows (not aiming to open some kind of marketplace).
 
 - **`release-ansible.yml`**: Automates building and publishing Ansible Collections to Ansible Galaxy.
 - **`release-python.yml`**: Automates building and publishing Python packages using Poetry and PyPI.
