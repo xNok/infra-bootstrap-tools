@@ -4,6 +4,3 @@ collections:
 - kubernetes.core
 - xnok.infra_bootstrap_tools
 
-
-roles:
-- name: diodonfrost.terraform

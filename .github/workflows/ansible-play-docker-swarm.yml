@@ -28,15 +28,24 @@ jobs:
   validate:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop .#ansible --command bash -eo pipefail {0}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
       - name: Run ansible-lint
-        uses: ansible/ansible-lint@v25.9.0
-        with:
-          args: "ansible"
+        run: |
+          make install-collection
+          ansible-lint ansible
 
   lock:
     # The type of runner that the job will run on
@@ -56,6 +65,9 @@ jobs:
   run-playbook:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop .#ansible --command bash -eo pipefail {0}
     # The validate Job needs to be successful
     needs: [ validate, lock ]
     # The deployment environment thus provides the secrets for that env
@@ -65,22 +77,19 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Setup the environment 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: 'pip' # caching pip dependencies
+      # Install Nix with flakes support
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
 
-      - name: Install dependencies Including Ansible
-        run: |
-          ./bin/bash/setup.sh ansible 1password-cli
+      # Cache Nix store for faster subsequent runs
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: write extra inventory to file
         if: ${{ env.INVENTORY != '' }}
         env:
           INVENTORY: ${{ secrets.ANSIBLE_INVENTORY }}
-        run: 'echo "$INVENTORY" > inventory/extra'
+        run: echo "$INVENTORY" > inventory/extra
 
       - name: run playbook
         run: |
@@ -88,3 +97,4 @@ jobs:
         env:
           BRANCH_NAME: ${{ github.head_ref }}
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
+

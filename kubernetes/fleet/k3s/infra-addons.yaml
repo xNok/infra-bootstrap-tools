@@ -1,0 +1,28 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: infra-addons
+  namespace: flux-system
+spec:
+  interval: 1h
+  prune: true
+
+  # Ensure cluster-specific values ConfigMaps are applied before addons reconcile.
+  dependsOn:
+    - name: infra-addons-values
+
+  sourceRef:
+    kind: OCIRepository
+    name: infra-addons
+  path: "./base"
+
+  # components are relative to the source root (infra-addons OCI root)
+  components:
+    - ../components/cert-manager
+    - ../components/openziti
+
+  # Substitute cluster-specific values (e.g. CLUSTER_NAME) into the manifests before applying.
+  postBuild:
+    substituteFrom:
+      - kind: ConfigMap
+        name: flux-runtime-info

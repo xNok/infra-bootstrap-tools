@@ -11,7 +11,8 @@
       "ansible",
       "ansible/roles/*",
       "stacks",
-      "stacks/*"
+      "stacks/*",
+      "kubernetes/*"
   ],
   "devDependencies": {
     "@changesets/cli": "^2.27.3"

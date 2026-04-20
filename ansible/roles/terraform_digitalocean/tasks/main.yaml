@@ -4,7 +4,6 @@
 ---
 
 - name: Copy Backend Configuration
-  when: not terraform_digitalocean_destroy | bool
   ansible.builtin.copy:
     src: "{{ terraform_digitalocean_backend_config }}"
     dest: "{{ role_path }}/terraform/backend.tf"
@@ -28,6 +27,8 @@
     user: "{{ terraform_digitalocean_inventory_user }}"
     nodes: "{{ terraform_digitalocean_result.outputs.nodes_ips.value }}"
     managers: "{{ terraform_digitalocean_result.outputs.managers_ips.value }}"
+    managers_group: "{{ terraform_digitalocean_inventory_managers_group }}"
+    nodes_group: "{{ terraform_digitalocean_inventory_nodes_group }}"
 
 - name: Delete Ansible Inventory on Destroy
   when: terraform_digitalocean_destroy | bool

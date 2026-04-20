@@ -17,5 +17,4 @@ galaxy_info:
     - infrastructure
     # Add other relevant tags
 
-dependencies:
-  - diodonfrost.terraform
+dependencies: []

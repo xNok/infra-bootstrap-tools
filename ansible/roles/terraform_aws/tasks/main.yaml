@@ -15,7 +15,7 @@
     region: "{{ terraform_aws_backend_region }}"
 
 - name: Provision AWS Infra
-  community.aws.terraform:
+  community.general.terraform:
     project_path: '{{ role_path }}/terraform'
     state: "{{ 'absent' if terraform_aws_destroy | bool else 'present' }}"
     force_init: true
@@ -32,6 +32,8 @@
     user: "{{ terraform_aws_inventory_user }}"
     nodes: "{{ terraform_aws_result.outputs.nodes_ips.value }}"
     managers: "{{ terraform_aws_result.outputs.managers_ips.value }}"
+    managers_group: "{{ terraform_aws_inventory_managers_group }}"
+    nodes_group: "{{ terraform_aws_inventory_nodes_group }}"
 
 - name: Delete Ansible Inventory on Destroy
   when: terraform_aws_destroy | bool

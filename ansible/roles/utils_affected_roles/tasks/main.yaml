@@ -33,7 +33,7 @@
 - name: Debug git diff output
   debug:
     msg: "{{ diff.stdout_lines }}"
-  when: not utils_affected_roles_always_run_all_roles
+  when: not utils_affected_roles_always_run_all_roles | bool
 
 - name: Extract folders from the diff
   set_fact:
@@ -50,7 +50,7 @@
       | select('match', '^' + utils_affected_roles_roles_folder + '/')
       | map('regex_replace', '^' + utils_affected_roles_roles_folder + '/([^/]+)/.*$', '\\1')
       | unique }}"
-  when: not utils_affected_roles_always_run_all_roles
+  when: not utils_affected_roles_always_run_all_roles | bool
 
 - name: List all existing roles
   find:
@@ -58,12 +58,12 @@
     recurse: false
     file_type: directory
   register: utils_affected_roles_found_directories
-  when: utils_affected_roles_always_run_all_roles
+  when: utils_affected_roles_always_run_all_roles | bool
 
 - name: Set all roles to run if on default branch
   set_fact:
     utils_affected_roles_roles_with_changes: "{{ utils_affected_roles_found_directories.files | map(attribute='path') | map('basename') | list }}"
-  when: utils_affected_roles_always_run_all_roles
+  when: utils_affected_roles_always_run_all_roles | bool
 
 - name: Debug roles_with_changes output
   debug:

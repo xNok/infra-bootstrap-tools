@@ -1,0 +1,5 @@
+# Flux Bootstrap Secrets
+k3s_flux_bootstrap_github_token: "{{
+  lookup('community.general.onepassword', 'GitHub_Flux_Token',
+  vault='infra-bootstrap-tools', field='password')
+  }}"

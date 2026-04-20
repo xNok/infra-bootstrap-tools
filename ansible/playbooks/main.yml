@@ -11,15 +11,13 @@
     AWS_SECRET_ACCESS_KEY: "{{ tf_aws_secret_access_key }}"
 
   roles:
-  - xnok.infra_bootstrap_tools.utils_ssh_add
-  - role: diodonfrost.terraform
-    become: true
+  - role: xnok.infra_bootstrap_tools.utils_ssh_add
   - role: xnok.infra_bootstrap_tools.terraform_digitalocean
   - role: xnok.infra_bootstrap_tools.utils_affected_roles
 
 # SWARM Managers
 - name: This setup the Docker Swarm Manager
-  hosts: managers
+  hosts: docker_swarm_managers
   gather_facts: true
   become: true
   vars:
@@ -40,7 +38,7 @@
 
 # SWARM Nodes
 - name: This setup nodes to join the Swarm
-  hosts: nodes
+  hosts: docker_swarm_nodes
   gather_facts: true
   become: true
   vars:
@@ -55,7 +53,7 @@
 
 # PLUGINS
 - name: This installs docker plugins on all hosts
-  hosts: all
+  hosts: docker_swarm_managers:docker_swarm_nodes
   become: true
 
   roles:
@@ -64,7 +62,7 @@
 
 # APPS
 - name: This install Caddy and Portainer in the Swarm
-  hosts: managers[0] # Only one manager need to be hit
+  hosts: docker_swarm_managers[0] # Only one manager need to be hit
   become: true
 
   roles:

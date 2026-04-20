@@ -4,6 +4,8 @@ terraform_digitalocean_backend_config: "{{ role_path }}/assets/backend.tf"
 terraform_digitalocean_inventory_path: "{{ playbook_dir }}/inventory"
 terraform_digitalocean_inventory_prefix: do-swarm
 terraform_digitalocean_inventory_user: root
+terraform_digitalocean_inventory_managers_group: docker_swarm_managers
+terraform_digitalocean_inventory_nodes_group: docker_swarm_nodes
 
 # Destroy flag
 terraform_digitalocean_destroy: false

@@ -1,6 +1,6 @@
 # BASE
 - name: This is the base requirement for all nodes
-  hosts: all
+  hosts: docker_swarm_managers:docker_swarm_nodes
   become: true
 
   roles:
@@ -9,7 +9,7 @@
 
 # SWARM
 - name: This setup the Docker Swarm Manager
-  hosts: managers
+  hosts: docker_swarm_managers
   gather_facts: true
   become: true
 
@@ -22,14 +22,14 @@
   - role: xnok.infra_bootstrap_tools.docker_swarm_manager
 
 - name: This setup nodes to join the Swarm
-  hosts: nodes
+  hosts: docker_swarm_nodes
 
   roles:
   - role: xnok.infra_bootstrap_tools.docker_swarm_node # this role is for host to join the swarm
 
 # APPS
 - name: This install Caddy and Portainer in the Swarm
-  hosts: managers[0] # Only one manager need to be hit
+  hosts: docker_swarm_managers[0] # Only one manager need to be hit
   become: true
 
   roles:
