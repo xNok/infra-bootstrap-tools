@@ -20,4 +20,4 @@ spec:
     url: "oci://ghcr.io/xnok/manifests/kubernetes/fleet/k3s"
     ref: "latest"
     pullSecret: "flux-system"
-    path: "./fleet/k3s"
+    path: "."
