@@ -209,9 +209,6 @@ def deploy_jules_workflow(prefect_api_url: str, work_pool_name: str = "default-a
         return True
     except Exception as e:
         print(f"✗ Failed to deploy workflow: {e}")
-        import traceback
-
-        traceback.print_exc()
         return False
 
 
