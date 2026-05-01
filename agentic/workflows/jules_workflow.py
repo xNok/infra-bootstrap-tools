@@ -81,6 +81,16 @@ async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
     Raises:
         RuntimeError: If the agent fails to process the issue
     """
+    from urllib.parse import urlparse
+
+    parsed_url = urlparse(github_issue_url)
+    if parsed_url.scheme != "https":
+        raise ValueError("Invalid GitHub issue URL: Scheme must be https")
+    if parsed_url.netloc not in ("github.com", "www.github.com"):
+        raise ValueError("Invalid GitHub issue URL: Domain must be github.com")
+    if "/issues/" not in parsed_url.path:
+        raise ValueError("Invalid GitHub issue URL: Must contain an issue path")
+
     try:
         prompt = f"Please assign the task from this GitHub issue: {github_issue_url}"
         result = await agent.run(prompt)
