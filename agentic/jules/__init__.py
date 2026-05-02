@@ -7,12 +7,12 @@ via the MCP server.
 
 from .agent import main as run_agent
 from .models import (
-    GithubRepo,
-    Source,
-    Session,
     CreateSessionRequest,
-    SourceContext,
+    GithubRepo,
     GithubRepoContext,
+    Session,
+    Source,
+    SourceContext,
 )
 
 __all__ = [

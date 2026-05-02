@@ -7,6 +7,7 @@ enabling scheduled and on-demand execution of GitHub issue automation tasks.
 
 import os
 import sys
+import urllib.parse
 from typing import Optional
 
 from prefect import flow, task
@@ -66,6 +67,22 @@ def create_jules_agent(
     return agent
 
 
+def is_valid_github_issue_url(url: str) -> bool:
+    """Validates that the provided URL is a valid GitHub issue URL."""
+    try:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme != "https":
+            return False
+        if parsed.netloc != "github.com":
+            return False
+        path_parts = parsed.path.strip("/").split("/")
+        if len(path_parts) < 4 or path_parts[2] != "issues" or not path_parts[3].isdigit():
+            return False
+        return True
+    except Exception:
+        return False
+
+
 @task(name="assign_github_issue", retries=1)
 async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
     """
@@ -81,12 +98,15 @@ async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
     Raises:
         RuntimeError: If the agent fails to process the issue
     """
+    if not is_valid_github_issue_url(github_issue_url):
+        raise ValueError("Invalid GitHub issue URL provided")
+
     try:
         prompt = f"Please assign the task from this GitHub issue: {github_issue_url}"
         result = await agent.run(prompt)
         return result.output
-    except Exception as e:
-        raise RuntimeError(f"Failed to assign GitHub issue: {e}") from e
+    except Exception:
+        raise RuntimeError("Failed to assign GitHub issue due to an internal error")
 
 
 @flow(
