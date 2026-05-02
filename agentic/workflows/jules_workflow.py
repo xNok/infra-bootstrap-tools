@@ -13,6 +13,8 @@ from prefect import flow, task
 from pydantic_ai import Agent
 from pydantic_ai.toolsets.fastmcp import FastMCPToolset
 
+from agentic.jules.url_validation import is_valid_github_issue_url
+
 
 @task(name="initialize_mcp_toolset", retries=2, retry_delay_seconds=5)
 async def initialize_mcp_toolset(mcp_server_url: str) -> FastMCPToolset:
@@ -79,14 +81,20 @@ async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
         Agent's response/output
 
     Raises:
+        ValueError: If the provided GitHub issue URL is invalid
         RuntimeError: If the agent fails to process the issue
     """
+    if not is_valid_github_issue_url(github_issue_url):
+        raise ValueError("Invalid GitHub issue URL provided")
+
     try:
         prompt = f"Please assign the task from this GitHub issue: {github_issue_url}"
         result = await agent.run(prompt)
         return result.output
     except Exception as e:
-        raise RuntimeError(f"Failed to assign GitHub issue: {e}") from e
+        raise RuntimeError(
+            "Failed to assign GitHub issue due to an internal error"
+        ) from e
 
 
 @flow(

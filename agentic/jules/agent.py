@@ -9,14 +9,25 @@ import sys
 from pydantic_ai import Agent
 from pydantic_ai.toolset import FastMCPToolset
 
+from agentic.jules.url_validation import is_valid_github_issue_url
+
 # The user has indicated that the MCP server is running locally for this demonstration.
 MCP_SERVER_URL = "http://localhost:8000/mcp"
 
+
 def main():
     """Defines the command-line interface and runs the agent."""
-    parser = argparse.ArgumentParser(description="Assign a GitHub issue task to the Jules agent using Pydantic AI and an MCP server.")
-    parser.add_argument("github_issue_url", type=str, help="The full URL of the GitHub issue to be assigned.")
+    parser = argparse.ArgumentParser(
+        description="Assign a GitHub issue task to the Jules agent using Pydantic AI and an MCP server."
+    )
+    parser.add_argument(
+        "github_issue_url", type=str, help="The full URL of the GitHub issue to be assigned."
+    )
     args = parser.parse_args()
+
+    if not is_valid_github_issue_url(args.github_issue_url):
+        print("Error: Invalid GitHub issue URL provided", file=sys.stderr)
+        sys.exit(1)
 
     try:
         # Initialize a toolset that points to the MCP server.
@@ -27,9 +38,9 @@ def main():
         # We assume any necessary API keys for the LLM (e.g., OPENAI_API_KEY)
         # are available in the environment.
         agent = Agent(
-            'openai:gpt-4o',
+            "openai:gpt-4o",
             toolsets=[toolset],
-            system_prompt="You are an agent assistant. Your primary function is to assign tasks to the Jules agent by calling the available tools from the MCP server with the correct parameters."
+            system_prompt="You are an agent assistant. Your primary function is to assign tasks to the Jules agent by calling the available tools from the MCP server with the correct parameters.",
         )
 
         # Create a clear prompt for the pydantic-ai agent, instructing it to use the
