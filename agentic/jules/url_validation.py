@@ -29,6 +29,7 @@ def is_valid_github_issue_url(url: str) -> bool:
             return False
         if parsed.hostname != "github.com":
             return False
+        # Reject non-standard ports; parsed.hostname strips the port so we check separately.
         if parsed.port is not None:
             return False
         if parsed.params or parsed.query or parsed.fragment:
@@ -37,6 +38,8 @@ def is_valid_github_issue_url(url: str) -> bool:
         if len(path_parts) != 4:
             return False
         owner, repo, resource, issue_number = path_parts
+        # owner and repo: explicit empty check; resource: validated via equality;
+        # issue_number: validated via isdigit() which also rejects empty strings.
         if not owner or not repo:
             return False
         if resource != "issues" or not issue_number.isdigit():
