@@ -7,12 +7,13 @@ enabling scheduled and on-demand execution of GitHub issue automation tasks.
 
 import os
 import sys
-import urllib.parse
 from typing import Optional
 
 from prefect import flow, task
 from pydantic_ai import Agent
 from pydantic_ai.toolsets.fastmcp import FastMCPToolset
+
+from agentic.jules.url_validation import is_valid_github_issue_url
 
 
 @task(name="initialize_mcp_toolset", retries=2, retry_delay_seconds=5)
@@ -67,31 +68,6 @@ def create_jules_agent(
     return agent
 
 
-def is_valid_github_issue_url(url: str) -> bool:
-    """Validates that the provided URL is a valid GitHub issue URL."""
-    try:
-        parsed = urllib.parse.urlparse(url)
-        if parsed.scheme != "https":
-            return False
-        if parsed.hostname != "github.com":
-            return False
-        if parsed.port is not None:
-            return False
-        if parsed.params or parsed.query or parsed.fragment:
-            return False
-        path_parts = parsed.path.strip("/").split("/")
-        if len(path_parts) != 4:
-            return False
-        owner, repo, resource, issue_number = path_parts
-        if not owner or not repo:
-            return False
-        if resource != "issues" or not issue_number.isdigit():
-            return False
-        return True
-    except Exception:
-        return False
-
-
 @task(name="assign_github_issue", retries=1)
 async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
     """
@@ -105,6 +81,7 @@ async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
         Agent's response/output
 
     Raises:
+        ValueError: If the provided GitHub issue URL is invalid
         RuntimeError: If the agent fails to process the issue
     """
     if not is_valid_github_issue_url(github_issue_url):
