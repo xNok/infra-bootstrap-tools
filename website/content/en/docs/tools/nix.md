@@ -32,6 +32,20 @@ nix develop .#docs
 nix develop .#full
 ```
 
+## Seamless IDE Integration with Direnv
+
+While running `nix develop` manually works great, you can automate this completely using `direnv`. This bridges the gap between your IDE and Nix, ensuring that whenever you open a terminal in this project, your environment is instantly and automatically loaded.
+
+1. Ensure you have `direnv` and `nix-direnv` installed.
+2. Create an `.envrc` file in the root of your project:
+   ```bash
+   # Load the default Nix Flake development shell
+   use flake
+   ```
+3. Allow the directory by running `direnv allow`.
+
+Now, every time you navigate into the project or open your IDE's integrated terminal, `direnv` will automatically evaluate `flake.nix` and drop you straight into the ready-to-use development environment!
+
 ## How It Works Under the Hood
 
 When you run `nix develop`, Nix reads the `flake.nix` file in the root of the repository.

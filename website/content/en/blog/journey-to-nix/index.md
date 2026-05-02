@@ -154,8 +154,25 @@ Now, a developer can run `nix develop .#ansible` to get just the Ansible tooling
 
 The final piece of the puzzle was integrating Nix Flakes into my GitHub Actions pipelines. By using the exact same `flake.nix` environment in CI that I use locally, I achieved 100% environment parity. No more "it passes locally but fails in CI because the runner has a different version of Ansible."
 
+### Bridging the IDE Gap with Direnv
+
+While running `nix develop` manually is great, the absolute pinnacle of this setup is automating it with `direnv`. By adding a simple `.envrc` file to the root of the project containing `use flake`, `direnv` bridges the gap between my IDE and Nix. 
+
+Whenever I navigate into the project directory, or whenever I open a new terminal directly inside VSCode, `direnv` automatically evaluates the flake and seamlessly loads all my tools into the environment. I never have to explicitly activate my environment—it's just instantly ready the second I open the project.
+
 ## Conclusion
 
 It took several iterations—from clunky Docker containers to massive Bash scripts—but I finally achieved the holy grail of developer experience: **"same config, same env in local, cloud env, and CI."**
 
 Nix has a steep learning curve, but the payoff is immense. If you're tired of fighting environment drift across your local machines, cloud IDEs, and CI pipelines, it might be time to take the Nix pill.
+
+## Relevant Resources
+
+If you want to dive deeper or replicate this setup yourself, here are some helpful links:
+
+- **[Our Internal Nix Documentation](/docs/tools/nix/)**: A step-by-step guide on how we structure our `common.nix`, `shell.nix`, and `flake.nix` in this repository.
+- **[`infra-bootstrap-tools` Source Code](https://github.com/xNok/infra-bootstrap-tools)**: The home of our declarative setups.
+- **[`my-home-manager` GitHub Repo](https://github.com/xNok/my-home-manager)**: My personal declarative dotfiles and laptop setup.
+- **[Nix Official Documentation](https://nixos.org/learn/)**: The best place to start learning Nix.
+- **[Home Manager](https://nix-community.github.io/home-manager/)**: Manage your user environment securely and declaratively.
+- **[Direnv Official Site](https://direnv.net/)** & **[nix-direnv](https://github.com/nix-community/nix-direnv)**: The fast, persistent integration to bridge the gap between Nix and your IDE.
