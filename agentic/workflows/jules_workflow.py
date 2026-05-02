@@ -73,10 +73,19 @@ def is_valid_github_issue_url(url: str) -> bool:
         parsed = urllib.parse.urlparse(url)
         if parsed.scheme != "https":
             return False
-        if parsed.netloc != "github.com":
+        if parsed.hostname != "github.com":
+            return False
+        if parsed.port is not None:
+            return False
+        if parsed.params or parsed.query or parsed.fragment:
             return False
         path_parts = parsed.path.strip("/").split("/")
-        if len(path_parts) < 4 or path_parts[2] != "issues" or not path_parts[3].isdigit():
+        if len(path_parts) != 4:
+            return False
+        owner, repo, resource, issue_number = path_parts
+        if not owner or not repo:
+            return False
+        if resource != "issues" or not issue_number.isdigit():
             return False
         return True
     except Exception:
@@ -105,8 +114,10 @@ async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
         prompt = f"Please assign the task from this GitHub issue: {github_issue_url}"
         result = await agent.run(prompt)
         return result.output
-    except Exception:
-        raise RuntimeError("Failed to assign GitHub issue due to an internal error")
+    except Exception as e:
+        raise RuntimeError(
+            "Failed to assign GitHub issue due to an internal error"
+        ) from e
 
 
 @flow(
