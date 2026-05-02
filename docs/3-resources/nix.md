@@ -263,3 +263,15 @@ Nix provides Python, pip creates venv:
 
 - [IBT/Nix Refactor Project](../1-projects/ibt-nix-refactor.md) - Active development of Nix integration
 - [Developer Experience Area](../2-areas/developer-experience.md) - Broader developer tooling context
+
+## Conceptual Evolution: From Docker/Bash to Nix
+
+The adoption of Nix in this repository was the culmination of multiple iterations aimed at solving the "works on my machine" problem across local Ubuntu environments, cloud IDEs (Gitpod, Codespaces), and CI/CD pipelines.
+
+1. **The Docker Era:** Initially, we used `docker_tools_alias` to containerize tools. While highly portable, this approach introduced significant overhead (slowness) and felt clunky when integrated into CI workflows.
+2. **The Bash Era (`ibt`):** We replaced Docker aliases with a custom bash CLI (`ibt`). This worked seamlessly in Gitpod, Codespaces, and CI, but the maintenance burden of complex bash scripts eventually outweighed the benefits.
+3. **The Nix Era:** Nix and `nix-shell` provided a native way to declare dependencies without heavy containers or fragile bash scripts. With the introduction of Nix Flakes, we achieved true hermetic reproducibility.
+
+## System-Level Configuration with Home-Manager
+
+While `flake.nix` manages project-level dependencies, [Home Manager](https://nix-community.github.io/home-manager/) extends Nix's declarative model to the user's personal environment. It manages dotfiles, system-wide packages, and user services (like background daemons). The synergy between project flakes and `home-manager` provides a holistic developer experience that spans from the OS level down to specific project needs.
