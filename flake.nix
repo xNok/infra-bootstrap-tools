@@ -16,6 +16,9 @@
         common = import ./bin/nix/common.nix { inherit pkgs; };
       in
       {
+        # Dynamically create shell endpoints (`nix develop .#<name>`)
+        # by mapping over the configurations defined in our common.nix file.
+        # This keeps our flake.nix extremely clean.
         devShells = pkgs.lib.mapAttrs (_: shell: pkgs.mkShell shell) common.shells;
 
         packages = pkgs.lib.mapAttrs (name: shell:

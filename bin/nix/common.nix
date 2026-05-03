@@ -3,6 +3,52 @@
 let
   lib = pkgs.lib;
 
+  # --- Package Bundles ---
+  
+  # Core utilities and standard tools required across all environments
+  basePackages = with pkgs; [
+    git
+    docker
+    pre-commit
+    tenv
+    terraform-docs
+  ];
+
+  # Python ecosystem for scripting, linting, and agentic workflows
+  pythonPackages = with pkgs; [
+    python3
+    python3Packages.pip
+    python3Packages.yamllint
+  ];
+
+  # Ansible and infrastructure automation tools
+  ansiblePackages = with pkgs; [
+    ansible
+    ansible-lint
+    _1password-cli
+  ];
+
+  # Kubernetes and GitOps configuration tools
+  fluxPackages = with pkgs; [
+    jq
+    kubectl
+    kubernetes-helm
+    kind
+    fluxcd
+  ];
+
+  # Documentation and site generation tools
+  docsPackages = with pkgs; [
+    go
+    hugo
+  ];
+
+  # --- Shell Hook Generator ---
+
+  # A dynamic shell hook generator to set up environments conditionally.
+  # This factory function takes boolean flags (like `withVenv`) and
+  # returns a bash script string that Nix will execute upon entering the shell.
+  # This prevents running heavy setup scripts (like Ansible Galaxy) unless needed.
   mkShellHook = {
     name,
     withVenv ? false,
@@ -21,9 +67,8 @@ let
 
       # Pre-install the pinned Terraform version so tenv shims resolve immediately (e.g. for pre-commit hooks)
       tenv tf install
-    ''
-    + lib.optionalString withVenv ''
 
+      ${lib.optionalString withVenv ''
       if [ ! -d ".venv" ]; then
         echo "Creating Python virtual environment..."
         python -m venv .venv
@@ -31,64 +76,30 @@ let
 
       echo "Activating Python virtual environment..."
       source .venv/bin/activate
-    ''
-    + lib.optionalString withRootRequirements ''
+      ''}
 
+      ${lib.optionalString withRootRequirements ''
       echo "Installing Python dependencies from requirements.txt..."
       pip install -r requirements.txt
-    ''
-    + lib.optionalString withAgenticRequirements ''
+      ''}
 
+      ${lib.optionalString withAgenticRequirements ''
       echo "Installing Python dependencies from agentic/requirements.txt..."
       pip install -r agentic/requirements.txt
-    ''
-    + lib.optionalString withAnsibleGalaxy ''
+      ''}
 
+      ${lib.optionalString withAnsibleGalaxy ''
       echo "Installing Ansible Galaxy roles and collections..."
       ansible-galaxy install -r requirements.yml
-    ''
-    + lib.optionalString withPreCommit ''
+      ''}
 
+      ${lib.optionalString withPreCommit ''
       echo "Installing pre-commit hooks..."
       pre-commit install --install-hooks
-    ''
-    + ''
+      ''}
 
       echo "${name} shell ready."
     '';
-
-  basePackages = with pkgs; [
-    git
-    docker
-    pre-commit
-    tenv
-    terraform-docs
-  ];
-
-  pythonPackages = with pkgs; [
-    python3
-    python3Packages.pip
-    python3Packages.yamllint
-  ];
-
-  ansiblePackages = with pkgs; [
-    ansible
-    ansible-lint
-    _1password-cli
-  ];
-
-  fluxPackages = with pkgs; [
-    jq
-    kubectl
-    kubernetes-helm
-    kind
-    fluxcd
-  ];
-
-  docsPackages = with pkgs; [
-    go
-    hugo
-  ];
 in
 {
   # Allow unfree packages (specifically 1password-cli)
