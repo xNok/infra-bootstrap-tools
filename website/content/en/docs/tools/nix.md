@@ -20,7 +20,7 @@ If you have Nix installed (with Flakes enabled):
 nix develop
 ```
 
-This will drop you into a shell with `python3`, `ansible`, `pre-commit`, `docker`, and other required tools pre-installed and configured.
+This will drop you into a shell with `python3`, `pre-commit`, `docker`, and other required tools pre-installed and configured. Note that `ansible` is **not** included in the default shell — use `nix develop .#ansible` or `nix develop .#full` for infrastructure automation tasks.
 
 ### Specialized Environments
 
@@ -37,11 +37,11 @@ nix develop .#full
 While running `nix develop` manually works great, you can automate this completely using `direnv`. This bridges the gap between your IDE and Nix, ensuring that whenever you open a terminal in this project, your environment is instantly and automatically loaded.
 
 1. Ensure you have `direnv` and `nix-direnv` installed.
-2. Create an `.envrc` file in the root of your project:
+2. The repository already includes a root [`.envrc`](https://github.com/xNok/infra-bootstrap-tools/blob/main/.envrc) that loads the `full` dev shell:
    ```bash
-   # Load the default Nix Flake development shell
-   use flake
+   use flake .#full
    ```
+   If you want a lighter environment, you can change this to `use flake` (default shell) or `use flake .#ansible`, etc.
 3. Allow the directory by running `direnv allow`.
 
 Now, every time you navigate into the project or open your IDE's integrated terminal, `direnv` will automatically evaluate `flake.nix` and drop you straight into the ready-to-use development environment!
@@ -49,7 +49,7 @@ Now, every time you navigate into the project or open your IDE's integrated term
 ## How It Works Under the Hood
 
 When you run `nix develop`, Nix reads the `flake.nix` file in the root of the repository.
-It leverages a `shellHook` to automatically set up virtual environments (like a Python `.venv`) and install project-specific dependencies (`pip install -r requirements.txt`, `ansible-galaxy install`).
+It leverages a `shellHook` to automatically set up virtual environments (like a Python `.venv`) and install project-specific dependencies (`pip install -r requirements.txt`). Some shell variants (such as `ansible` and `full`) also optionally run `ansible-galaxy install -r requirements.yml` to install Ansible roles and collections.
 
 ### CI/CD Integration
 Our GitHub Actions pipelines also use Nix. By running tasks inside the same Nix profile used locally, we guarantee 100% parity between your laptop and the CI runner.
@@ -75,7 +75,7 @@ nix profile install nixpkgs#nodejs
 For a truly reproducible laptop, use [Home Manager](https://nix-community.github.io/home-manager/). You can define all your packages, dotfiles, and configurations in a single `home.nix` file, ensuring your terminal, Git config, and global tools are identical across every machine you own.
 
 ### Achieving Flake and `nix-shell` Compatibility
-When setting up a new repository, it is highly recommended to support both legacy `nix-shell` users and modern Nix Flake users without duplicating code. Here is the architecture we use to achieve that:
+When setting up a new repository, it is highly recommended to support both legacy `nix-shell` users and modern Nix Flake users without duplicating code. Here is the generic architecture pattern used to achieve that (in this repo the files live at `bin/nix/common.nix`, `bin/nix/shell.nix`, and `flake.nix` at the root):
 
 **1. Centralize Configurations (`common.nix`)**
 Create a file that exports your packages and shell environments natively:

@@ -95,19 +95,28 @@ Nix shells are very quick to start since Nix is caching the dependencies in the 
 
 However, let's dive a little bit more into the "profiles" idea since it is the key to dealing with monorepos and light CI environments. The idea is simple: define `basePackages` and `pythonPackages` for example, and then use `pkgs.lib.optionalString` to conditionally inject Python virtual environments or install Ansible dependencies only when a specific shell variant is requested. 
 
-Here is the secret sauce in [`bin/nix/common.nix`](https://github.com/xNok/infra-bootstrap-tools/blob/main/bin/nix/common.nix):
+Here is the key excerpt from [`bin/nix/common.nix`](https://github.com/xNok/infra-bootstrap-tools/blob/main/bin/nix/common.nix) (simplified for illustration):
 
 ```nix
   # --- Package Bundles ---
-  basePackages = with pkgs; [ git docker pre-commit tenv ];
-  pythonPackages = with pkgs; [ python3 python3Packages.pip ];
+  basePackages = with pkgs; [ git docker pre-commit tenv terraform-docs ];
+  pythonPackages = with pkgs; [ python3 python3Packages.pip python3Packages.yamllint ];
 
   # --- Shell Hook Generator ---
   # Returns a bash script string that Nix will execute upon entering the shell.
-  mkShellHook = { name, withVenv ? false, withAnsibleGalaxy ? false, ... }: ''
+  mkShellHook = {
+    name,
+    withVenv ? false,
+    withAnsibleGalaxy ? false,
+    ...
+  }: ''
     echo "Entering ${name} development shell..."
-    ${pkgs.lib.optionalString withVenv ''
+    ${lib.optionalString withVenv ''
       if [ ! -d ".venv" ]; then python -m venv .venv; fi
+      source .venv/bin/activate
+    ''}
+    ${lib.optionalString withAnsibleGalaxy ''
+      ansible-galaxy install -r requirements.yml
     ''}
   '';
 ```
@@ -121,7 +130,9 @@ This modular setup is then consumed by a very lightweight entrypoint in [`bin/ni
 # Allows entering targeted environments: `nix-shell --argstr shell ansible bin/nix/shell.nix`
 { shell ? "default" }:
 let
-  nixpkgs = import <nixpkgs> {};
+  nixpkgs = import <nixpkgs> {
+    config = (import ./common.nix { pkgs = nixpkgs; }).nixpkgsConfig;
+  };
   common = import ./common.nix { pkgs = nixpkgs; };
 in
 nixpkgs.mkShell common.shells.${shell}
@@ -191,7 +202,7 @@ But going one step further, we also implemented profiles and the command becomes
 
 ### Bridging the IDE Gap with Direnv
 
-While running `nix develop` manually is great, the absolute pinnacle of this setup is automating it with `direnv`. By adding a simple [`.envrc`](https://github.com/xNok/infra-bootstrap-tools/blob/main/.envrc) file to the root of the project containing `use flake`, `direnv` bridges the gap between my IDE and Nix. 
+While running `nix develop` manually is great, the absolute pinnacle of this setup is automating it with `direnv`. By adding a simple [`.envrc`](https://github.com/xNok/infra-bootstrap-tools/blob/main/.envrc) file to the root of the project containing `use flake .#full`, `direnv` bridges the gap between my IDE and Nix. You can use just `use flake` to load the default shell instead, but this repo opts into the `full` shell to get every tool available.
 
 Whenever I navigate into the project directory, or whenever I open a new terminal directly inside VSCode, `direnv` automatically evaluates the flake and seamlessly loads all my tools into the environment. I never have to explicitly activate my environment—it's just instantly ready the second I open the project.
 
@@ -223,7 +234,7 @@ This ensures that our CI pipelines are as reproducible as our local development 
 
 It took several iterations—from clunky Docker containers to massive Bash scripts—but I finally achieved the holy grail of developer experience: **"same config, same env in local, cloud env, and CI."**
 
-Nix is simple to use the configuration syntax is not that hard to get used to and is quit readable. The ecosystem is mature and constantly improving, and Nix as probably much more to offer that the use cases I've described above. As a matter of fact Nix was build to create declarative and reproducible system configurations with a dedicated programming language. But no need to become an expert in Nix to use it. You can start small with `nix-shell` and more generally Nix `flakes` and you will have all you need.
+Nix is simple to use, the configuration syntax is not that hard to get used to and is quite readable. The ecosystem is mature and constantly improving, and Nix has probably much more to offer than the use cases I've described above. As a matter of fact Nix was built to create declarative and reproducible system configurations with a dedicated programming language. But no need to become an expert in Nix to use it. You can start small with `nix-shell` and more generally Nix `flakes` and you will have all you need.
 
 ## Relevant Resources
 
