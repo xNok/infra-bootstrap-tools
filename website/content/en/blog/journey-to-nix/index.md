@@ -68,7 +68,7 @@ I just didn't quite like the maintenance overhead for this approach and didn't f
 
 I knew there had to be a better way to declare dependencies without heavy containers or shell scripts. That's when I discovered Nix.
 
-I was immediately seduced by `nix-shell`. It seemed like the perfect compromise. With a single `shell.nix` file, I could define exactly which packages and versions my project needed. Gone is the installation doc; I can simply ask users to run `nix-shell bin/nix/shell.nix` and they get the exact same environment as I have. This includes the same Python version and libraries installed in a Python virtual environment.
+I was immediately seduced by `nix-shell`. It seemed like the perfect compromise. With a single `shell.nix` file, I could define exactly which packages and versions my project needed. Gone is the installation doc; I can simply ask users to run `nix-shell` on our [`bin/nix/shell.nix`](https://github.com/xNok/infra-bootstrap-tools/blob/main/bin/nix/shell.nix) and they get the exact same environment as I have. This includes the same Python version and libraries installed in a Python virtual environment.
 
 ```nix
 # bin/nix/shell.nix
@@ -135,7 +135,7 @@ In sum, with this architecture, developers can jump into the default environment
 
 Once I saw the power of Nix at the project level, I wanted that same declarative magic for my personal laptop. I have always wanted a declarative solution to manage my entire system configuration and personal preferences.
 
-This is why I jumped on the occasion to try `home-manager`. It's a Nix tool for managing your home directory declaratively. So I adopted `home-manager` to manage my Ubuntu laptop's configuration and personal tools declaratively. With `home-manager`, my core development tools—like `zsh`, `direnv`, `git`, and my 1Password SSH integration—are completely codified. 
+This is why I jumped on the occasion to try `home-manager`. It's a Nix tool for managing your home directory declaratively. So I adopted `home-manager` to manage my Ubuntu laptop's configuration and personal tools declaratively. In my [`my-home-manager`](https://github.com/xNok/my-home-manager) repository, my core development tools—like `zsh`, `direnv`, `git`, and my 1Password SSH integration—are completely codified. 
 
 Just like in the nix-shell experience, I declare everything I need globally in a few lines:
 
@@ -191,15 +191,17 @@ But going one step further, we also implemented profiles and the command becomes
 
 ### Bridging the IDE Gap with Direnv
 
-While running `nix develop` manually is great, the absolute pinnacle of this setup is automating it with `direnv`. By adding a simple `.envrc` file to the root of the project containing `use flake`, `direnv` bridges the gap between my IDE and Nix. 
+While running `nix develop` manually is great, the absolute pinnacle of this setup is automating it with `direnv`. By adding a simple [`.envrc`](https://github.com/xNok/infra-bootstrap-tools/blob/main/.envrc) file to the root of the project containing `use flake`, `direnv` bridges the gap between my IDE and Nix. 
 
 Whenever I navigate into the project directory, or whenever I open a new terminal directly inside VSCode, `direnv` automatically evaluates the flake and seamlessly loads all my tools into the environment. I never have to explicitly activate my environment—it's just instantly ready the second I open the project.
 
+![direnv](./direnv-nix.gif)
+
 ## Phase 6: Nix in GitHub Actions
 
-This was really the final piece of the puzzle for integrating Nix Flakes into my GitHub Actions pipelines. By using the exact same `flake.nix` environment in CI that I use locally, I achieved 100% environment parity. No more "it passes locally but fails in CI because the runner has a different version of Ansible."
+This was really the final piece of the puzzle for integrating Nix Flakes into my [GitHub Actions pipelines](https://github.com/xNok/infra-bootstrap-tools/tree/main/.github/workflows). By using the exact same `flake.nix` environment in CI that I use locally, I achieved 100% environment parity. No more "it passes locally but fails in CI because the runner has a different version of Ansible."
 
-GitHub Actions has fantastic community support for Nix. We can use the official Determinate Systems action to install Nix in seconds. Then, using `nix develop`, we can run our CI scripts in the exact same environment as our local machines:
+GitHub Actions has fantastic community support for Nix. We can use the official Determinate Systems action to install Nix in seconds. Then, using `nix develop`, we can run our CI scripts (like `make test` via our [`Makefile`](https://github.com/xNok/infra-bootstrap-tools/blob/main/Makefile)) in the exact same environment as our local machines:
 
 ```yaml
 jobs:
