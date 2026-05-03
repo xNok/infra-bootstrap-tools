@@ -232,6 +232,7 @@ If you want to dive deeper or replicate this setup yourself, here are some helpf
 - **[Our Internal Nix Documentation](/docs/tools/nix/)**: A step-by-step guide on how we structure our `common.nix`, `shell.nix`, and `flake.nix` in this repository.
 - **[`infra-bootstrap-tools` Source Code](https://github.com/xNok/infra-bootstrap-tools)**: The home of our declarative setups.
 - **[`my-home-manager` GitHub Repo](https://github.com/xNok/my-home-manager)**: My personal declarative dotfiles and laptop setup.
+- **[A Walkthrough of My Home Manager Config](/blog/home-manager-walkthrough/)**: A deep-dive into each section of my `home.nix`, with rationale and lessons learned.
 - **[Nix Official Documentation](https://nixos.org/learn/)**: The best place to start learning Nix.
 - **[Home Manager](https://nix-community.github.io/home-manager/)**: Manage your user environment securely and declaratively.
 - **[Direnv Official Site](https://direnv.net/)** & **[nix-direnv](https://github.com/nix-community/nix-direnv)**: The fast, persistent integration to bridge the gap between Nix and your IDE.
