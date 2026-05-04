@@ -26,3 +26,5 @@
       path: tools/boilerplate
     - title: Hugo
       path: tools/hugo
+    - title: Nix Environment
+      path: tools/nix
