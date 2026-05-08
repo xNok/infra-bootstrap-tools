@@ -4,15 +4,16 @@ A Pydantic AI agent script to assign tasks to the Jules agent via the MCP server
 """
 
 import argparse
+import os
 import sys
 
 from pydantic_ai import Agent
 from pydantic_ai.toolset import FastMCPToolset
 
-from agentic.jules.url_validation import is_valid_github_issue_url
+from agentic.jules.url_validation import is_safe_mcp_server_url, is_valid_github_issue_url
 
 # The user has indicated that the MCP server is running locally for this demonstration.
-MCP_SERVER_URL = "http://localhost:8000/mcp"
+MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8000/mcp")
 
 
 def main():
@@ -27,6 +28,10 @@ def main():
 
     if not is_valid_github_issue_url(args.github_issue_url):
         print("Error: Invalid GitHub issue URL provided", file=sys.stderr)
+        sys.exit(1)
+
+    if not is_safe_mcp_server_url(MCP_SERVER_URL):
+        print("Error: Invalid or unsafe MCP_SERVER_URL provided.", file=sys.stderr)
         sys.exit(1)
 
     try:

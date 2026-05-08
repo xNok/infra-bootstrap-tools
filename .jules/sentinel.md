@@ -1,4 +1,4 @@
-## 2026-05-02 - SSRF and Prompt Injection via Unvalidated Issue URLs
-**Vulnerability:** External input (`github_issue_url`) was directly interpolated into the user prompt passed to the LLM agent without validation in `agentic/workflows/jules_workflow.py` and `agentic/jules/agent.py`.
-**Learning:** Passing unsanitized URLs to an LLM exposes the system to prompt injection (where a malicious URL contains instructions overriding the agent's intent) and SSRF (where the LLM agent could be tricked into querying internal or unintended domains).
-**Prevention:** Always validate external URLs using strict parsing (like `urllib.parse`) before embedding them in prompts. Enforce allowed schemes (`https`), specific domains (`github.com`), and strictly validate path structures to ensure only intended inputs reach the LLM.
+## 2024-05-24 - [Fix SSRF vulnerability in FastMCPToolset Initialization]
+**Vulnerability:** The FastMCPToolset initialization via `MCP_SERVER_URL` in multiple Python scripts allowed Server-Side Request Forgery (SSRF) since the provided URLs weren't validated for internal endpoints or cloud metadata boundaries.
+**Learning:** Tools accessing external inputs natively assume internal connectivity might be safe, but can be targeted to access internal infrastructure specifically like cloud metadata instance endpoints.
+**Prevention:** Validate environment variable and function-argument-based URLs using `urllib.parse` explicitly rejecting missing schemes, non HTTP/S schemas, and metadata internal target IP/hostnames.
