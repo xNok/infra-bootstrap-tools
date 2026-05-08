@@ -2,3 +2,8 @@
 **Vulnerability:** External input (`github_issue_url`) was directly interpolated into the user prompt passed to the LLM agent without validation in `agentic/workflows/jules_workflow.py` and `agentic/jules/agent.py`.
 **Learning:** Passing unsanitized URLs to an LLM exposes the system to prompt injection (where a malicious URL contains instructions overriding the agent's intent) and SSRF (where the LLM agent could be tricked into querying internal or unintended domains).
 **Prevention:** Always validate external URLs using strict parsing (like `urllib.parse`) before embedding them in prompts. Enforce allowed schemes (`https`), specific domains (`github.com`), and strictly validate path structures to ensure only intended inputs reach the LLM.
+
+## 2026-05-03 - SSRF Risk via Unvalidated MCP Server URLs
+**Vulnerability:** The MCP server URL passed to `FastMCPToolset` in `agentic/workflows/jules_workflow.py` and `agentic/jules/agent.py` was not properly validated. This could allow an attacker to trigger Server-Side Request Forgery (SSRF) against cloud metadata services or local files if they can influence the `MCP_SERVER_URL` parameter or environment variable.
+**Learning:** Network I/O operations triggered by third-party libraries (like `pydantic-ai`'s `FastMCPToolset`) must have their endpoint inputs validated, even if they default to local/safe endpoints, to protect against environmental injection or direct input attacks.
+**Prevention:** Always validate URL schemas to enforce `http` or `https` only. Implement a blocklist for sensitive internal IP spaces (like AWS/GCP metadata endpoints: `169.254.169.254`, `metadata.google.internal`) using strict parsing (`urllib.parse`) before initializing remote connections.
