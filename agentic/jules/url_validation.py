@@ -8,6 +8,42 @@ and SSRF attacks when processing external user inputs.
 import urllib.parse
 
 
+def is_safe_mcp_url(url: str) -> bool:
+    """
+    Validates that the provided MCP server URL is safe to connect to.
+
+    Enforces allowed schemes (http/https) and blocks known cloud metadata
+    hostnames/IPs to prevent SSRF (Server-Side Request Forgery) attacks.
+
+    Args:
+        url: The URL string to validate.
+
+    Returns:
+        True if the URL is safe, False otherwise.
+    """
+    try:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme not in ["http", "https"]:
+            return False
+
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+
+        # Block known cloud metadata IP addresses and hostnames
+        blocked_hosts = {
+            "169.254.169.254",
+            "metadata.google.internal"
+        }
+
+        if hostname in blocked_hosts:
+            return False
+
+        return True
+    except Exception:
+        return False
+
+
 def is_valid_github_issue_url(url: str) -> bool:
     """
     Validates that the provided URL is a strict GitHub issue URL.
