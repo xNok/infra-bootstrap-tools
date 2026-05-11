@@ -13,7 +13,7 @@ from prefect import flow, task
 from pydantic_ai import Agent
 from pydantic_ai.toolsets.fastmcp import FastMCPToolset
 
-from agentic.jules.url_validation import is_valid_github_issue_url
+from agentic.jules.url_validation import is_safe_mcp_server_url, is_valid_github_issue_url
 
 
 @task(name="initialize_mcp_toolset", retries=2, retry_delay_seconds=5)
@@ -148,6 +148,9 @@ async def jules_agent_workflow(
     # Use provided or default values
     mcp_url = mcp_server_url or os.getenv("MCP_SERVER_URL", "http://localhost:8000/mcp")
     llm_model = model or os.getenv("LLM_MODEL", "google-gla:gemini-1.5-flash")
+
+    if not is_safe_mcp_server_url(mcp_url):
+        raise ValueError(f"Unsafe MCP server URL provided: {mcp_url}. Please ensure it is a valid HTTP/HTTPS URL and does not target internal metadata endpoints.")
 
     print(f"Connecting to MCP server at: {mcp_url}")
     print(f"Using LLM model: {llm_model}")
