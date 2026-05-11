@@ -7,9 +7,9 @@ import argparse
 import sys
 
 from pydantic_ai import Agent
-from pydantic_ai.toolset import FastMCPToolset
+from pydantic_ai.toolsets.fastmcp import FastMCPToolset
 
-from agentic.jules.url_validation import is_valid_github_issue_url
+from agentic.jules.url_validation import is_safe_mcp_server_url, is_valid_github_issue_url
 
 # The user has indicated that the MCP server is running locally for this demonstration.
 MCP_SERVER_URL = "http://localhost:8000/mcp"
@@ -30,6 +30,10 @@ def main():
         sys.exit(1)
 
     try:
+        if not is_safe_mcp_server_url(MCP_SERVER_URL):
+            print(f"Error: Unsafe MCP server URL provided: {MCP_SERVER_URL}", file=sys.stderr)
+            sys.exit(1)
+
         # Initialize a toolset that points to the MCP server.
         # This toolset will automatically discover the tools provided by the server.
         toolset = FastMCPToolset(MCP_SERVER_URL)
