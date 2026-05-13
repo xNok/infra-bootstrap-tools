@@ -13,7 +13,7 @@ from prefect import flow, task
 from pydantic_ai import Agent
 from pydantic_ai.toolsets.fastmcp import FastMCPToolset
 
-from agentic.jules.url_validation import is_valid_github_issue_url
+from agentic.jules.url_validation import is_safe_mcp_url, is_valid_github_issue_url
 
 
 @task(name="initialize_mcp_toolset", retries=2, retry_delay_seconds=5)
@@ -92,9 +92,7 @@ async def assign_github_issue(agent: Agent, github_issue_url: str) -> str:
         result = await agent.run(prompt)
         return result.output
     except Exception as e:
-        raise RuntimeError(
-            "Failed to assign GitHub issue due to an internal error"
-        ) from e
+        raise RuntimeError("Failed to assign GitHub issue due to an internal error") from e
 
 
 @flow(
@@ -147,6 +145,10 @@ async def jules_agent_workflow(
 
     # Use provided or default values
     mcp_url = mcp_server_url or os.getenv("MCP_SERVER_URL", "http://localhost:8000/mcp")
+
+    if not is_safe_mcp_url(mcp_url):
+        raise ValueError(f"Unsafe MCP Server URL provided: {mcp_url}")
+
     llm_model = model or os.getenv("LLM_MODEL", "google-gla:gemini-1.5-flash")
 
     print(f"Connecting to MCP server at: {mcp_url}")
