@@ -47,3 +47,42 @@ def is_valid_github_issue_url(url: str) -> bool:
         return True
     except Exception:
         return False
+
+
+def is_safe_mcp_server_url(url: str) -> bool:
+    """
+    Validates that the MCP server URL is safe to connect to,
+    preventing Server-Side Request Forgery (SSRF) attacks targeting
+    cloud metadata endpoints or other sensitive internal addresses.
+
+    Args:
+        url: The URL string to validate.
+
+    Returns:
+        True if the URL is safe, False otherwise.
+    """
+    try:
+        parsed = urllib.parse.urlparse(url)
+
+        # Enforce HTTP/HTTPS only
+        if parsed.scheme not in ("http", "https"):
+            return False
+
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+
+        # Common SSRF metadata IPs and hostnames
+        # Note: urlparse strips brackets from IPv6, so fd00:ec2::254 is used instead of [fd00:ec2::254]
+        blocked_hostnames = {
+            "169.254.169.254",  # AWS/GCP/Azure/Oracle metadata
+            "metadata.google.internal",  # GCP metadata DNS
+            "fd00:ec2::254",  # AWS IPv6 metadata
+        }
+
+        if hostname in blocked_hostnames:
+            return False
+
+        return True
+    except Exception:
+        return False
