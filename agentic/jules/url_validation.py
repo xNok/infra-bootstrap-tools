@@ -5,6 +5,7 @@ Centralizes security-sensitive URL validation to prevent prompt injection
 and SSRF attacks when processing external user inputs.
 """
 
+import ipaddress
 import urllib.parse
 
 
@@ -43,6 +44,35 @@ def is_valid_github_issue_url(url: str) -> bool:
         if not owner or not repo:
             return False
         if resource != "issues" or not issue_number.isdigit():
+            return False
+        return True
+    except Exception:
+        return False
+
+
+def is_safe_mcp_server_url(url: str) -> bool:
+    """
+    Validates that the provided MCP server URL is safe from SSRF attacks.
+    """
+    try:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return False
+
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+
+        try:
+            ip = ipaddress.ip_address(hostname.strip("[]"))
+            if ip.is_link_local:
+                return False
+            if ip == ipaddress.ip_address("fd00:ec2::254"):
+                return False
+        except ValueError:
+            pass
+        blocked_hostnames = {"metadata.google.internal"}
+        if hostname.lower() in blocked_hostnames:
             return False
         return True
     except Exception:
