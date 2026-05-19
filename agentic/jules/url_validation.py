@@ -5,7 +5,49 @@ Centralizes security-sensitive URL validation to prevent prompt injection
 and SSRF attacks when processing external user inputs.
 """
 
+import ipaddress
 import urllib.parse
+
+
+def is_safe_mcp_server_url(url: str) -> bool:
+    """
+    Validates that the provided MCP Server URL is safe from SSRF attacks.
+    Ensures the scheme is http/https and blocks known cloud metadata endpoints.
+
+    Args:
+        url: The URL string to validate.
+
+    Returns:
+        True if the URL appears safe, False if it is invalid or blacklisted.
+    """
+    try:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return False
+
+        hostname = parsed.hostname
+        if not hostname:
+            return False
+
+        # Strip square brackets for IPv6 addresses
+        hostname = hostname.strip('[]')
+
+        # Block known cloud metadata domains
+        if hostname.lower() == "metadata.google.internal":
+            return False
+
+        try:
+            # Check if the hostname is an IP address
+            ip = ipaddress.ip_address(hostname)
+            # Block known cloud metadata IPs (AWS/Azure/GCP and AWS IPv6)
+            if str(ip) in ("169.254.169.254", "fd00:ec2::254"):
+                return False
+        except ValueError:
+            pass # Not an IP address, proceed
+
+        return True
+    except Exception:
+        return False
 
 
 def is_valid_github_issue_url(url: str) -> bool:
