@@ -12,5 +12,3 @@ data:
   ARTIFACT_TAG: latest
   CLUSTER_NAME: k3s
   ENVIRONMENT: production
-  ARTIFACT_SUBJECT_WORKFLOW: push-artifact
-  ARTIFACT_SUBJECT_GIT_REF: refs/heads/main

@@ -1,6 +1,10 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+resources:
+  - 0-source.yaml
+  - 1-kustomize.yaml
+
 generatorOptions:
   disableNameSuffixHash: true
   annotations:
@@ -10,16 +14,16 @@ configMapGenerator:
   - name: kind-cert-manager-values
     namespace: flux-system
     files:
-      - values.yaml=cert-manager.values.yaml
+      - values.yaml=values/cert-manager.values.yaml
   - name: kind-trust-manager-values
     namespace: flux-system
     files:
-      - values.yaml=trust-manager.values.yaml
+      - values.yaml=values/trust-manager.values.yaml
   - name: kind-ziti-controller-values
     namespace: flux-system
     files:
-      - values.yaml=ziti-controller.values.yaml
+      - values.yaml=values/ziti-controller.values.yaml
   - name: kind-ziti-router-values
     namespace: flux-system
     files:
-      - values.yaml=ziti-router.values.yaml
+      - values.yaml=values/ziti-router.values.yaml

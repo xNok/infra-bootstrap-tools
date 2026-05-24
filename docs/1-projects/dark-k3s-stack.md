@@ -56,7 +56,7 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 
 - **GHCR OCI Pull Credentials**:
   - Private OCI packages on `ghcr.io` require standard OCI pull secrets (`secretRef`).
-  - Added `secretRef: name: flux-system` to the `infra-addons` OCIRepository in `kubernetes/fleet/k3s/oci-sources.yaml`.
+  - Added `secretRef: name: flux-system` to the `infra-addons` OCIRepository in `kubernetes/fleet/k3s/oci-sources.yaml` (subsequently refactored into `infra-addons/0-install.yaml`).
   - Identified that the `flux-system` pull secret is created by the Ansible `k3s_flux_bootstrap` role using 1Password's `GitHub_Flux_Token`.
   - Added OCI publishing step for `infra-addons` to `.github/workflows/flux-oci-publish.yml` so that every push to `main` automatically publishes updated addons alongside fleet configurations.
 
@@ -64,12 +64,18 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
   - Discovered a mismatch where the CI/CD pipeline publishes `./kubernetes/fleet/k3s` at the root (`.`) of the OCI artifact, but `flux-instance.yaml.j2` was configured with `path: "./fleet/k3s"`.
   - Fixed `ansible/roles/k3s_flux_bootstrap/templates/flux-instance.yaml.j2` to use `path: "."`, matching the checked-in configs and CI behavior.
 
+- **Infra Addons Installation Refactoring & Alignment**:
+  - Aligned `kubernetes/fleet/kind` with the user's refactored `infra-addons` directory design.
+  - Organized `infra-addons/` directory by splitting the install manifest into `0-source.yaml` (`OCIRepository`) and `1-kustomize.yaml` (`Kustomization`) to separate intent.
+  - Grouped all `.values.yaml` environment variables into a neat `values/` subdirectory, keeping the root of `infra-addons` completely free of variable/value clutter.
+  - Cleaned up obsolete files and `infra-addons-values/` directory in `kind` and `k3s`.
+
 ## Current State
 - Investigating existing Ansible roles and playbooks.
 - [Completed] Refactored `k3s_server` to use `config.yaml`.
 - [Completed] Fixed Flux OCI bootstrap resource kind.
 - [Completed] Implemented initial UFW rules in `k3s_os_hardening`.
-- [Completed] Added missing `secretRef` to `infra-addons` `OCIRepository`.
 - [Completed] Fixed path mismatch in `flux-instance.yaml.j2` (changed `path: "./fleet/k3s"` to `path: "."`).
 - [Completed] Added `infra-addons` OCI publishing on push to `main` in GitHub Actions workflow.
-- [Investigating] Diagnosing `flux-system` OCIRepository pull permission issues due to GHCR token authentication failure.
+- [Completed] Refactored and aligned `kind` and `k3s` infra-addons layouts with a nested `values/` directory and split installer resources.
+- [Completed] Verified integration test suite compatibility (fully compatible with no changes needed).
