@@ -9,4 +9,6 @@ spec:
   url: oci://ghcr.io/xnok/manifests/kubernetes/infra-addons
   ref:
     tag: latest
+  secretRef:
+    name: flux-system
   provider: generic
