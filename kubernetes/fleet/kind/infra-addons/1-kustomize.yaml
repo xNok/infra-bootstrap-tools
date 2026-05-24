@@ -7,10 +7,6 @@ spec:
   interval: 1h
   prune: true
 
-  # Ensure cluster-specific values ConfigMaps are applied before addons reconcile.
-  dependsOn:
-    - name: infra-addons-values
-
   sourceRef:
     kind: OCIRepository
     name: infra-addons
