@@ -1,5 +1,10 @@
 name: Publish Flux Artifacts
 
+# This workflow builds and publishes Flux OCI artifacts for the fleet clusters
+# and infrastructure addons on pushes to main, pull requests targeting main,
+# and manual dispatches. It uses the bin/ci/publish-flux-artifact.sh script
+# to handle the actual publishing.
+
 on:
   push:
     branches:
@@ -40,15 +45,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish fleet/${{ matrix.cluster }} artifact
-        run: |
-          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          OCI_REPO="oci://ghcr.io/$OWNER_LC/manifests/kubernetes/fleet/${{ matrix.cluster }}"
-          
-          flux push artifact $OCI_REPO:$(git rev-parse --short HEAD) \
-              --path="./kubernetes/fleet/${{ matrix.cluster }}" \
-              --source="${{ github.event.repository.html_url }}" \
-              --revision="$(git rev-parse HEAD)"
-          flux tag artifact $OCI_REPO:$(git rev-parse --short HEAD) --tag latest
+        run: ./bin/ci/publish-flux-artifact.sh "${{ github.repository_owner }}" "./kubernetes/fleet/${{ matrix.cluster }}" "${{ github.event.repository.html_url }}" "fleet/${{ matrix.cluster }}"
 
   publish-infra-addons:
     runs-on: ubuntu-latest
@@ -67,13 +64,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish infra-addons artifact
-        run: |
-          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          OCI_REPO="oci://ghcr.io/$OWNER_LC/manifests/kubernetes/infra-addons"
-          
-          flux push artifact $OCI_REPO:$(git rev-parse --short HEAD) \
-              --path="./kubernetes/infra-addons" \
-              --source="${{ github.event.repository.html_url }}" \
-              --revision="$(git rev-parse HEAD)"
-          flux tag artifact $OCI_REPO:$(git rev-parse --short HEAD) --tag latest
+        run: ./bin/ci/publish-flux-artifact.sh "${{ github.repository_owner }}" "./kubernetes/infra-addons" "${{ github.event.repository.html_url }}" "infra-addons"
 
