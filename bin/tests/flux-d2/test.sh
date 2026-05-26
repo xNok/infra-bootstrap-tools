@@ -53,13 +53,6 @@ dump_debug_state() {
   kubectl get fluxinstance flux -n flux-system -o yaml || true
 }
 
-for cmd in docker kubectl helm flux; do
-  need_cmd "$cmd"
-done
-
-require_docker
-trap dump_debug_state ERR
-
 require_resource() {
   local resource="$1"
   local namespace="$2"
@@ -88,43 +81,103 @@ wait_ready() {
   success "Ready: ${resource}"
 }
 
-info "Installing Flux Operator via Helm..."
-helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
-  --namespace flux-system --create-namespace
-success "Flux Operator installed."
+# --- Phase Functions ---
 
-info "Waiting for Flux Operator to become ready..."
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=flux-operator -n flux-system --timeout=2m
-success "Flux Operator is ready."
+require_dependencies() {
+  info "Checking dependency commands..."
+  for cmd in docker kubectl helm flux; do
+    need_cmd "$cmd"
+  done
+  require_docker
+  trap dump_debug_state ERR
+}
 
-info "Pushing the local kubernetes/ folder as an OCI artifact to the local registry..."
-flux push artifact "oci://localhost:${REGISTRY_PORT}/flux-system:latest" \
-  --path="${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}" \
-  --source="${SOURCE_URL}" \
-  --revision="${REVISION}"
-success "Fleet OCI artifact pushed."
+install_flux_operator() {
+  info "Installing Flux Operator via Helm..."
+  helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
+    --namespace flux-system --create-namespace
+  success "Flux Operator installed."
 
-info "Pushing infra-addons/ as a separate OCI artifact to the local registry..."
-flux push artifact "oci://localhost:${REGISTRY_PORT}/infra-addons:latest" \
-  --path="${ROOT_DIR}/kubernetes/infra-addons" \
-  --source="${SOURCE_URL}" \
-  --revision="${REVISION}"
-success "infra-addons OCI artifact pushed."
+  info "Waiting for Flux Operator to become ready..."
+  kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=flux-operator -n flux-system --timeout=2m
+  success "Flux Operator is ready."
+}
 
-info "Validating local Kustomize entrypoints..."
-kubectl kustomize "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}" > /dev/null
-kubectl kustomize "${ROOT_DIR}/kubernetes/infra-addons" > /dev/null
-success "Kustomize entrypoints valid."
+publish_oci_artifacts() {
+  info "Pushing the local kubernetes/ folder as an OCI artifact to the local registry..."
+  flux push artifact "oci://localhost:${REGISTRY_PORT}/flux-system:latest" \
+    --path="${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}" \
+    --source="${SOURCE_URL}" \
+    --revision="${REVISION}"
+  success "Fleet OCI artifact pushed."
 
-info "Bootstrapping cluster from OCI..."
-kubectl apply -f "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}/flux-system/flux-instance.yaml"
-success "FluxInstance applied."
+  info "Pushing infra-addons/ as a separate OCI artifact to the local registry..."
+  flux push artifact "oci://localhost:${REGISTRY_PORT}/infra-addons:latest" \
+    --path="${ROOT_DIR}/kubernetes/infra-addons" \
+    --source="${SOURCE_URL}" \
+    --revision="${REVISION}"
+  success "infra-addons OCI artifact pushed."
+}
 
-wait_ready "fluxinstance/flux" "flux-system" "2m"
-wait_ready "ocirepository/flux-system" "flux-system" "1m"
-wait_ready "kustomization/flux-system" "flux-system" "2m"
+validate_kustomize() {
+  info "Validating local Kustomize entrypoints..."
+  kubectl kustomize "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}" > /dev/null
+  kubectl kustomize "${ROOT_DIR}/kubernetes/infra-addons" > /dev/null
+  success "Kustomize entrypoints valid."
+}
 
-info "Waiting for infra-addons Kustomization to become ready..."
-wait_ready "kustomization/infra-addons" "flux-system" "5m"
+bootstrap_flux() {
+  info "Bootstrapping cluster from OCI..."
+  kubectl apply -f "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}/flux-system/flux-instance.yaml"
+  success "FluxInstance applied."
 
-echo -e "\n${GREEN}${BOLD}  ✔  Flux D2 bootstrap test completed successfully!${RESET}\n"
+  wait_ready "fluxinstance/flux" "flux-system" "2m"
+  wait_ready "ocirepository/flux-system" "flux-system" "1m"
+  wait_ready "kustomization/flux-system" "flux-system" "2m"
+}
+
+verify_infra_addons() {
+  info "Waiting for infra-addons Kustomization to become ready..."
+  wait_ready "kustomization/infra-addons" "flux-system" "5m"
+
+  info "Waiting for cert-manager HelmReleases to become ready..."
+  wait_ready "helmrelease/cert-manager" "flux-system" "3m"
+  wait_ready "helmrelease/trust-manager" "flux-system" "3m"
+}
+
+verify_openziti_stack() {
+  info "Waiting for ziti-controller HelmRelease to become ready..."
+  wait_ready "helmrelease/ziti-controller" "flux-system" "5m"
+
+  info "Waiting for ziti-router-enroll job to complete..."
+  kubectl wait --for=condition=complete job/ziti-router-enroll -n openziti --timeout=5m || {
+    error "ziti-router-enroll job failed!"
+    echo "=== ENROLL JOB LOGS ==="
+    kubectl logs -n openziti -l job-name=ziti-router-enroll --all-containers=true --tail=-1 || true
+    echo "=== ENROLL JOB DESCRIBE ==="
+    kubectl describe job ziti-router-enroll -n openziti || true
+    exit 1
+  }
+  success "ziti-router-enroll job completed successfully."
+
+  info "Waiting for ziti-router HelmRelease to become ready..."
+  wait_ready "helmrelease/ziti-router" "flux-system" "3m"
+
+  info "Verifying openziti pods are healthy and running..."
+  kubectl get pods -n openziti
+}
+
+# --- Main Routine ---
+main() {
+  require_dependencies
+  install_flux_operator
+  publish_oci_artifacts
+  validate_kustomize
+  bootstrap_flux
+  verify_infra_addons
+  verify_openziti_stack
+
+  echo -e "\n${GREEN}${BOLD}  ✔  Flux D2 bootstrap test completed successfully!${RESET}\n"
+}
+
+main "$@"

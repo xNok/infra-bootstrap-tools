@@ -69,6 +69,13 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
   - Organized `infra-addons/` directory by splitting the install manifest into `0-source.yaml` (`OCIRepository`) and `1-kustomize.yaml` (`Kustomization`) to separate intent.
   - Grouped all `.values.yaml` environment variables into a neat `values/` subdirectory, keeping the root of `infra-addons` completely free of variable/value clutter.
   - Cleaned up obsolete files and `infra-addons-values/` directory in `kind` and `k3s`.
+  - Added rigorous, deep assertions to the local integration test suite (`bin/tests/flux-d2/test.sh`) to explicitly verify `cert-manager`, `trust-manager`, `ziti-controller`, `ziti-router-enroll` job completion, and `ziti-router` HelmRelease readiness, guaranteeing the cluster's dark overlay network works end-to-end.
+
+- **Makefile Integration Test Target**:
+  - Identified the need to simplify running integration tests locally.
+  - Adding a `test-flux-d2` target to the `Makefile` to automate:
+    1. Ensuring the local Kind cluster and container registry are active by executing `bin/k8s/setup-kind-local-registry.sh`.
+    2. Running the full Flux D2/OpenZiti integration test suite via `bin/tests/flux-d2/test.sh`.
 
 ## Current State
 - Investigating existing Ansible roles and playbooks.
@@ -78,4 +85,5 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Fixed path mismatch in `flux-instance.yaml.j2` (changed `path: "./fleet/k3s"` to `path: "."`).
 - [Completed] Added `infra-addons` OCI publishing on push to `main` in GitHub Actions workflow.
 - [Completed] Refactored and aligned `kind` and `k3s` infra-addons layouts with a nested `values/` directory and split installer resources.
-- [Completed] Verified integration test suite compatibility (fully compatible with no changes needed).
+- [Completed] Enhanced integration test suite to comprehensively verify the functional readiness of the entire OpenZiti overlay stack.
+- [Completed] Added `test-flux-d2` target to the root `Makefile` to automate Kind cluster creation and Flux/OpenZiti integration testing.
