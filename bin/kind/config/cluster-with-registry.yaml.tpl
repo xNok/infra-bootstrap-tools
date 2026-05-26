@@ -6,3 +6,5 @@ containerdConfigPatches:
       endpoint = ["http://__REGISTRY_NAME__:5000"]
 nodes:
   - role: control-plane
+
+

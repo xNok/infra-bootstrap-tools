@@ -26,14 +26,7 @@ ziti edge login \
 get_router_field() {
   FIELD="$${1}"
   ziti edge list edge-routers 'name="ziti-router"' -j 2>/dev/null | \
-    python3.11 -c "
-import sys, json
-d = json.load(sys.stdin).get('data', [])
-if d:
-    print(d[0].get('$${FIELD}') or '')
-else:
-    print('')
-" 2>/dev/null || echo ""
+    grep -o "\"$${FIELD}\": *\"[^\"]*\"" | awk -F '"' '{print $4}' | head -n 1 || echo ""
 }
 
 # Check if router already exists

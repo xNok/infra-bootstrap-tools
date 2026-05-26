@@ -4,7 +4,7 @@ COLLECTION_NAME=xnok-infra_bootstrap_tools
 DIST_DIR=dist
 COLLECTION_TARBALL=$(DIST_DIR)/$(COLLECTION_NAME)-*.tar.gz
 
-.PHONY: up down install-collection clean-collection swarm swarm-portainer swarm-portainer-caddy k3s
+.PHONY: up down install-collection clean-collection swarm swarm-portainer swarm-portainer-caddy k3s test-flux-d2
 
 # Build the collection tarball into dist/ if any source file in ansible/ changes
 # Excludes the dist/ directory itself to avoid false cache hits
@@ -37,3 +37,11 @@ swarm-portainer-caddy: install-collection
 # K3s
 k3s: install-collection
 	ansible-playbook -i ansible/playbooks/inventory ansible/playbooks/k3s.yml
+
+# Flux D2
+test-flux-d2:
+	@echo "Ensuring Kind cluster and local registry are running..."
+	./bin/k8s/setup-kind-local-registry.sh
+	@echo "Running Flux D2 integration test..."
+	./bin/tests/flux-d2/test.sh
+

@@ -4,10 +4,10 @@ set -euo pipefail
 CLUSTER_NAME=${CLUSTER_NAME:-"kind"}
 REGISTRY_NAME=${REGISTRY_NAME:-"kind-registry"}
 REGISTRY_PORT=${REGISTRY_PORT:-"5000"}
-KIND_NODE_IMAGE=${KIND_NODE_IMAGE:-""}
+KIND_NODE_IMAGE=${KIND_NODE_IMAGE:-"kindest/node:v1.32.0"}
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-KIND_CONFIG_TEMPLATE=${KIND_CONFIG_TEMPLATE:-"${SCRIPT_DIR}/kind/config/cluster-with-registry.yaml.tpl"}
-LOCAL_REGISTRY_TEMPLATE=${LOCAL_REGISTRY_TEMPLATE:-"${SCRIPT_DIR}/kind/config/local-registry-hosting.yaml.tpl"}
+KIND_CONFIG_TEMPLATE=${KIND_CONFIG_TEMPLATE:-"${SCRIPT_DIR}/../kind/config/cluster-with-registry.yaml.tpl"}
+LOCAL_REGISTRY_TEMPLATE=${LOCAL_REGISTRY_TEMPLATE:-"${SCRIPT_DIR}/../kind/config/local-registry-hosting.yaml.tpl"}
 
 need_cmd() {
   local cmd="$1"
