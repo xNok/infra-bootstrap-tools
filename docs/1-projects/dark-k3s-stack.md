@@ -87,3 +87,4 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Refactored and aligned `kind` and `k3s` infra-addons layouts with a nested `values/` directory and split installer resources.
 - [Completed] Enhanced integration test suite to comprehensively verify the functional readiness of the entire OpenZiti overlay stack.
 - [Completed] Added `test-flux-d2` target to the root `Makefile` to automate Kind cluster creation and Flux/OpenZiti integration testing.
+- [Completed] Configured GitHub Actions workflow (`flux-test.yml`) to test against Kubernetes `v1.35.0` (`kindest/node:v1.35.0`) to match local development and cleaned up legacy file triggers.
