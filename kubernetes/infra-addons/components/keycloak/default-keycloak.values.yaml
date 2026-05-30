@@ -1,0 +1,42 @@
+auth:
+  adminUser: admin
+  adminPassword: password
+httpRelativePath: "/"
+service:
+  type: ClusterIP
+keycloakConfigCli:
+  enabled: true
+  configuration:
+    ziti-realm.json: |
+      {
+        "realm": "ziti",
+        "enabled": true,
+        "clients": [
+          {
+            "clientId": "openziti",
+            "enabled": true,
+            "clientAuthenticatorType": "client-secret",
+            "secret": "openziti-secret",
+            "redirectUris": ["*"],
+            "webOrigins": ["*"],
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": true,
+            "directAccessGrantsEnabled": true,
+            "publicClient": true
+          }
+        ],
+        "users": [
+          {
+            "username": "ziti-user",
+            "enabled": true,
+            "email": "user@example.com",
+            "credentials": [
+              {
+                "type": "password",
+                "value": "password",
+                "temporary": false
+              }
+            ]
+          }
+        ]
+      }
