@@ -34,23 +34,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish Artifact
-        run: |
-          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          OCI_REPO="oci://ghcr.io/$OWNER_LC/manifests/kubernetes"
-
-          # The tag provides the version, e.g., kubernetes-infra-addons@1.0.0
-          TAG_NAME="${{ inputs.release_tag }}"
-          BUNDLE_FULL_NAME="${TAG_NAME%@*}"
-          VERSION="${TAG_NAME#*@}"
-          
-          # Remove 'kubernetes-' prefix
-          BUNDLE_NAME="${BUNDLE_FULL_NAME#kubernetes-}"
-          
-          # Publish
-          flux push artifact $OCI_REPO/$BUNDLE_NAME:$(git rev-parse --short HEAD) \
-              --path="./${{ inputs.package_dir }}/$BUNDLE_NAME" \
-              --source="${{ github.event.repository.html_url }}" \
-              --revision="$(git rev-parse HEAD)"
-          
-          # Tag with version from the git tag and latest
-          flux tag artifact $OCI_REPO/$BUNDLE_NAME:$(git rev-parse --short HEAD) --tag latest --tag $VERSION
+        run: ./bin/ci/publish-kubernetes-release.sh "${{ github.repository_owner }}" "${{ inputs.release_tag }}" "${{ inputs.package_dir }}" "${{ github.event.repository.html_url }}"
