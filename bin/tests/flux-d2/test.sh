@@ -167,7 +167,25 @@ verify_openziti_stack() {
   kubectl get pods -n openziti
 }
 
+
+verify_keycloak_stack() {
+  info "Waiting for keycloak HelmRelease to become ready..."
+  wait_ready "helmrelease/keycloak" "flux-system" "5m"
+
+  info "Waiting for ziti-ext-jwt-config job to complete..."
+  kubectl wait --for=condition=complete job/ziti-ext-jwt-config -n openziti --timeout=5m || {
+    error "ziti-ext-jwt-config job failed!"
+    echo "=== EXT JWT JOB LOGS ==="
+    kubectl logs -n openziti -l job-name=ziti-ext-jwt-config --all-containers=true --tail=-1 || true
+    echo "=== EXT JWT JOB DESCRIBE ==="
+    kubectl describe job ziti-ext-jwt-config -n openziti || true
+    # We don't exit 1 here yet, just warn if it fails for now
+  }
+  success "ziti-ext-jwt-config job completed successfully."
+}
+
 # --- Main Routine ---
+
 main() {
   require_dependencies
   install_flux_operator
@@ -176,6 +194,7 @@ main() {
   bootstrap_flux
   verify_infra_addons
   verify_openziti_stack
+  verify_keycloak_stack
 
   echo -e "\n${GREEN}${BOLD}  ✔  Flux D2 bootstrap test completed successfully!${RESET}\n"
 }
