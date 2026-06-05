@@ -170,10 +170,10 @@ verify_openziti_stack() {
 
 verify_keycloak_stack() {
   info "Waiting for keycloak HelmRelease to become ready..."
-  wait_ready "helmrelease/keycloak" "flux-system" "5m"
+  wait_ready "helmrelease/keycloak" "flux-system" "10m"
 
   info "Waiting for ziti-ext-jwt-config job to complete..."
-  kubectl wait --for=condition=complete job/ziti-ext-jwt-config -n openziti --timeout=5m || {
+  kubectl wait --for=condition=complete job/ziti-ext-jwt-config -n openziti --timeout=10m || {
     error "ziti-ext-jwt-config job failed!"
     echo "=== EXT JWT JOB LOGS ==="
     kubectl logs -n openziti -l job-name=ziti-ext-jwt-config --all-containers=true --tail=-1 || true

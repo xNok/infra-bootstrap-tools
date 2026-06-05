@@ -16,7 +16,7 @@ ziti edge login openziti-ziti-controller-client.openziti.svc.cluster.local:1280 
 if ! ziti edge list ext-jwt-signers 'name="keycloak"' | grep -q "keycloak"; then
     echo "Creating Keycloak Ext JWT Signer..."
     # Based on docs the creation is: ziti edge create ext-jwt-signer <name> <issuer> <jwksEndpoint> --audience <audience> --claims-property <claims-property>
-    ziti edge create ext-jwt-signer "keycloak" "https://keycloak.openziti.svc.cluster.local/realms/ziti" "https://keycloak.openziti.svc.cluster.local/realms/ziti/protocol/openid-connect/certs" --audience "account" --claims-property "email"
+    ziti edge create ext-jwt-signer "keycloak" "http://keycloak.keycloak.svc.cluster.local:80/realms/ziti" "http://keycloak.keycloak.svc.cluster.local:80/realms/ziti/protocol/openid-connect/certs" --audience "account" --claims-property "email"
 else
     echo "Keycloak Ext JWT Signer already exists."
 fi
@@ -28,20 +28,24 @@ else
     echo "Keycloak Auth Policy already exists."
 fi
 
-# Configure Auth0 (used for production in K3s)
-if ! ziti edge list ext-jwt-signers 'name="auth0"' | grep -q "auth0"; then
-    echo "Creating Auth0 Ext JWT Signer..."
-    # The actual ISSUER and JWKS endpoints should be provided as env vars or injected for Auth0
-    ziti edge create ext-jwt-signer "auth0" "$AUTH0_ISSUER" "$AUTH0_JWKS_ENDPOINT" --audience "$AUTH0_AUDIENCE" --claims-property "email"
-else
-    echo "Auth0 Ext JWT Signer already exists."
-fi
 
-if ! ziti edge list auth-policies 'name="auth0-auth"' | grep -q "auth0-auth"; then
-    echo "Creating Auth0 Auth Policy..."
-    ziti edge create auth-policy "auth0-auth" --primary-ext-jwt-allowed --primary-ext-jwt-allowed-signers "auth0"
+# Configure Auth0 (used for production in K3s)
+if [ -n "$AUTH0_ISSUER" ] && [ -n "$AUTH0_JWKS_ENDPOINT" ] && [ -n "$AUTH0_AUDIENCE" ]; then
+    if ! ziti edge list ext-jwt-signers 'name="auth0"' | grep -q "auth0"; then
+        echo "Creating Auth0 Ext JWT Signer..."
+        ziti edge create ext-jwt-signer "auth0" "$AUTH0_ISSUER" "$AUTH0_JWKS_ENDPOINT" --audience "$AUTH0_AUDIENCE" --claims-property "email"
+    else
+        echo "Auth0 Ext JWT Signer already exists."
+    fi
+
+    if ! ziti edge list auth-policies 'name="auth0-auth"' | grep -q "auth0-auth"; then
+        echo "Creating Auth0 Auth Policy..."
+        ziti edge create auth-policy "auth0-auth" --primary-ext-jwt-allowed --primary-ext-jwt-allowed-signers "auth0"
+    else
+        echo "Auth0 Auth Policy already exists."
+    fi
 else
-    echo "Auth0 Auth Policy already exists."
+    echo "Skipping Auth0 configuration as required environment variables are not set."
 fi
 
 echo "Successfully configured external IdPs."
