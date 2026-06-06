@@ -1,294 +1,431 @@
-# Startup Infra for Small Self-hosted Projects
+# terraform-docs
 
-![Ansible](https://img.shields.io/badge/ansible-%231A1918.svg?style=for-the-badge&logo=ansible&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Vagrant](https://img.shields.io/badge/vagrant-%231563FF.svg?style=for-the-badge&logo=vagrant&logoColor=white) ![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
+[![Build Status](https://github.com/terraform-docs/terraform-docs/workflows/ci/badge.svg)](https://github.com/terraform-docs/terraform-docs/actions) [![GoDoc](https://pkg.go.dev/badge/github.com/terraform-docs/terraform-docs)](https://pkg.go.dev/github.com/terraform-docs/terraform-docs) [![Go Report Card](https://goreportcard.com/badge/github.com/terraform-docs/terraform-docs)](https://goreportcard.com/report/github.com/terraform-docs/terraform-docs) [![Codecov Report](https://codecov.io/gh/terraform-docs/terraform-docs/branch/master/graph/badge.svg)](https://codecov.io/gh/terraform-docs/terraform-docs) [![License](https://img.shields.io/github/license/terraform-docs/terraform-docs)](https://github.com/terraform-docs/terraform-docs/blob/master/LICENSE) [![Latest release](https://img.shields.io/github/v/release/terraform-docs/terraform-docs)](https://github.com/terraform-docs/terraform-docs/releases)
 
-This repository provides Ansible playbooks to set up a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects. I made this repository a place to **Learn** about DevOps and Cloud Infrastructure. You have all the tutorial you need to get started.
+![terraform-docs-teaser](./images/terraform-docs-teaser.png)
 
+## What is terraform-docs
 
-## Development Environment Setup
+A utility to generate documentation from Terraform modules in various output formats.
 
+## Installation
 
-This project provides a convenient dispatcher command, `ibt`, to help you set up your local development environment and manage project tools. Additionally, a Gitpod configuration is available for a cloud-based, ready-to-use environment.
-
-### Unified Tools Bash script: `ibt`
-
-The `ibt` command (Infra Bootstrap Tools) is a shell function that provides a unified interface to the main project scripts with subcommands and auto-completion support.
-
-**Subcommands:**
-
-- `ibt setup [tool ...]` &mdash; Install required tools and dependencies (see below)
-- `ibt stacks [args ...]` &mdash; Manage and run infrastructure stacks
-- `ibt tools [args ...]` &mdash; Use Docker-based aliases for Ansible, AWS CLI, etc.
-
-**Auto-completion:**
-
-Tab-completion is available for subcommands and for the `setup` tool list (e.g., `ibt setup [TAB]`).
-
-**To enable `ibt` in your shell:**
+macOS users can install using [Homebrew]:
 
 ```bash
-source ./bin/bash/ibt.sh
+brew install terraform-docs
 ```
 
-You can add this line to your `~/.bashrc` or `~/.bash_profile` for persistence.
-
-**Example usage:**
+or
 
 ```bash
-# Install pre-commit and Ansible
-ibt setup pre-commit ansible
-
-# List available stacks
-ibt stacks list
-
-# Use Docker-based Ansible
-ibt tools dasb --version
+brew install terraform-docs/tap/terraform-docs
 ```
 
-
-### Nix Shell
-
-**Prerequisites:** This requires [Nix](https://nixos.org/download.html) to be installed on your system.
-
-For a fully automated and reproducible development environment using Nix, you have two options:
-
-#### Option 1: Using Traditional Nix Shell (Most Compatible)
-
-Use this option if `nix develop` fails with `experimental Nix feature 'nix-command' is disabled`.
+Windows users can install using [Scoop]:
 
 ```bash
-nix-shell bin/nix/shell.nix
-
-# Or select a specific shell
-nix-shell bin/nix/shell.nix --argstr shell flux
+scoop bucket add terraform-docs https://github.com/terraform-docs/scoop-bucket
+scoop install terraform-docs
 ```
 
-Shell overview:
-- `default`: general development shell with Python, Docker, Git, and pre-commit
-- `ansible`: adds Ansible tooling and installs Galaxy dependencies
-- `flux`: adds `jq`, `kubectl`, `helm`, `kind`, and `flux` for Kubernetes/Flux work
-- `docs`: adds Hugo and Go for website/documentation work
-- `full`: includes everything when you need the broadest environment
-
-The shells are ready to use after their hooks complete. Python-based shells create and activate a local virtual environment (`.venv`) to avoid conflicts with the Nix-provided Python.
-
-#### Option 2: Using Nix Flakes (Optional)
-
-Nix Flakes provide a more modern and reproducible approach, but require the `nix-command` and `flakes` experimental features:
+or [Chocolatey]:
 
 ```bash
-# Enable flakes if not already enabled (add to ~/.config/nix/nix.conf or /etc/nix/nix.conf):
-# experimental-features = nix-command flakes
-
-# Enter the default general-purpose development environment
-nix develop
+choco install terraform-docs
 ```
 
-Task-focused shells are also available:
+Stable binaries are also available on the [releases] page. To install, download the
+binary for your platform from "Assets" and place this into your `$PATH`:
 
 ```bash
-# Infrastructure / Ansible work
-nix develop .#ansible
-
-# Flux / Kind / Kubernetes work
-nix develop .#flux
-
-# Website / Hugo work
-nix develop .#docs
-
-# Full kitchen-sink environment
-nix develop .#full
+curl -Lo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.17.0/terraform-docs-v0.17.0-$(uname)-amd64.tar.gz
+tar -xzf terraform-docs.tar.gz
+chmod +x terraform-docs
+mv terraform-docs /usr/local/bin/terraform-docs
 ```
 
-### GitHub Codespaces
+**NOTE:** Windows releases are in `ZIP` format.
 
-The repository includes a `.devcontainer/devcontainer.json` that keeps the current base image (`mcr.microsoft.com/devcontainers/base:ubuntu-24.04`), installs Nix by default, and enables flakes (`nix-command flakes`) out of the box. Docker access is enabled as well.
-
-You can use:
+The latest version can be installed using `go install` or `go get`:
 
 ```bash
-nix develop
-nix develop .#ansible
-nix develop .#flux
+# go1.17+
+go install github.com/terraform-docs/terraform-docs@v0.17.0
 ```
-
-If you are in a different environment where flakes are not enabled, use:
 
 ```bash
-nix-shell bin/nix/shell.nix
+# go1.16
+GO111MODULE="on" go get github.com/terraform-docs/terraform-docs@v0.17.0
 ```
 
+**NOTE:** please use the latest Go to do this, minimum `go1.16` is required.
 
-### Gitpod
-
-Alternatively, you can use Gitpod to get a pre-configured development environment in your browser. Click the button below to get started:
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
-
-## 🚀 Quick Start
-
-Got your [prerequisites](./website/content/en/docs/gs1.getting_started.md#prerequisites) and [secrets configured](./website/content/en/docs/gs1.getting_started.md#configuration-secrets-management)?
-
-Deploy your entire infrastructure with a single command:
+This will put `terraform-docs` in `$(go env GOPATH)/bin`. If you encounter the error
+`terraform-docs: command not found` after installation then you may need to either add
+that directory to your `$PATH` as shown [here] or do a manual installation by cloning
+the repo and run `make build` from the repository which will put `terraform-docs` in:
 
 ```bash
-make up
+$(go env GOPATH)/src/github.com/terraform-docs/terraform-docs/bin/$(uname | tr '[:upper:]' '[:lower:]')-amd64/terraform-docs
 ```
 
-This command will:
-*   Provision infrastructure on DigitalOcean using Terraform.
-*   Install Docker on all hosts.
-*   Initialize a Docker Swarm cluster.
-*   Deploy Caddy and Portainer applications.
+## Usage
 
-To tear down the infrastructure:
+### Running the binary directly
+
+To run and generate documentation into README within a directory:
 
 ```bash
-make down
+terraform-docs markdown table --output-file README.md --output-mode inject /path/to/module
 ```
 
-For a detailed step-by-step guide, including prerequisites and secret management options, please refer to our **[Full Getting Started Guide](./website/content/en/docs/gs1.getting_started.md)**.
+Check [`output`] configuration for more details and examples.
 
-To understand the underlying Ansible concepts, check out **[Understanding Ansible Concepts](./website/content/en/docs/b1.ansible_concepts.md)**.
+### Using docker
 
-## Articles and Tutorials
-
-The articles/tutorials are divided into sections. 
-* **Introduction** -> What are the tools to manage infrastructure? Perfect to learn the basis.
-* **How-tos** -> Good takeaway from this project - Answers many questions you could encounter in the future
-* **Deepening Understanding** -> Learn more about each application used in this setup (Portainer, Graphana, Caddy, etc.)
-* **Local Experimentation & Advanced Topics**: Deeper dives into specific setups and components.
-
-I used [DigitalOcean](https://digitalocean.pxf.io/q4b2qO) for experiments because it is cheap, but any cloud provider should work, as we are mainly playing with Virtual Machines. You can even get [$200 DigitalOcean free credit](https://digitalocean.pxf.io/q4b2qO) when starting 
-* Don't forget to delete everything after a tutorial if you don't want to add unnecessary costs
-
-### Tools Introduction
-
-* [ ] WIP: 📚 1: [What is **Terraform** and why you might need it.]()
-* [X] 📚 2: [What is **Terraform Cloud** and why you might need it.](https://faun.pub/what-is-terraform-cloud-and-why-you-might-need-it-c9847fb8f6e6?sk=ee85423512f39030bb287a3f2a6623d3)
-* [ ] WIP: 📚 3: [What is **Github Action** and why you might need it.]()
-* [ ] WIP: 📚 4: [What is **Ansible** and why you might need it.]()
-* [ ] WIP: 📚 5: [What is **Ansible AWX** and why you might need it.]()
-
-### Learn the Tools
-
-* [X] 🌍 [How to configure GitHub Environments with Terraform?](https://faun.pub/how-to-configure-github-environments-with-terraform-d2b76766547b?sk=b50616eed7da268d5a99c459fc9c57d5)
-* [x] 🏭 [How to provision VM on Digital Ocean with Terraform?](https://faun.pub/how-to-provision-vms-on-digitalocean-with-terraform-898515a0dbbc?sk=7af174d77b4a7bd81e581378beac9a0d)
-* [X] 🔏 [How to create SSH keys with Terraform?](https://faun.pub/how-to-create-ssh-keys-with-terraform-a615dfc631c1?sk=176a8f5c0c0517a01e8fabd5bb7c18fa)
-* [x] 🗺️ [How to create Ansible Inventory with Terraform?](https://faun.pub/how-to-create-ansible-inventory-with-terraform-a32fcbe11be6?sk=da18fba15ee996e4c3b92782229654ee)
-* [x] 👩 [How to run an Ansible playbook using GitHub Action?](https://faun.pub/how-to-run-an-ansible-playbook-using-github-action-42430dec944?sk=7796e8bd44f6b8c394b80507b8ff3e87)
-
-### Local Experimentation & Advanced Topics
-
-These articles cover setting up local test environments and exploring specific components in more detail. They are excellent for understanding the individual parts before or alongside deploying the full cloud infrastructure.
-
-* [X] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
-   * Example code [.articles/1_vagrant_101](.articles/1_vagrant_101)   
-* [X] 🧰 2 [Experimenting on Docker Swarm with Vagrant and Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4?sk=1eac227cf3c9ec5dc5abbf06f38e92c3)
-   * Example code [.articles/2_docker_swarm_101](.articles/2_docker_swarm_101)
-* [ ] WIP: 🧰 3: [Automate Infrastructure provisioning with Ansible and Github action]() (This might be more of an advanced topic now, focusing on CI/CD aspects beyond the basic `make up`)
-
-
-### Learn about the applications used in this setup
-
-* [ ] WIP: ☸️ 1: [What is Portainer and why you might need it.]() (Covered by [Portainer Management UI](./website/content/en/docs/a2.portainer.md))
-* [ ] WIP: ☸️ 2: [What is Prometheus and why you might need it.]()
-* [ ] WIP: ☸️ 3: [What is Caddy and why you might need it.]() (Covered by [Caddy Web Server](./website/content/en/docs/a1.caddy.md))
-
-### Deep Dives
-
-Below, I've included some explainers on how I solved a specific problem when I encountered it. This should demistify some of the magic happening in this repo.
-
-#### Ansible
-
-* [x] 🏃‍♂️ 1: [Speedup Ansible Playbook Pull-Requests by only running affected roles](https://medium.com/itnext/speedup-ansible-playbook-merge-request-by-only-running-affected-roles-42d9ca3f6433?sk=382b8de777e41deb20f7fefe430b2f26)
-* [x] 🏃‍♂️ 2: [How to rotate Docker Secrets with Ansible](https://medium.com/itnext/rotating-docker-swarm-secrets-with-ansible-cbaddfdd8ee9?sk=886dae52f1570c251a6a664d5ee2c5fe)
-* [x] 🏃‍♂️ 3: [How to implement Pull-Request locking for Ansible](https://medium.com/itnext/safe-infrastructure-as-code-github-actions-workflow-with-a-pr-lock-27bef636f852?sk=a6615ca085348aa2543a68f9c7a41077)
-
-## Ansible Collection
-
-This repository is also available as an Ansible Collection on Ansible Galaxy, allowing you to easily reuse the roles in your own Ansible projects.
-
-**Collection Name:** `xnok.infra_bootstrap_tools`
-
-### Installation
-
-To install this collection from Ansible Galaxy, use the following command:
+terraform-docs can be run as a container by mounting a directory with `.tf`
+files in it and run the following command:
 
 ```bash
-ansible-galaxy collection install xnok.infra_bootstrap_tools
+docker run --rm --volume "$(pwd):/terraform-docs" -u $(id -u) quay.io/terraform-docs/terraform-docs:0.17.0 markdown /terraform-docs
 ```
 
-### Usage
+If `output.file` is not enabled for this module, generated output can be redirected
+back to a file:
 
-Once installed, you can use the roles from this collection in your playbooks. For example, to use the `docker` role:
+```bash
+docker run --rm --volume "$(pwd):/terraform-docs" -u $(id -u) quay.io/terraform-docs/terraform-docs:0.17.0 markdown /terraform-docs > doc.md
+```
+
+**NOTE:** Docker tag `latest` refers to _latest_ stable released version and `edge`
+refers to HEAD of `master` at any given point in time.
+
+### Using GitHub Actions
+
+To use terraform-docs GitHub Action, configure a YAML workflow file (e.g.
+`.github/workflows/documentation.yml`) with the following:
 
 ```yaml
-- hosts: all
-  become: yes
-  roles:
-    - role: xnok.infra_bootstrap_tools.docker
-      # Optional: specify variables for the role
-      # docker_users:
-      #   - your_username
+name: Generate terraform docs
+on:
+  - pull_request
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.pull_request.head.ref }}
+
+    - name: Render terraform docs and push changes back to PR
+      uses: terraform-docs/gh-actions@main
+      with:
+        working-dir: .
+        output-file: README.md
+        output-method: inject
+        git-push: "true"
 ```
 
-Refer to the `README.md` file within each role's directory (`ansible/roles/[role_name]/README.md`) for detailed information on specific roles, their variables, and dependencies.
+Read more about [terraform-docs GitHub Action] and its configuration and
+examples.
 
-You can find the collection on Ansible Galaxy: [xnok.infra_bootstrap_tools](https://galaxy.ansible.com/xnok/infra_bootstrap_tools)
+### pre-commit hook
 
-## Release Management
+With pre-commit, you can ensure your Terraform module documentation is kept
+up-to-date each time you make a commit.
 
-This monorepo uses [Changesets](https://github.com/changesets/changesets) for automated version management and releases. Different package types (Ansible collection, Python package, Docker stacks) are automatically published when versions are bumped.
+First [install pre-commit] and then create or update a `.pre-commit-config.yaml`
+in the root of your Git repo with at least the following content:
 
-For detailed information about the release process, see **[RELEASE.md](./RELEASE.md)**.
+```yaml
+repos:
+  - repo: https://github.com/terraform-docs/terraform-docs
+    rev: "v0.17.0"
+    hooks:
+      - id: terraform-docs-go
+        args: ["markdown", "table", "--output-file", "README.md", "./mymodule/path"]
+```
 
-### Quick Start
+Then run:
 
-To create a changeset for your changes:
 ```bash
-npx changeset add
+pre-commit install
+pre-commit install-hooks
 ```
 
-For more details on package types, publishing workflows, and troubleshooting, see the [full release documentation](./RELEASE.md).
+Further changes to your module's `.tf` files will cause an update to documentation
+when you make a commit.
 
-## Architecture
+## Configuration
 
-![](./diagrams/startup_infra_for_small_self_hosted_project.png)
+terraform-docs can be configured with a yaml file. The default name of this file is
+`.terraform-docs.yml` and the path order for locating it is:
 
-## Handy toolchain
+1. root of module directory
+1. `.config/` folder at root of module directory
+1. current directory
+1. `.config/` folder at current directory
+1. `$HOME/.tfdocs.d/`
 
-Do you want to go fast? Too lazy to set up your local environment?
+```yaml
+formatter: "" # this is required
 
-Then, use the tools from a Docker container. I included a simple Toochain in this repository and a useful alias for it.
+version: ""
 
-Use common infrastructure tools in docker with:
-* [docker_tools_alias.sh](bin/bash/docker_tools_alias.sh)
+header-from: main.tf
+footer-from: ""
 
+recursive:
+  enabled: false
+  path: modules
+
+sections:
+  hide: []
+  show: []
+
+content: ""
+
+output:
+  file: ""
+  mode: inject
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->
+
+output-values:
+  enabled: false
+  from: ""
+
+sort:
+  enabled: true
+  by: name
+
+settings:
+  anchor: true
+  color: true
+  default: true
+  description: false
+  escape: true
+  hide-empty: false
+  html: true
+  indent: 2
+  lockfile: true
+  read-comments: true
+  required: true
+  sensitive: true
+  type: true
 ```
-source ./bin/docker_tools_alias.sh
+
+## Content Template
+
+Generated content can be customized further away with `content` in configuration.
+If the `content` is empty the default order of sections is used.
+
+Compatible formatters for customized content are `asciidoc` and `markdown`. `content`
+will be ignored for other formatters.
+
+`content` is a Go template with following additional variables:
+
+- `{{ .Header }}`
+- `{{ .Footer }}`
+- `{{ .Inputs }}`
+- `{{ .Modules }}`
+- `{{ .Outputs }}`
+- `{{ .Providers }}`
+- `{{ .Requirements }}`
+- `{{ .Resources }}`
+
+and following functions:
+
+- `{{ include "relative/path/to/file" }}`
+
+These variables are the generated output of individual sections in the selected
+formatter. For example `{{ .Inputs }}` is Markdown Table representation of _inputs_
+when formatter is set to `markdown table`.
+
+Note that sections visibility (i.e. `sections.show` and `sections.hide`) takes
+precedence over the `content`.
+
+Additionally there's also one extra special variable avaialble to the `content`:
+
+- `{{ .Module }}`
+
+As opposed to the other variables mentioned above, which are generated sections
+based on a selected formatter, the `{{ .Module }}` variable is just a `struct`
+representing a [Terraform module].
+
+````yaml
+content: |-
+  Any arbitrary text can be placed anywhere in the content
+
+  {{ .Header }}
+
+  and even in between sections
+
+  {{ .Providers }}
+
+  and they don't even need to be in the default order
+
+  {{ .Outputs }}
+
+  include any relative files
+
+  {{ include "relative/path/to/file" }}
+
+  {{ .Inputs }}
+
+  # Examples
+
+  ```hcl
+  {{ include "examples/foo/main.tf" }}
+  ```
+
+  ## Resources
+
+  {{ range .Module.Resources }}
+  - {{ .GetMode }}.{{ .Spec }} ({{ .Position.Filename }}#{{ .Position.Line }})
+  {{- end }}
+````
+
+## Build on top of terraform-docs
+
+terraform-docs primary use-case is to be utilized as a standalone binary, but
+some parts of it is also available publicly and can be imported in your project
+as a library.
+
+```go
+import (
+    "github.com/terraform-docs/terraform-docs/format"
+    "github.com/terraform-docs/terraform-docs/print"
+    "github.com/terraform-docs/terraform-docs/terraform"
+)
+
+// buildTerraformDocs for module root `path` and provided content `tmpl`.
+func buildTerraformDocs(path string, tmpl string) (string, error) {
+    config := print.DefaultConfig()
+    config.ModuleRoot = path // module root path (can be relative or absolute)
+
+    module, err := terraform.LoadWithOptions(config)
+    if err != nil {
+        return "", err
+    }
+
+    // Generate in Markdown Table format
+    formatter := format.NewMarkdownTable(config)
+
+    if err := formatter.Generate(module); err != nil {
+        return "", err
+    }
+
+    // // Note: if you don't intend to provide additional template for the generated
+    // // content, or the target format doesn't provide templating (e.g. json, yaml,
+    // // xml, or toml) you can use `Content()` function instead of `Render()`.
+    // // `Content()` returns all the sections combined with predefined order.
+    // return formatter.Content(), nil
+
+    return formatter.Render(tmpl)
+}
 ```
 
+## Plugin
+
+Generated output can be heavily customized with [`content`], but if using that
+is not enough for your use-case, you can write your own plugin.
+
+In order to install a plugin the following steps are needed:
+
+- download the plugin and place it in `~/.tfdocs.d/plugins` (or `./.tfdocs.d/plugins`)
+- make sure the plugin file name is `tfdocs-format-<NAME>`
+- modify [`formatter`] of `.terraform-docs.yml` file to be `<NAME>`
+
+**Important notes:**
+
+- if the plugin file name is different than the example above, terraform-docs won't
+be able to to pick it up nor register it properly
+- you can only use plugin thorough `.terraform-docs.yml` file and it cannot be used
+with CLI arguments
+
+To create a new plugin create a new repository called `tfdocs-format-<NAME>` with
+following `main.go`:
+
+```go
+package main
+
+import (
+    _ "embed" //nolint
+
+    "github.com/terraform-docs/terraform-docs/plugin"
+    "github.com/terraform-docs/terraform-docs/print"
+    "github.com/terraform-docs/terraform-docs/template"
+    "github.com/terraform-docs/terraform-docs/terraform"
+)
+
+func main() {
+    plugin.Serve(&plugin.ServeOpts{
+        Name:    "<NAME>",
+        Version: "0.1.0",
+        Printer: printerFunc,
+    })
+}
+
+//go:embed sections.tmpl
+var tplCustom []byte
+
+// printerFunc the function being executed by the plugin client.
+func printerFunc(config *print.Config, module *terraform.Module) (string, error) {
+    tpl := template.New(config,
+        &template.Item{Name: "custom", Text: string(tplCustom)},
+    )
+
+    rendered, err := tpl.Render("custom", module)
+    if err != nil {
+        return "", err
+    }
+
+    return rendered, nil
+}
 ```
-use dasb for ansible in docker
-use dap for ansible-playbook in docker
-use daws for awscli in docker
-use dpk for packer in docker
-use dtf for terraform in docker
-use dbash for bash in docker
-```
 
-## Tools Showcase
+Please refer to [tfdocs-format-template] for more details. You can create a new
+repository from it by clicking on `Use this template` button.
 
-This project leverages several tools to streamline development and improve code quality. Here's a brief overview of some of them:
+## Documentation
 
-*   **Pre-commit**: We use pre-commit hooks to automate linting, formatting, and other checks before code is committed. This helps maintain code consistency and catch errors early. Configuration can be found in `.pre-commit-config.yaml`.
-*   **1Password CLI**: For securely managing sensitive information like API keys and passwords, the 1Password CLI can be integrated into your workflow. The setup script provides an option to install it.
-*   **Boilerplate**: [Gruntwork Boilerplate](https://github.com/gruntwork-io/boilerplate) is used to generate répétitive code structures, ensuring consistency and saving time. You can find boilerplate templates in the `.boilerplates` directory.
-*   **Hugo**: The project documentation website (what you're likely reading if you're on the website!) is built using [Hugo](https://gohugo.io/), a fast and flexible static site generator. The website content is in the `website/` directory.
+- **Users**
+  - Read the [User Guide] to learn how to use terraform-docs
+  - Read the [Formats Guide] to learn about different output formats of terraform-docs
+  - Refer to [Config File Reference] for all the available configuration options
+- **Developers**
+  - Read [Contributing Guide] before submitting a pull request
 
-## Scale Up
+Visit [our website] for all documentation.
 
-With docker swarm and portainer it because easy to manager multiple nodes.
+## Community
 
-![](./diagrams/scaled_up_infra_for_small_self_hosted_project.png)
+- Discuss terraform-docs on [Slack]
+
+## License
+
+MIT License - Copyright (c) 2021 The terraform-docs Authors.
+
+[Chocolatey]: https://www.chocolatey.org
+[Config File Reference]: https://terraform-docs.io/user-guide/configuration/
+[`content`]: https://terraform-docs.io/user-guide/configuration/content/
+[Contributing Guide]: CONTRIBUTING.md
+[Formats Guide]: https://terraform-docs.io/reference/terraform-docs/
+[`formatter`]: https://terraform-docs.io/user-guide/configuration/formatter/
+[here]: https://golang.org/doc/code.html#GOPATH
+[Homebrew]: https://brew.sh
+[install pre-commit]: https://pre-commit.com/#install
+[`output`]: https://terraform-docs.io/user-guide/configuration/output/
+[releases]: https://github.com/terraform-docs/terraform-docs/releases
+[Scoop]: https://scoop.sh/
+[Slack]: https://slack.terraform-docs.io/
+[terraform-docs GitHub Action]: https://github.com/terraform-docs/gh-actions
+[Terraform module]: https://pkg.go.dev/github.com/terraform-docs/terraform-docs/terraform#Module
+[tfdocs-format-template]: https://github.com/terraform-docs/tfdocs-format-template
+[our website]: https://terraform-docs.io/
+[User Guide]: https://terraform-docs.io/user-guide/introduction/

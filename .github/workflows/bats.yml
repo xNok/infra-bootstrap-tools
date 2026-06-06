@@ -1,6 +1,10 @@
 name: BATS Tests
 
 on:
+  push:
+    paths:
+      - 'bin/**'
+      - '.github/workflows/bats.yml'
   pull_request:
     paths:
       - 'bin/**'
