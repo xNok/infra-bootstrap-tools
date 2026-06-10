@@ -92,6 +92,17 @@ require_dependencies() {
   trap dump_debug_state ERR
 }
 
+wait_for_cluster_basics() {
+  info "Waiting for Kind cluster core services to become healthy..."
+
+  kubectl wait --for=condition=Ready node --all --timeout=2m
+  kubectl wait --for=condition=Available deployment/coredns -n kube-system --timeout=5m
+  kubectl wait --for=condition=Available deployment/local-path-provisioner -n local-path-storage --timeout=5m
+  kubectl wait --for=condition=Ready pod -l k8s-app=kube-dns -n kube-system --timeout=5m
+
+  success "Kind cluster core services are ready."
+}
+
 install_flux_operator() {
   info "Installing Flux Operator via Helm..."
   helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
@@ -198,6 +209,7 @@ verify_keycloak_stack() {
 
 main() {
   require_dependencies
+  wait_for_cluster_basics
   install_flux_operator
   publish_oci_artifacts
   validate_kustomize
