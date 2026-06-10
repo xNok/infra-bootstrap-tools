@@ -1,3 +1,11 @@
+global:
+  security:
+    allowInsecureImages: true
+
+image:
+  repository: bitnamilegacy/keycloak
+
+
 auth:
   adminUser: admin
   adminPassword: password
@@ -6,6 +14,8 @@ service:
   type: ClusterIP
 keycloakConfigCli:
   enabled: true
+  image:
+    repository: bitnamilegacy/keycloak-config-cli
   configuration:
     ziti-realm.json: |
       {
@@ -40,3 +50,12 @@ keycloakConfigCli:
           }
         ]
       }
+
+postgresql:
+  image:
+    repository: bitnamilegacy/postgresql
+  auth:
+    postgresPassword: postgres-password
+    password: keycloak-db-password
+  persistence:
+    enabled: false

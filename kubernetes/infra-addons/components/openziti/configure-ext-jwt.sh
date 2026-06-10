@@ -12,6 +12,14 @@ echo "Controller is ready."
 echo "Logging into Ziti Controller..."
 ziti edge login openziti-ziti-controller-client.openziti.svc.cluster.local:1280 -u admin -p "$ZITI_PWD" -y
 
+# Wait for Keycloak realm metadata to be reachable
+echo "Waiting for Keycloak 'ziti' realm to be reachable..."
+until curl -sf "http://keycloak.keycloak.svc.cluster.local:80/realms/ziti/.well-known/openid-configuration" > /dev/null 2>&1; do
+    echo "Keycloak realm 'ziti' not ready yet. Retrying in 5 seconds..."
+    sleep 5
+done
+echo "Keycloak realm 'ziti' is ready."
+
 # Configure Keycloak (used for local testing in Kind)
 if ! ziti edge list ext-jwt-signers 'name="keycloak"' | grep -q "keycloak"; then
     echo "Creating Keycloak Ext JWT Signer..."
