@@ -57,22 +57,8 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
 
-      - name: Install Hugo CLI
-        run: |
-          wget -O ${{ runner.temp }}/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb \
-          && sudo dpkg -i ${{ runner.temp }}/hugo.deb
-
-      - name: Build with Hugo
-        env:
-          # For maximum backward compatibility with Hugo modules
-          HUGO_ENVIRONMENT: production
-          HUGO_ENV: production
-        run: |
-          cd website
-          hugo \
-            --gc \
-            --minify \
-            --baseURL "${{ steps.pages.outputs.base_url }}/"
+      - name: Build website
+        run: ./bin/ci/build-website.sh "${{ env.HUGO_VERSION }}" "${{ runner.temp }}" "${{ steps.pages.outputs.base_url }}"
        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
