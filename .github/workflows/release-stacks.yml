@@ -52,23 +52,52 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          INPUT_TAG: ${{ inputs.release_tag || github.event.inputs.release_tag }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: ./bin/ci/extract-version.sh "$EVENT_NAME" "$INPUT_TAG" "$RELEASE_TAG"
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ] || [ "${{ github.event_name }}" == "workflow_call" ]; then
+            TAG="${{ inputs.release_tag || github.event.inputs.release_tag }}"
+          else
+            TAG="${{ github.event.release.tag_name }}"
+          fi
+          # Extract version from tag (format: stacks@1.0.3)
+          VERSION=$(echo "$TAG" | sed 's/^.*@//')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
 
       - name: Create stack archives
-        env:
-          DIR: ${{ inputs.stacks_dir || github.event.inputs.stacks_dir || 'stacks' }}
-          VERSION: ${{ steps.version.outputs.version }}
-          DIST_DIR: ${{ github.workspace }}/dist
-        run: ./bin/ci/package-stacks.sh "$DIR" "$VERSION" "$DIST_DIR"
+        run: |
+          DIR="${{ inputs.stacks_dir || github.event.inputs.stacks_dir || 'stacks' }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          DIST_DIR="$GITHUB_WORKSPACE/dist"
+          mkdir -p "$DIST_DIR"
+
+          # Create individual stack archives
+          for stack in "$DIR"/*/; do
+            if [ -d "$stack" ] && [ "$(basename "$stack")" != "node_modules" ]; then
+              stack_name=$(basename "$stack")
+              echo "Creating archive for $stack_name"
+              (cd "$(dirname "$stack")" && zip -r "$DIST_DIR/${stack_name}-${VERSION}.zip" "$stack_name" -x "*/node_modules/*" "*.git/*")
+            fi
+          done
+
+          # Create a complete stacks archive
+          echo "Creating complete stacks archive"
+          (cd "$DIR" && zip -r "$DIST_DIR/infra-bootstrap-tools-stacks-${VERSION}.zip" . -x "node_modules/*" "*.git/*" "*/node_modules/*")
+
+          ls -lh "$DIST_DIR/"
 
       - name: Upload archives to release
         if: ${{ !(inputs.dry_run || github.event.inputs.dry_run) }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.version.outputs.tag }}
-          DIST_DIR: ${{ github.workspace }}/dist
-        run: ./bin/ci/upload-stacks-release.sh "$TAG" "$DIST_DIR"
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          DIST_DIR="$GITHUB_WORKSPACE/dist"
+
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" \
+              "$DIST_DIR"/*.zip \
+              --clobber
+          else
+            echo "No GitHub Release found for tag $TAG, skipping upload"
+          fi
