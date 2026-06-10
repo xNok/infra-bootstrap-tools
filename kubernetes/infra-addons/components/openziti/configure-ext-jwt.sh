@@ -3,9 +3,17 @@ set -e
 
 # Wait for controller API to be reachable
 echo "Waiting for OpenZiti controller API to be reachable..."
+RETRY_INTERVAL_SECONDS=5
+MAX_WAIT_SECONDS=300
+elapsed_seconds=0
 until curl -sk https://openziti-ziti-controller-client.openziti.svc.cluster.local:1280/edge/client/v1/version > /dev/null 2>&1; do
-    echo "Controller not ready. Retrying in 5 seconds..."
-    sleep 5
+    if [ "$elapsed_seconds" -ge "$MAX_WAIT_SECONDS" ]; then
+        echo "Timed out after ${MAX_WAIT_SECONDS} seconds waiting for OpenZiti controller API to become reachable."
+        exit 1
+    fi
+    echo "Controller not ready. Retrying in ${RETRY_INTERVAL_SECONDS} seconds..."
+    sleep "$RETRY_INTERVAL_SECONDS"
+    elapsed_seconds=$((elapsed_seconds + RETRY_INTERVAL_SECONDS))
 done
 echo "Controller is ready."
 
