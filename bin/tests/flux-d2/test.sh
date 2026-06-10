@@ -169,8 +169,18 @@ verify_openziti_stack() {
 
 
 verify_keycloak_stack() {
-  info "Waiting for keycloak HelmRelease to become ready..."
-  wait_ready "helmrelease/keycloak" "flux-system" "20m"
+  info "Waiting for Keycloak deployment to become ready..."
+  if ! kubectl wait --for=condition=available deployment/keycloak -n keycloak --timeout=10m; then
+    error "Keycloak deployment failed to become ready!"
+    echo "=== KEYCLOAK PODS ==="
+    kubectl get pods -n keycloak -o wide || true
+    echo "=== KEYCLOAK DEPLOYMENT ==="
+    kubectl describe deployment keycloak -n keycloak || true
+    echo "=== KEYCLOAK LOGS ==="
+    kubectl logs -n keycloak deployment/keycloak --all-containers=true --tail=-1 || true
+    exit 1
+  fi
+  success "Keycloak deployment is ready."
 
   info "Waiting for ziti-ext-jwt-config job to complete..."
   kubectl wait --for=condition=complete job/ziti-ext-jwt-config -n openziti --timeout=10m || {

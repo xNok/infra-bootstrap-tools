@@ -4,9 +4,12 @@
 Debug and resolve the `helmrelease/keycloak` installation timeout and the `ziti-ext-jwt-config` job failure in the local integration testing environment.
 
 ## Status
-- [x] Upgraded Keycloak HelmRelease chart version from `22.0.0` to `25.2.0` to pull a newer version.
-- [x] Attempted using `bitnamilegacy` repository overrides to bypass Bitnami registry restrictions.
-- [ ] Pivoting to the official Keycloak Operator to avoid Bitnami registry and Helm chart issues entirely.
-- [x] Implemented a health check loop in `configure-ext-jwt.sh` to wait for Keycloak OIDC before running OpenZiti commands.
-- [ ] Deploying the official Keycloak Operator, a standalone PostgreSQL instance, and importing the realm via `KeycloakRealmImport` CRD.
-- [ ] Verifying local integration test suite via `make test-flux-d2`.
+- [x] Confirmed the current CI failure comes from the Kind test path and the old Bitnami Keycloak HelmRelease approach.
+- [x] Confirmed `k3s` already excludes the Keycloak component while `kind` still includes it.
+- [ ] Replace the HelmRelease with a local Keycloak manifest tailored for Kind CI.
+- [ ] Update the OpenZiti external JWT setup to prefer Auth0 in production and Keycloak in Kind.
+- [ ] Re-run the Kind integration test after the manifest switch.
+
+## Current approach
+- Kind/CI should run a local Keycloak instance only for OpenZiti OIDC validation.
+- K3s/production should not depend on the local Keycloak install path and should use Auth0 when `auth0-config` is provided.
