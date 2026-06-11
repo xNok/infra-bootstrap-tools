@@ -1,0 +1,29 @@
+name: BATS Tests
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'bin/**'
+      - '.github/workflows/bats.yml'
+  pull_request:
+    paths:
+      - 'bin/**'
+      - '.github/workflows/bats.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install BATS
+        run: sudo apt-get update && sudo apt-get install -y bats
+
+      - name: Run BATS tests
+        run: bats bin/tests/ci
