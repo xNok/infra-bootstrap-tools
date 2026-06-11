@@ -10,7 +10,7 @@ generatorOptions:
   annotations:
     reconcile.fluxcd.io/watch: Enabled
 configMapGenerator:
-  - name: default-keycloak-values
-    namespace: flux-system
+  - name: keycloak-realm-import
+    namespace: keycloak
     files:
-      - values.yaml=default-keycloak.values.yaml
+      - ziti-realm.json
