@@ -48,7 +48,7 @@ teardown() {
   [ "$status" -eq 0 ]
 
   # Check if flux tag was called correctly
-  run grep "flux tag artifact oci://ghcr.io/testowner/manifests/kubernetes/my-artifact:abcdef1 --tag latest" "$TEST_TEMP_DIR/flux_calls.log"
+  run grep "flux push artifact oci://ghcr.io/testowner/manifests/kubernetes/my-artifact:latest --path=./my/path --source=https://github.com/repo --revision=abcdef1234567890" "$TEST_TEMP_DIR/flux_calls.log"
   [ "$status" -eq 0 ]
 
   # Check step summary
