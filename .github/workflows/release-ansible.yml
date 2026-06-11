@@ -59,33 +59,24 @@ jobs:
         run: pip install ansible-core
 
       - name: Install mikefarah/yq
-        run: |
-          sudo wget -qO /usr/local/bin/yq \
-            https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
-          sudo chmod +x /usr/local/bin/yq
+        run: ./bin/ci/lib/install-yq.sh
 
       - name: Extract version from tag
         id: get_version
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ] || [ "${{ github.event_name }}" == "workflow_call" ]; then
-            TAG="${{ inputs.release_tag || github.event.inputs.release_tag }}"
-          else
-            TAG="${{ github.ref_name }}"
-          fi
-          # Handle both v1.0.0 and workspace@1.0.0 formats
-          VERSION=$(echo "$TAG" | sed 's/^.*@//' | sed 's/^v//')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          echo "Version: $VERSION"
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUTS_RELEASE_TAG: ${{ inputs.release_tag || github.event.inputs.release_tag }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+        run: ./bin/ci/lib/extract-version.sh
 
       - name: Update collection version
         run: yq -i ".version = \"${{ steps.get_version.outputs.VERSION }}\"" ${{ inputs.collection_dir || 'ansible' }}/galaxy.yml
 
       - name: Build Ansible Collection
         id: build
-        run: |
-          OUTPUT=$(ansible-galaxy collection build ${{ inputs.collection_dir || 'ansible' }})
-          TARBALL=$(echo "$OUTPUT" | grep -o 'Created collection file .*.tar.gz' | sed 's/Created collection file //')
-          echo "TARBALL=$TARBALL" >> $GITHUB_OUTPUT
+        env:
+          COLLECTION_DIR: ${{ inputs.collection_dir || 'ansible' }}
+        run: ./bin/ci/build-ansible-collection.sh
 
       - name: Publish collection to Ansible Galaxy
         if: ${{ !(inputs.dry_run || github.event.inputs.dry_run) }}
@@ -98,17 +89,8 @@ jobs:
         if: ${{ !(inputs.dry_run || github.event.inputs.dry_run) }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ] || [ "${{ github.event_name }}" == "workflow_call" ]; then
-            TAG="${{ inputs.release_tag || github.event.inputs.release_tag }}"
-          else
-            TAG="${{ github.ref_name }}"
-          fi
-
-          if gh release view "$TAG" > /dev/null 2>&1; then
-            gh release upload "$TAG" \
-              ${{ steps.build.outputs.TARBALL }} \
-              --clobber
-          else
-            echo "No GitHub Release found for tag $TAG, skipping upload"
-          fi
+          EVENT_NAME: ${{ github.event_name }}
+          INPUTS_RELEASE_TAG: ${{ inputs.release_tag || github.event.inputs.release_tag }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          ASSET_PATH: ${{ steps.build.outputs.TARBALL }}
+        run: ./bin/ci/lib/upload-github-release-asset.sh
