@@ -22,8 +22,8 @@ spec:
         verify:
           provider: cosign
           matchOIDCIdentity:
-          - issuer: ^https://token\.actions\.githubusercontent\.com$
-            subject: ^https://github\.com/controlplaneio-fluxcd/charts/\.github/workflows/release\.yml@refs/tags/v\d+\.\d+\.\d+$
+            - issuer: ^https://token\.actions\.githubusercontent\.com$
+              subject: ^https://github\.com/controlplaneio-fluxcd/charts/\.github/workflows/release\.yml@refs/tags/v\d+\.\d+\.\d+$
     - apiVersion: helm.toolkit.fluxcd.io/v2
       kind: HelmRelease
       metadata:

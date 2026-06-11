@@ -38,7 +38,13 @@ flux push artifact "$OCI_REPO:$SHORT_SHA" \
     --revision="$HEAD_SHA"
 
 # Tag the artifact as latest
-flux tag artifact "$OCI_REPO:$SHORT_SHA" --tag latest
+# Since GHCR can have propagation delays causing 'manifest unknown' on immediate tag,
+# we simply push the artifact again with the 'latest' tag instead of using 'flux tag artifact'.
+flux push artifact "$OCI_REPO:latest" \
+    --path="$ARTIFACT_PATH" \
+    --source="$SOURCE_URL" \
+    --revision="$HEAD_SHA"
+
 
 # Output summary to GitHub step summary if running in CI
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then

@@ -1,4 +1,4 @@
-ARG CADDY_VERSION=2.10.0
+ARG CADDY_VERSION=2.8.4
 FROM caddy:${CADDY_VERSION}-builder-alpine AS builder
 
 RUN xcaddy build \
@@ -8,7 +8,6 @@ RUN xcaddy build \
     --with github.com/caddy-dns/digitalocean=github.com/xnok/caddy-dns-digitalocean@master \
     --replace github.com/libdns/digitalocean=github.com/xNok/libdns-digitalocean@master \
     --with github.com/mholt/caddy-dynamicdns
-
 
 FROM caddy:${CADDY_VERSION}-alpine
 

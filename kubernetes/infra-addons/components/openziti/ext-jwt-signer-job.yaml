@@ -1,0 +1,85 @@
+---
+# ServiceAccount + RBAC for the enrollment Job to read secrets and configmaps
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ziti-ext-jwt-configurer
+  namespace: openziti
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ziti-ext-jwt-configurer
+  namespace: openziti
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ziti-ext-jwt-configurer
+  namespace: openziti
+subjects:
+  - kind: ServiceAccount
+    name: ziti-ext-jwt-configurer
+    namespace: openziti
+roleRef:
+  kind: Role
+  name: ziti-ext-jwt-configurer
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ziti-ext-jwt-config
+  namespace: openziti
+  annotations:
+    # Re-run via: kubectl delete job ziti-ext-jwt-config -n openziti
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  template:
+    spec:
+      serviceAccountName: ziti-ext-jwt-configurer
+      restartPolicy: OnFailure
+      containers:
+        - name: ziti-ext-jwt
+          image: docker.io/openziti/ziti-cli:0.34.1
+          command:
+            - /bin/sh
+            - -c
+            - /scripts/configure-ext-jwt.sh
+          env:
+            - name: ZITI_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: openziti-ziti-controller-admin-secret
+                  key: admin-password
+            - name: AUTH0_ISSUER
+              valueFrom:
+                configMapKeyRef:
+                  name: auth0-config
+                  key: issuer
+                  optional: true
+            - name: AUTH0_JWKS_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: auth0-config
+                  key: jwks_endpoint
+                  optional: true
+            - name: AUTH0_AUDIENCE
+              valueFrom:
+                configMapKeyRef:
+                  name: auth0-config
+                  key: audience
+                  optional: true
+          volumeMounts:
+            - name: script-volume
+              mountPath: /scripts
+      volumes:
+        - name: script-volume
+          configMap:
+            name: ziti-ext-jwt-script
+            defaultMode: 0755

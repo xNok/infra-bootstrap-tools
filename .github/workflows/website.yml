@@ -52,6 +52,7 @@ jobs:
         with:
           name: images
           path: website/static/images/gallery
+          if-no-files-found: ignore
 
       - name: Setup Pages
         id: pages
