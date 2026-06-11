@@ -3,7 +3,7 @@
 setup() {
   export TEST_TEMP_DIR="$(mktemp -d)"
   export SCRIPT_DIR="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." >/dev/null 2>&1 && pwd)"
-  export SCRIPT="$SCRIPT_DIR/ci/publish-flux-artifact.sh"
+  export SCRIPT="$SCRIPT_DIR/ci/release-kubernetes.sh"
 
   # Mock 'git'
   mkdir -p "$TEST_TEMP_DIR/bin"
@@ -33,28 +33,27 @@ teardown() {
 }
 
 @test "script fails with insufficient arguments" {
-  run "$SCRIPT" "owner" "path" "url"
+  run "$SCRIPT" "owner" "tag" "dir"
   [ "$status" -eq 1 ]
   [[ "$output" == *"Usage:"* ]]
 }
 
 @test "script executes flux commands and updates summary" {
-  run "$SCRIPT" "TestOwner" "./my/path" "https://github.com/repo" "my-artifact"
+  run "$SCRIPT" "TestOwner" "kubernetes-infra-addons@1.0.0" "kubernetes" "https://github.com/repo"
 
   [ "$status" -eq 0 ]
 
-  # Check if flux push was called correctly
-  run grep "flux push artifact oci://ghcr.io/testowner/manifests/kubernetes/my-artifact:abcdef1 --path=./my/path --source=https://github.com/repo --revision=abcdef1234567890" "$TEST_TEMP_DIR/flux_calls.log"
+  run grep "flux push artifact oci://ghcr.io/testowner/manifests/kubernetes/infra-addons:abcdef1 --path=./kubernetes/infra-addons --source=https://github.com/repo --revision=abcdef1234567890" "$TEST_TEMP_DIR/flux_calls.log"
   [ "$status" -eq 0 ]
 
-  # Check if flux tag was called correctly
-  run grep "flux tag artifact oci://ghcr.io/testowner/manifests/kubernetes/my-artifact:abcdef1 --tag latest" "$TEST_TEMP_DIR/flux_calls.log"
+  run grep "flux tag artifact oci://ghcr.io/testowner/manifests/kubernetes/infra-addons:abcdef1 --tag latest --tag 1.0.0" "$TEST_TEMP_DIR/flux_calls.log"
   [ "$status" -eq 0 ]
 
-  # Check step summary
   [ -f "$GITHUB_STEP_SUMMARY" ]
-  run grep "### :rocket: Flux Artifact Published" "$GITHUB_STEP_SUMMARY"
+  run grep "### :rocket: Kubernetes Component Published" "$GITHUB_STEP_SUMMARY"
   [ "$status" -eq 0 ]
-  run grep "\`my-artifact\`" "$GITHUB_STEP_SUMMARY"
+  run grep "\`infra-addons\`" "$GITHUB_STEP_SUMMARY"
+  [ "$status" -eq 0 ]
+  run grep "\`1.0.0\`" "$GITHUB_STEP_SUMMARY"
   [ "$status" -eq 0 ]
 }

@@ -92,17 +92,6 @@ require_dependencies() {
   trap dump_debug_state ERR
 }
 
-wait_for_cluster_basics() {
-  info "Waiting for Kind cluster core services to become healthy..."
-
-  kubectl wait --for=condition=Ready node --all --timeout=2m
-  kubectl wait --for=condition=Available deployment/coredns -n kube-system --timeout=5m
-  kubectl wait --for=condition=Available deployment/local-path-provisioner -n local-path-storage --timeout=5m
-  kubectl wait --for=condition=Ready pod -l k8s-app=kube-dns -n kube-system --timeout=5m
-
-  success "Kind cluster core services are ready."
-}
-
 install_flux_operator() {
   info "Installing Flux Operator via Helm..."
   helm upgrade --install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator \
@@ -180,18 +169,8 @@ verify_openziti_stack() {
 
 
 verify_keycloak_stack() {
-  info "Waiting for Keycloak deployment to become ready..."
-  if ! kubectl wait --for=condition=available deployment/keycloak -n keycloak --timeout=10m; then
-    error "Keycloak deployment failed to become ready!"
-    echo "=== KEYCLOAK PODS ==="
-    kubectl get pods -n keycloak -o wide || true
-    echo "=== KEYCLOAK DEPLOYMENT ==="
-    kubectl describe deployment keycloak -n keycloak || true
-    echo "=== KEYCLOAK LOGS ==="
-    kubectl logs -n keycloak deployment/keycloak --all-containers=true --tail=-1 || true
-    exit 1
-  fi
-  success "Keycloak deployment is ready."
+  info "Waiting for keycloak HelmRelease to become ready..."
+  wait_ready "helmrelease/keycloak" "flux-system" "20m"
 
   info "Waiting for ziti-ext-jwt-config job to complete..."
   kubectl wait --for=condition=complete job/ziti-ext-jwt-config -n openziti --timeout=10m || {
@@ -209,7 +188,6 @@ verify_keycloak_stack() {
 
 main() {
   require_dependencies
-  wait_for_cluster_basics
   install_flux_operator
   publish_oci_artifacts
   validate_kustomize
