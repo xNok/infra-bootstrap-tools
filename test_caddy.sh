@@ -1,0 +1,2 @@
+#!/bin/bash
+docker buildx build ./ansible/roles/docker_swarm_app_caddy/assets
