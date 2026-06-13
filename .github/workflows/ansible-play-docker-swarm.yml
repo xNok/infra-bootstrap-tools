@@ -43,9 +43,7 @@ jobs:
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Run ansible-lint
-        run: |
-          make install-collection
-          ansible-lint ansible
+        run: ./bin/ci/ansible-lint.sh
 
   lock:
     # The type of runner that the job will run on
@@ -92,9 +90,7 @@ jobs:
         run: echo "$INVENTORY" > inventory/extra
 
       - name: run playbook
-        run: |
-          ansible-playbook -i ansible/playbooks/inventory ansible/playbooks/main.yml
         env:
           BRANCH_NAME: ${{ github.head_ref }}
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-
+        run: ./bin/ci/run-playbook.sh
