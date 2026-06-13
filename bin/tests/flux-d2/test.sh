@@ -178,6 +178,10 @@ main() {
   verify_openziti_stack
 
   echo -e "\n${GREEN}${BOLD}  ✔  Flux D2 bootstrap test completed successfully!${RESET}\n"
+
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+    echo "### :rocket: Flux D2 bootstrap test completed successfully" >> "$GITHUB_STEP_SUMMARY"
+  fi
 }
 
 main "$@"
