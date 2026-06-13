@@ -31,5 +31,4 @@ jobs:
           FLEET_NAME: kind
           SOURCE_URL: ${{ github.event.repository.html_url }}
           REVISION: ${{ github.sha }}
-        run: |
-          ./bin/tests/flux-d2/test.sh
+        run: ./bin/tests/flux-d2/test.sh
