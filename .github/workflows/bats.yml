@@ -26,4 +26,4 @@ jobs:
         run: ./bin/ci/lib/install-bats.sh
 
       - name: Run BATS tests
-        run: bats bin/tests/ci
+        run: ./bin/ci/lib/run-bats-tests.sh
