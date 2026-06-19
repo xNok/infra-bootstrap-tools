@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export TEST_REPORT="test-results.log"
+rm -f "$TEST_REPORT"
+touch "$TEST_REPORT"
+
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 ROOT_DIR=$(cd "${SCRIPT_DIR}/../../.." && pwd)
 
@@ -72,10 +76,7 @@ wait_ready() {
     kubectl get fluxinstances -n flux-system -o yaml || true
 
     echo "ERROR: Timed out waiting for ${resource} in ${namespace}"
-    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
-      echo "### :x: Flux D2 bootstrap test failed!" >> "$GITHUB_STEP_SUMMARY"
-      echo "Timed out waiting for \`${resource}\` in namespace \`${namespace}\`" >> "$GITHUB_STEP_SUMMARY"
-    fi
+    echo "FAIL: Timed out waiting for ${resource} in ${namespace}" >> "$TEST_REPORT"
     kubectl describe fluxinstances -n flux-system
     kubectl describe ocirepository -n flux-system
     kubectl get kustomization -n flux-system -o yaml
@@ -83,6 +84,7 @@ wait_ready() {
     exit 1
   fi
   success "Ready: ${resource}"
+  echo "PASS: Ready: ${resource}" >> "$TEST_REPORT"
 }
 
 # --- Phase Functions ---
@@ -156,10 +158,7 @@ verify_openziti_stack() {
   info "Waiting for ziti-router-enroll job to complete..."
   kubectl wait --for=condition=complete job/ziti-router-enroll -n openziti --timeout=5m || {
     error "ziti-router-enroll job failed!"
-    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
-      echo "### :x: Flux D2 bootstrap test failed!" >> "$GITHUB_STEP_SUMMARY"
-      echo "ziti-router-enroll job failed!" >> "$GITHUB_STEP_SUMMARY"
-    fi
+    echo "FAIL: ziti-router-enroll job failed!" >> "$TEST_REPORT"
     echo "=== ENROLL JOB LOGS ==="
     kubectl logs -n openziti -l job-name=ziti-router-enroll --all-containers=true --tail=-1 || true
     echo "=== ENROLL JOB DESCRIBE ==="
@@ -167,6 +166,7 @@ verify_openziti_stack() {
     exit 1
   }
   success "ziti-router-enroll job completed successfully."
+  echo "PASS: ziti-router-enroll job completed successfully." >> "$TEST_REPORT"
 
   info "Waiting for ziti-router HelmRelease to become ready..."
   wait_ready "helmrelease/ziti-router" "flux-system" "3m"
@@ -186,11 +186,6 @@ main() {
   verify_openziti_stack
 
   echo -e "\n${GREEN}${BOLD}  ✔  Flux D2 bootstrap test completed successfully!${RESET}\n"
-
-  if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
-    echo "### :white_check_mark: Flux D2 bootstrap test completed successfully!" >> "$GITHUB_STEP_SUMMARY"
-    echo "All resources have been bootstrapped and validated." >> "$GITHUB_STEP_SUMMARY"
-  fi
 }
 
 main "$@"
