@@ -18,10 +18,9 @@ MOCK
 teardown() {
   rm -f "$GITHUB_STEP_SUMMARY"
   rm -rf "$MOCK_BIN_DIR"
-  rm -f test_results.tap
 }
 
-@test "run-bats-tests.sh runs bats, creates tap output and writes to summary" {
+@test "run-bats-tests.sh runs bats, captures tap output and writes to summary" {
   run ./bin/ci/lib/run-bats-tests.sh
 
   [ "$status" -eq 0 ]
@@ -32,6 +31,6 @@ teardown() {
   run grep "ok 1 test pass" "$GITHUB_STEP_SUMMARY"
   [ "$status" -eq 0 ]
 
-  run grep "ok 1 test pass" test_results.tap
+  run grep "ok 1 test pass" <<< "$output"
   [ "$status" -eq 0 ]
 }
