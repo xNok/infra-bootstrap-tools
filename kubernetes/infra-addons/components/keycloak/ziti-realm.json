@@ -24,6 +24,9 @@
       "username": "ziti-user",
       "enabled": true,
       "email": "user@example.com",
+      "emailVerified": true,
+      "firstName": "Ziti",
+      "lastName": "User",
       "credentials": [
         {
           "type": "password",

@@ -52,7 +52,7 @@ else
 
     if ! ziti edge list ext-jwt-signers 'name="keycloak"' | grep -q "keycloak"; then
         echo "Creating Keycloak Ext JWT Signer..."
-        ziti edge create ext-jwt-signer "keycloak" "$$KEYCLOAK_ISSUER" -u "$$KEYCLOAK_JWKS_ENDPOINT" --audience "account" --claims-property "email"
+        ziti edge create ext-jwt-signer "keycloak" "$$KEYCLOAK_ISSUER" -u "$$KEYCLOAK_JWKS_ENDPOINT" --audience "openziti" --claims-property "email"
     else
         echo "Keycloak Ext JWT Signer already exists."
     fi
