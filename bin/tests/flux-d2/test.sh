@@ -133,10 +133,19 @@ bootstrap_flux() {
 
   wait_ready "fluxinstance/flux" "flux-system" "2m"
   wait_ready "ocirepository/flux-system" "flux-system" "1m"
+
+  info "Forcing reconciliation of flux-system source and kustomization..."
+  flux reconcile source oci flux-system || true
+  flux reconcile kustomization flux-system || true
+
   wait_ready "kustomization/flux-system" "flux-system" "2m"
 }
 
 verify_infra_addons() {
+  info "Forcing reconciliation of infra-addons source and kustomization..."
+  flux reconcile source oci infra-addons || true
+  flux reconcile kustomization infra-addons || true
+
   info "Waiting for infra-addons Kustomization to become ready..."
   wait_ready "kustomization/infra-addons" "flux-system" "5m"
 
@@ -169,8 +178,8 @@ verify_openziti_stack() {
 
 
 verify_keycloak_stack() {
-  info "Waiting for keycloak HelmRelease to become ready..."
-  wait_ready "helmrelease/keycloak" "flux-system" "20m"
+  info "Waiting for keycloak deployment to become ready..."
+  kubectl wait --for=condition=ready pod -l app=keycloak -n keycloak --timeout=5m
 
   info "Waiting for ziti-ext-jwt-config job to complete..."
   kubectl wait --for=condition=complete job/ziti-ext-jwt-config -n openziti --timeout=10m || {
@@ -179,7 +188,7 @@ verify_keycloak_stack() {
     kubectl logs -n openziti -l job-name=ziti-ext-jwt-config --all-containers=true --tail=-1 || true
     echo "=== EXT JWT JOB DESCRIBE ==="
     kubectl describe job ziti-ext-jwt-config -n openziti || true
-    # We don't exit 1 here yet, just warn if it fails for now
+    exit 1
   }
   success "ziti-ext-jwt-config job completed successfully."
 }

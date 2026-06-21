@@ -40,6 +40,7 @@ metadata:
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
+  ttlSecondsAfterFinished: 600
   template:
     spec:
       serviceAccountName: ziti-ext-jwt-configurer
