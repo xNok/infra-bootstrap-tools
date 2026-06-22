@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install BATS
-        run: sudo apt-get update && sudo apt-get install -y bats
+        run: ./bin/ci/lib/install-bats.sh
 
       - name: Run BATS tests
-        run: bats bin/tests/ci
+        run: ./bin/ci/lib/run-bats-tests.sh

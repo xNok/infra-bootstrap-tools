@@ -20,4 +20,8 @@ if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 fi
 
+if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+  echo "Extracted Version: $VERSION from Tag: $TAG" >> "$GITHUB_STEP_SUMMARY"
+fi
+
 echo "Version: $VERSION"
