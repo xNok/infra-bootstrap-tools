@@ -14,6 +14,7 @@ spec:
 
   # components are relative to the source root (infra-addons OCI root)
   components:
+    - ../components/keycloak
     - ../components/cert-manager
     - ../components/openziti
 

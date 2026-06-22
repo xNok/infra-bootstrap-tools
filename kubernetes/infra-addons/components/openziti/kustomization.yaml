@@ -6,6 +6,7 @@ resources:
   - controller.yaml
   - ziti-host.yaml
   - router-enrollment-job.yaml
+  - ext-jwt-signer-job.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -16,6 +17,10 @@ configMapGenerator:
     namespace: openziti
     files:
       - enroll-router.sh
+  - name: ziti-ext-jwt-script
+    namespace: openziti
+    files:
+      - configure-ext-jwt.sh
   - name: default-ziti-controller-values
     namespace: flux-system
     files:
