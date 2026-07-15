@@ -16,25 +16,35 @@ ansible-lint.pkg-path = "ansible-lint"
 TENV_VALIDATION = "sha"
 TENV_AUTO_INSTALL = "true"
 
+[hook]
+on-activate = '''
+  echo "Bootstrapping development shell..."
+  tenv tf install
+
+  if [ ! -d ".venv" ]; then
+    echo "Creating Python virtual environment..."
+    python3 -m venv .venv
+  fi
+
+  # Note: The venv is activated here strictly to run pip installs during the hook execution.
+  # The actual user subshell activation is handled via aliases in [profile] or standard sourcing.
+  source .venv/bin/activate
+
+  echo "Installing Python dependencies from requirements.txt..."
+  pip install -r requirements.txt
+  pip install -r agentic/requirements.txt
+
+  echo "Installing Ansible Galaxy roles and collections..."
+  ansible-galaxy install -r requirements.yml
+
+  echo "Installing pre-commit hooks..."
+  pre-commit install --install-hooks
+'''
+
 [profile]
 common = '''
-echo "Entering default development shell..."
-tenv tf install
-
-if [ ! -d ".venv" ]; then
-  echo "Creating Python virtual environment..."
-  python3 -m venv .venv
-fi
-echo "Activating Python virtual environment..."
-source .venv/bin/activate
-
-echo "Installing Python dependencies from requirements.txt..."
-pip install -r requirements.txt
-pip install -r agentic/requirements.txt
-
-echo "Installing Ansible Galaxy roles and collections..."
-ansible-galaxy install -r requirements.yml
-
-echo "Installing pre-commit hooks..."
-pre-commit install --install-hooks
+  # Automatically activate the virtual environment for the user's interactive shell session
+  if [ -f ".venv/bin/activate" ]; then
+    source .venv/bin/activate
+  fi
 '''
