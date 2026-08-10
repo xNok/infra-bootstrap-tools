@@ -56,7 +56,7 @@ jobs:
           cache: 'pip'
 
       - name: Install Ansible dependencies
-        run: pip install ansible-core
+        run: ./bin/ci/lib/install-ansible-core.sh
 
       - name: Install mikefarah/yq
         run: ./bin/ci/lib/install-yq.sh
