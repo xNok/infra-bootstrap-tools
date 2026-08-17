@@ -38,3 +38,21 @@ teardown() {
   run grep "VERSION=2.0.0" "$GITHUB_OUTPUT"
   [ "$status" -eq 0 ]
 }
+
+@test "extract-version.sh extracts version correctly from TAG env var" {
+  export TAG="package@3.0.0"
+
+  run ./bin/ci/lib/extract-version.sh
+
+  [ "$status" -eq 0 ]
+  [ "${lines[0]}" = "Version: 3.0.0" ]
+
+  run grep "VERSION=3.0.0" "$GITHUB_OUTPUT"
+  [ "$status" -eq 0 ]
+
+  run grep "version=3.0.0" "$GITHUB_OUTPUT"
+  [ "$status" -eq 0 ]
+
+  run grep "tag=package@3.0.0" "$GITHUB_OUTPUT"
+  [ "$status" -eq 0 ]
+}
