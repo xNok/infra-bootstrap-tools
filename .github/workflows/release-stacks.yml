@@ -62,10 +62,8 @@ jobs:
       - name: Extract version from tag
         id: version
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          INPUT_TAG: ${{ inputs.release_tag || github.event.inputs.release_tag }}
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: ./bin/ci/extract-version.sh "$EVENT_NAME" "$INPUT_TAG" "$RELEASE_TAG"
+          TAG: ${{ inputs.release_tag || github.event.release.tag_name || github.event.inputs.release_tag }}
+        run: ./bin/ci/lib/extract-version.sh
 
       - name: Create stack archives
         env:
