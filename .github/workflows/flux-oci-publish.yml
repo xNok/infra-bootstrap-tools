@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: nix develop .#flux --command bash -eo pipefail {0}
+        shell: IBT_SKIP_SHELL_SETUP=1 nix develop .#flux --command bash -eo pipefail {0}
     strategy:
       matrix:
         cluster:
@@ -58,7 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: nix develop .#flux --command bash -eo pipefail {0}
+        shell: IBT_SKIP_SHELL_SETUP=1 nix develop .#flux --command bash -eo pipefail {0}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -79,4 +79,3 @@ jobs:
 
       - name: Publish infra-addons artifact
         run: ./bin/ci/publish-flux-artifact.sh "${{ github.repository_owner }}" "./kubernetes/infra-addons" "${{ github.event.repository.html_url }}" "infra-addons"
-

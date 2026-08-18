@@ -33,7 +33,11 @@ MOCK_EOF
   # Mock hugo
   cat << 'MOCK_EOF' > "${MOCK_DIR}/hugo"
 #!/usr/bin/env bash
-echo "mock hugo $@"
+if [[ "$1" == "version" ]]; then
+  echo "hugo v0.147.3+extended linux/amd64 BuildDate=unknown"
+else
+  echo "mock hugo $@"
+fi
 MOCK_EOF
   chmod +x "${MOCK_DIR}/hugo"
 }
@@ -57,7 +61,7 @@ cd() {
   echo "mock cd $@"
 }
 export -f cd
-./bin/ci/build-website.sh "0.147.3" "/tmp/runner" "https://example.com"
+./bin/ci/build-website.sh "https://example.com"
 WRAPPER_EOF
   chmod +x "${MOCK_DIR}/test_wrapper.sh"
 
@@ -73,6 +77,6 @@ WRAPPER_EOF
   # Check if summary was populated
   run cat "$GITHUB_STEP_SUMMARY"
   [[ "$output" == *"### :rocket: Website Built Successfully"* ]]
-  [[ "$output" == *"**Hugo Version**: \`0.147.3\`"* ]]
+  [[ "$output" == *"**Hugo Version**: \`hugo v0.147.3+extended linux/amd64 BuildDate=unknown\`"* ]]
   [[ "$output" == *"**Base URL**: \`https://example.com\`"* ]]
 }
