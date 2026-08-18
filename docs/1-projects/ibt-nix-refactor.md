@@ -26,7 +26,7 @@ IBT is the core command-line interface and environment setup tool for the infra-
 ## Current State
 
 **Status**: Active Development / Refactoring  
-**Last Updated**: August 2026
+**Last Updated**: January 2025
 
 The project has two parallel implementations:
 1. ✅ **Current (Bash-based)**: Functional and in use
@@ -46,14 +46,9 @@ The project has two parallel implementations:
 - ✅ Automated dependency installation
 - ✅ Python virtual environment management
 - ✅ CI Integration (Ansible & lint workflows migrated to Nix)
-- ✅ Reusable Docker release workflow aligned with Nix-based CI shells after upstream workflow refactors
 - 🔄 Full feature parity with bash implementation
 - 🔄 Documentation updates
 - 🔄 Migration guide
-
-## Work Log
-
-- 2026-08-18: Resolved workflow merge conflicts by keeping the reusable Docker release workflow from `main` and reapplying the Nix shell migration in that shared workflow.
 
 ## Key Files and Directories
 
