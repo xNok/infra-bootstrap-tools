@@ -60,8 +60,6 @@ jobs:
 
 
 
-      - name: Install mikefarah/yq
-        run: ./bin/ci/lib/install-yq.sh
 
       - name: Extract version from tag
         id: get_version

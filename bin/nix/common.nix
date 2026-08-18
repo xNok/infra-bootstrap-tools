@@ -7,23 +7,22 @@ let
   
   # Core utilities and standard tools required across all environments
   basePackages = with pkgs; [
-    bats
-    cosign
     git
-    gh
     docker
     pre-commit
     tenv
     terraform-docs
+    yq-go
+    bats
   ];
 
   # Python ecosystem for scripting, linting, and agentic workflows
   pythonPackages = with pkgs; [
     python3
-    python3Packages.build
     python3Packages.pip
-    python3Packages.twine
     python3Packages.yamllint
+    python3Packages.build
+    python3Packages.twine
   ];
 
   # Ansible and infrastructure automation tools
@@ -70,42 +69,38 @@ let
       # Automatically install the correct version of Terraform when invoked
       export TENV_AUTO_INSTALL=true
 
-      if [ -n "''${IBT_SKIP_SHELL_SETUP:-}" ]; then
-        echo "Skipping interactive shell setup."
-      else
-        # Pre-install the pinned Terraform version so tenv shims resolve immediately (e.g. for pre-commit hooks)
-        tenv tf install
+      # Pre-install the pinned Terraform version so tenv shims resolve immediately (e.g. for pre-commit hooks)
+      tenv tf install
 
-        ${lib.optionalString withVenv ''
-        if [ ! -d ".venv" ]; then
-          echo "Creating Python virtual environment..."
-          python -m venv .venv
-        fi
-
-        echo "Activating Python virtual environment..."
-        source .venv/bin/activate
-        ''}
-
-        ${lib.optionalString withRootRequirements ''
-        echo "Installing Python dependencies from requirements.txt..."
-        pip install -r requirements.txt
-        ''}
-
-        ${lib.optionalString withAgenticRequirements ''
-        echo "Installing Python dependencies from agentic/requirements.txt..."
-        pip install -r agentic/requirements.txt
-        ''}
-
-        ${lib.optionalString withAnsibleGalaxy ''
-        echo "Installing Ansible Galaxy roles and collections..."
-        ansible-galaxy install -r requirements.yml
-        ''}
-
-        ${lib.optionalString withPreCommit ''
-        echo "Installing pre-commit hooks..."
-        pre-commit install --install-hooks
-        ''}
+      ${lib.optionalString withVenv ''
+      if [ ! -d ".venv" ]; then
+        echo "Creating Python virtual environment..."
+        python -m venv .venv
       fi
+
+      echo "Activating Python virtual environment..."
+      source .venv/bin/activate
+      ''}
+
+      ${lib.optionalString withRootRequirements ''
+      echo "Installing Python dependencies from requirements.txt..."
+      pip install -r requirements.txt
+      ''}
+
+      ${lib.optionalString withAgenticRequirements ''
+      echo "Installing Python dependencies from agentic/requirements.txt..."
+      pip install -r agentic/requirements.txt
+      ''}
+
+      ${lib.optionalString withAnsibleGalaxy ''
+      echo "Installing Ansible Galaxy roles and collections..."
+      ansible-galaxy install -r requirements.yml
+      ''}
+
+      ${lib.optionalString withPreCommit ''
+      echo "Installing pre-commit hooks..."
+      pre-commit install --install-hooks
+      ''}
 
       echo "${name} shell ready."
     '';

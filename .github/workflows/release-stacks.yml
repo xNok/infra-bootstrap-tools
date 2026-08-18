@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: IBT_SKIP_SHELL_SETUP=1 nix develop .#default --command bash -eo pipefail {0}
+        shell: nix develop .#default --command bash -eo pipefail {0}
     if: |
       github.event_name == 'workflow_call' ||
       github.event_name == 'workflow_dispatch' ||

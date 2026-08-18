@@ -41,7 +41,9 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: IBT_SKIP_SHELL_SETUP=1 nix develop .#docs --command bash -eo pipefail {0}
+        shell: nix develop .#docs --command bash -eo pipefail {0}
+    env:
+      HUGO_VERSION: 0.147.3
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -69,7 +71,7 @@ jobs:
           # For maximum backward compatibility with Hugo modules
           HUGO_ENVIRONMENT: production
           HUGO_ENV: production
-        run: ./bin/ci/build-website.sh "${{ steps.pages.outputs.base_url }}"
+        run: ./bin/ci/build-website.sh "${HUGO_VERSION}" "${{ runner.temp }}" "${{ steps.pages.outputs.base_url }}"
        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

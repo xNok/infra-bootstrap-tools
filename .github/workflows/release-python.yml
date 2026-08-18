@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: IBT_SKIP_SHELL_SETUP=1 nix develop .#default --command bash -eo pipefail {0}
+        shell: nix develop .#default --command bash -eo pipefail {0}
     # Run if it's workflow_call or manual dispatch. If release, run if the tag contains @ (Changesets workspace style).
     if: |
       github.event_name == 'workflow_call' ||
@@ -76,6 +76,8 @@ jobs:
         env:
           TAG: ${{ inputs.release_tag || github.event.release.tag_name || github.event.inputs.release_tag }}
         run: ./bin/ci/lib/extract-version.sh
+
+
 
       - name: Update version in pyproject.toml
         run: ./bin/ci/update-pyproject-version.sh "${{ inputs.package_dir || github.event.inputs.package_dir || 'agentic' }}" "${{ inputs.package_name || github.event.inputs.package_name || 'infra-bootstrap-tools-agentic' }}" "${{ steps.version.outputs.version }}"
