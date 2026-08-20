@@ -38,6 +38,6 @@ This project is a follow-up to the "journey-to-nix" article. The goal is to comp
 
 The article will be structured as a conversational, technical walkthrough of the user's `home.nix` and `flake.nix` in the `/home/xnok/.config/home-manager/` directory.
 
-- **Title:** A Walkthrough of My Home Manager Configuration
-- **Path:** `website/content/en/blog/home-manager-walkthrough/index.md` (overwriting the existing draft)
+- **Title:** My Personal Nix Configuration: Discoveries and Learnings
+- **Path:** `website/content/en/blog/home-manager-article/index.md`
 - **Frontmatter:** `draft: false` (or keeping it true until final user approval), proper tags, and a compelling summary.
