@@ -64,7 +64,9 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: ./bin/ci/extract-version-from-tag.sh "${{ github.event_name }}" "${{ inputs.release_tag || github.event.inputs.release_tag || github.event.release.tag_name }}"
+        env:
+          TAG: ${{ inputs.release_tag || github.event.release.tag_name || github.event.inputs.release_tag }}
+        run: ./bin/ci/lib/extract-version.sh
 
       - name: Setup Python
         uses: actions/setup-python@v5

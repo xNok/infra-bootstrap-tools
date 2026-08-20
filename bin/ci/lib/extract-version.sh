@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "${EVENT_NAME:-}" == "workflow_dispatch" ] || [ "${EVENT_NAME:-}" == "workflow_call" ]; then
+if [ -n "${TAG:-}" ]; then
+  # Allow overriding TAG directly
+  :
+elif [ "${EVENT_NAME:-}" == "workflow_dispatch" ] || [ "${EVENT_NAME:-}" == "workflow_call" ]; then
   TAG="${INPUTS_RELEASE_TAG:-}"
 else
   TAG="${GITHUB_REF_NAME:-}"
@@ -12,6 +15,9 @@ VERSION=$(echo "$TAG" | sed 's/^.*@//' | sed 's/^v//')
 
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+  # Backwards compatibility outputs
+  echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+  echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 fi
 
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
