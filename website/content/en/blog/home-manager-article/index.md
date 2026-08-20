@@ -171,7 +171,7 @@ By doing this, AppArmor permits Electron apps running from `/nix/store/` to inst
 
 Integrating 1Password to sign Git commits and manage SSH keys is a massive quality-of-life improvement. However, 1Password consists of two components that must communicate: the **CLI** (`op`) and the **GUI** desktop application.
 
-```mermaid
+```text
 graph TD
     CLI["1Password CLI (op)"] -->|Requests Auth| Socket["~/.1password/agent.sock"]
     Git["Git Commit Signing"] -->|Calls op-ssh-sign| Socket
