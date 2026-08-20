@@ -282,7 +282,7 @@ Adding this flake wrapper unlocked several critical capabilities for my setup:
 
 1. **The Almighty `flake.lock`**: The moment you build a flake, Nix generates a lockfile pinning every input (like the `nix-community/home-manager` repository and the `nixos/nixpkgs` branch) to a specific, immutable git commit hash. This guarantees 100% reproducibility. Whether I rebuild my system tomorrow, next month, or on a brand new laptop, the build will output the exact same binary configurations.
 
-2. **Declaring Custom Inputs with `extraSpecialArgs`**: This is where things get really interesting. I have internal tools and environments for instance a custom `antigravity-nix` overlay. With flakes, I can declare `antigravity` as an input and pass its evaluated package set directly down to my `home.nix` module using `extraSpecialArgs`.
+2. **Declaring Custom Inputs with `extraSpecialArgs`**: This is where things get really interesting. I have internal tools and environments, for instance, a custom `antigravity-nix` overlay. With flakes, I can declare `antigravity` as an input and pass its evaluated package set directly down to my `home.nix` module using `extraSpecialArgs`.
    
    This allows me to keep my custom tools isolated and modular. In `home.nix`, I can pull these custom packages directly from the module arguments without polluting global paths:
    ```nix
@@ -304,13 +304,13 @@ Wrapping your Home Manager configuration is just scratching the surface of what 
 * **Universal Application Running (`nix run`)**: Any software packaged with a flake can be executed directly from git. For example, running `nix run github:xNok/some-tool` fetches, builds, and executes the tool in an isolated sandbox without globally installing it.
 * **Reusable Templates**: You can use flakes to bootstrap new projects. Running `nix flake new -t github:nixos/templates#rust` instantly scaffolds a reproducible Rust project ready for development.
 
--The downside is that it feels you are writting more code while the original `home-manager` was just a matter of adding packages and editing the `home.nix` file. I guess once you have played enought with a tool you don't mind learning the extra mile it can take you. It's a trade-off I am happy to take out of curiosity but then i can't say my configuration is simple, it is not just a declarative config.
+The downside is that it feels like you are writing more code, while the original `home-manager` was just a matter of adding packages and editing the `home.nix` file. I guess once you have played enough with a tool, you don't mind going the extra mile. It's a trade-off I am happy to make out of curiosity, but then I can't say my configuration is simple; it is not just a declarative config.
 
-## Improving the everyday desktop experience
+## Improving the Everyday Desktop Experience
 
-Once your personal configuration is managed declaratively, i feelt like i was missing something usually apps like 1password auto start after you login. Luckily this is a behaviour we can get back, usually an installer will register the application as a service on the system no just a binary for the current user. We can use home manager to create the same service for our user.
+Once your personal configuration is managed declaratively, I felt like I was missing something. Usually, apps like 1Password auto-start after you log in. Luckily, this is a behavior we can get back. Usually, an installer will register the application as a service on the system, not just a binary for the current user. We can use Home Manager to create the same service for our user.
 
-For example you can manage 1password as a Systemd user service directly in your home configuration:
+For example, you can manage 1Password as a systemd user service directly in your home configuration:
 
 ```nix
 systemd.user.services.onepassword = {
@@ -328,7 +328,7 @@ systemd.user.services.onepassword = {
 };
 ```
 
-I thing this is a nice compromise between simplicity and power. I do not need to mess with systemd config even this is managed as code now.
+I think this is a nice compromise between simplicity and power. I do not need to mess with systemd configs manually, since even this is managed as code now.
 
 ## Conclusion: Key Takeaways & The Reality of Home Manager
 
@@ -340,9 +340,9 @@ I thing this is a nice compromise between simplicity and power. I do not need to
    * **PAM and Polkit**: Authorizing biometrics and fingerprint sensors from a user-space Nix package.
    * **SUID and SGID**: Understanding how the OS checks process credentials and group ownerships for sockets.
 
-Ultimately, while you will hit hurdles when packaging desktop applications, the benefits of keeping your system tidy is worth the effort. If you got time for it of course it forces you to learn how your Linux system behaves under the hood—making you not just a better Nix user, but a more knowledgeable Linux administrator.
+Ultimately, while you will hit hurdles when packaging desktop applications, the benefits of keeping your system tidy are worth the effort. If you have the time for it, of course, it forces you to learn how your Linux system behaves under the hood—making you not just a better Nix user, but a more knowledgeable Linux administrator.
 
-I would recommend nix shell and flake to anyone it really a good solution to manage project tools, couple this with direnv it is just magic. The move to home-manager after the fact is more a nerd move, it seems great on paper but in reality it is a bit of a hassle and have to do changes outside of home-manager config for thing to work properly it kinda defeats the purpose of having it if you have to do workarounds anyway.
+I would recommend Nix shell and flakes to anyone; it's a really good solution to manage project tools, and coupled with direnv, it is just magic. The move to Home Manager after the fact is more of a nerd move—it seems great on paper, but in reality, it is a bit of a hassle. Having to make changes outside of the Home Manager config for things to work properly kind of defeats the purpose of having it if you have to use workarounds anyway.
 
 ---
 
