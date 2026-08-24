@@ -24,7 +24,8 @@ jobs:
           node-version: 20
           cache: 'yarn'
 
-      - run: yarn
+      - name: Install dependencies
+        run: ./bin/ci/install-node-deps.sh
 
       - name: Create Release Pull Request or Publish
         id: changesets
