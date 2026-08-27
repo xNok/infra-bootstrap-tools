@@ -1,0 +1,23 @@
+name: Conftest Policy Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+      - 'policies/**'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'policies/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run conftest policies
+        run: ./bin/ci/run-conftest.sh
