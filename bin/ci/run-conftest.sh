@@ -4,7 +4,7 @@ set -e
 # Define root directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${ROOT_DIR:-$(cd "${SCRIPT_DIR}/../.." && pwd)}"
-CONFTEST_VERSION="0.55.0"
+CONFTEST_VERSION="0.69.0"
 CONFTEST_TAR="conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
 
 echo "Checking for conftest..."
@@ -48,6 +48,10 @@ if [[ -n "${GITHUB_STEP_SUMMARY}" ]]; then
         echo "</details>"
     } >> "${GITHUB_STEP_SUMMARY}"
 fi
+
+# Generate Documentation
+echo "Generating policy documentation..."
+"${CONFTEST_BIN}" doc policies/ci/ > policies/POLICIES_REFERENCE.md
 
 rm -f "${LOG_FILE}"
 if [[ -n "${TMP_DIR:-}" && -d "${TMP_DIR}" ]]; then

@@ -37,9 +37,6 @@ jobs:
   package-and-release:
     name: Package Stacks and Upload to Release
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: nix develop .#default --command bash -eo pipefail {0}
     if: |
       github.event_name == 'workflow_call' ||
       github.event_name == 'workflow_dispatch' ||
@@ -52,12 +49,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.release_tag || github.event.release.tag_name || github.event.inputs.release_tag }}
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
-
-      - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Extract version from tag
         id: version

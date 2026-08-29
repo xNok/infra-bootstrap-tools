@@ -8,7 +8,11 @@ setup() {
     # Mock conftest to always succeed
     cat << 'INNER_EOF' > "$MOCK_BIN_DIR/conftest"
 #!/usr/bin/env bash
-echo "Mock conftest executed"
+if [[ "$1" == "test" ]]; then
+    echo "Mock conftest executed"
+elif [[ "$1" == "doc" ]]; then
+    echo "Mock conftest doc executed"
+fi
 INNER_EOF
     chmod +x "$MOCK_BIN_DIR/conftest"
 
@@ -23,16 +27,21 @@ INNER_EOF
 teardown() {
     rm -rf "$MOCK_BIN_DIR"
     rm -f "$GITHUB_STEP_SUMMARY"
+    rm -f policies/POLICIES_REFERENCE.md
 }
 
-@test "run-conftest.sh executes conftest successfully" {
+@test "run-conftest.sh executes conftest successfully and generates docs" {
     run ./bin/ci/run-conftest.sh
 
     # Assert successful execution
     [ "$status" -eq 0 ]
 
-    # Assert conftest output is captured
+    # Assert conftest test output is captured
     [[ "$output" == *"Mock conftest executed"* ]]
+
+    # Assert conftest doc was executed and file created
+    run cat policies/POLICIES_REFERENCE.md
+    [[ "$output" == *"Mock conftest doc executed"* ]]
 
     # Assert GITHUB_STEP_SUMMARY is populated correctly
     run cat "$GITHUB_STEP_SUMMARY"
@@ -41,13 +50,17 @@ teardown() {
 }
 
 @test "run-conftest.sh reports failure when conftest fails" {
-    # Override the mock to fail
+    # Override the mock to fail on test
     cat << 'INNER_EOF' > "$MOCK_BIN_DIR/conftest"
 #!/usr/bin/env bash
-echo "Mock conftest failed"
+if [[ "$1" == "test" ]]; then
+    echo "Mock conftest failed"
+    (return 1 2>/dev/null) || command exit 1
+elif [[ "$1" == "doc" ]]; then
+    echo "Mock conftest doc executed"
+fi
 INNER_EOF
-    # Remove exit to avoid parsing errors in the heredoc, use return or false
-    echo "(return 1 2>/dev/null) || command exit 1" >> "$MOCK_BIN_DIR/conftest"
+    chmod +x "$MOCK_BIN_DIR/conftest"
 
     run ./bin/ci/run-conftest.sh
 

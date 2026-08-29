@@ -40,9 +40,6 @@ jobs:
   publish:
     name: Build and Publish Ansible Collection
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: nix develop .#ansible --command bash -eo pipefail {0}
     permissions:
       contents: write
       packages: write
@@ -52,14 +49,17 @@ jobs:
         with:
           ref: ${{ inputs.release_tag || github.event.inputs.release_tag || github.ref }}
 
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
 
-      - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@v8
+      - name: Install Ansible dependencies
+        run: pip install ansible-core
 
-
-
+      - name: Install mikefarah/yq
+        run: ./bin/ci/lib/install-yq.sh
 
       - name: Extract version from tag
         id: get_version

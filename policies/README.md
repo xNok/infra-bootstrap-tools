@@ -18,6 +18,11 @@ To test configuration files (like GitHub Actions workflows) against the policies
     conftest test .github/workflows/*.yml -p policies/ci/
     ```
 
+### Documentation
+
+Policy documentation is generated using the `conftest doc` command, extracting metadata from the Rego policies into Markdown.
+The generated reference can be found in [POLICIES_REFERENCE.md](POLICIES_REFERENCE.md).
+
 ### CI/CD Integration
 
-These policies are automatically enforced in CI using a dedicated GitHub Actions workflow (`.github/workflows/conftest.yml`), which uses `conftest` via the `bin/ci/run-conftest.sh` script to check configuration files.
+These policies are automatically enforced in CI using a dedicated GitHub Actions workflow (`.github/workflows/conftest.yml`), which uses `conftest` via the `bin/ci/run-conftest.sh` script to check configuration files and generate documentation.

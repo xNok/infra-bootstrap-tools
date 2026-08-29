@@ -67,6 +67,8 @@ WRAPPER_EOF
   [ "$status" -eq 0 ]
 
   # Check if mock commands were called
+  [[ "$output" == *"mock wget -O /tmp/runner/hugo.deb https://github.com/gohugoio/hugo/releases/download/v0.147.3/hugo_extended_0.147.3_linux-amd64.deb"* ]]
+  [[ "$output" == *"mock sudo dpkg -i /tmp/runner/hugo.deb"* ]]
   [[ "$output" == *"mock cd website"* ]]
   [[ "$output" == *"mock hugo --gc --minify --baseURL https://example.com/"* ]]
 
