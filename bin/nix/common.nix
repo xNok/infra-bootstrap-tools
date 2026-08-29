@@ -12,6 +12,8 @@ let
     pre-commit
     tenv
     terraform-docs
+    yq-go
+    bats
   ];
 
   # Python ecosystem for scripting, linting, and agentic workflows
@@ -19,6 +21,8 @@ let
     python3
     python3Packages.pip
     python3Packages.yamllint
+    python3Packages.build
+    python3Packages.twine
   ];
 
   # Ansible and infrastructure automation tools

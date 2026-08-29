@@ -17,13 +17,20 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    defaults:
+      run:
+        shell: nix develop .#default --command bash -eo pipefail {0}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install BATS
-        run: ./bin/ci/lib/install-bats.sh
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
 
       - name: Run BATS tests
         run: ./bin/ci/lib/run-bats-tests.sh
