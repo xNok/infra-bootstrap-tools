@@ -51,7 +51,10 @@ fi
 
 # Generate Documentation
 echo "Generating policy documentation..."
-"${CONFTEST_BIN}" doc policies/ci/ > policies/POLICIES_REFERENCE.md
+mkdir -p .conftest_doc_tmp
+"${CONFTEST_BIN}" doc policies/ci/ -o .conftest_doc_tmp/
+cat .conftest_doc_tmp/ci.md > policies/POLICIES_REFERENCE.md
+rm -rf .conftest_doc_tmp
 
 rm -f "${LOG_FILE}"
 if [[ -n "${TMP_DIR:-}" && -d "${TMP_DIR}" ]]; then

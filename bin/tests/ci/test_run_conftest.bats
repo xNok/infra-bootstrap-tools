@@ -12,6 +12,9 @@ if [[ "$1" == "test" ]]; then
     echo "Mock conftest executed"
 elif [[ "$1" == "doc" ]]; then
     echo "Mock conftest doc executed"
+    # conftest doc with -o creates a file with the name of the folder inside the output dir
+    mkdir -p "$4"
+    echo "Mock markdown content" > "$4/ci.md"
 fi
 INNER_EOF
     chmod +x "$MOCK_BIN_DIR/conftest"
@@ -41,7 +44,7 @@ teardown() {
 
     # Assert conftest doc was executed and file created
     run cat policies/POLICIES_REFERENCE.md
-    [[ "$output" == *"Mock conftest doc executed"* ]]
+    [[ "$output" == *"Mock markdown content"* ]]
 
     # Assert GITHUB_STEP_SUMMARY is populated correctly
     run cat "$GITHUB_STEP_SUMMARY"
@@ -58,6 +61,8 @@ if [[ "$1" == "test" ]]; then
     (return 1 2>/dev/null) || command exit 1
 elif [[ "$1" == "doc" ]]; then
     echo "Mock conftest doc executed"
+    mkdir -p "$4"
+    echo "Mock markdown content" > "$4/ci.md"
 fi
 INNER_EOF
     chmod +x "$MOCK_BIN_DIR/conftest"

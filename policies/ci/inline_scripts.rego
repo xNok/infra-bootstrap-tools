@@ -1,7 +1,16 @@
+# METADATA
+# title: CI Policies
+# description: Policies enforcing CI/CD conventions and best practices.
+# scope: package
 package main
 
-# Deny any run step that contains a newline, suggesting it is a multiline inline script
-deny[msg] {
+import rego.v1
+
+# METADATA
+# title: Prevent Multiline Inline Scripts
+# description: Denies any run step that contains a newline, suggesting it is a multiline inline script. All multi-line scripts should be extracted to dedicated files.
+# scope: rule
+deny contains msg if {
   # Match all jobs in the workflow
   some job_id
   job := input.jobs[job_id]
