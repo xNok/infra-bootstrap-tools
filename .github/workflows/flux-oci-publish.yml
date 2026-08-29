@@ -25,6 +25,9 @@ permissions:
 jobs:
   publish-fleet:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop .#flux --command bash -eo pipefail {0}
     strategy:
       matrix:
         cluster:
@@ -34,8 +37,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@main
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -49,12 +56,19 @@ jobs:
 
   publish-infra-addons:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop .#flux --command bash -eo pipefail {0}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@main
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -65,4 +79,3 @@ jobs:
 
       - name: Publish infra-addons artifact
         run: ./bin/ci/publish-flux-artifact.sh "${{ github.repository_owner }}" "./kubernetes/infra-addons" "${{ github.event.repository.html_url }}" "infra-addons"
-

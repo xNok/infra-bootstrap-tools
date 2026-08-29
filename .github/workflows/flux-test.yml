@@ -13,8 +13,17 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop .#flux --command bash -eo pipefail {0}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
 
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.14.0
@@ -22,8 +31,6 @@ jobs:
           cluster_name: kind
           registry: true
 
-      - name: Setup Flux CLI
-        uses: fluxcd/flux2/action@main
 
       - name: Run Test Script
         env:
