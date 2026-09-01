@@ -1,7 +1,12 @@
+# METADATA
+# title: No Multiline Inline Scripts
+# description: Denies GitHub Actions steps that contain a newline in their `run` command, ensuring scripts are extracted to dedicated files in the `bin/ci` directory.
 package main
 
+import rego.v1
+
 # Deny any run step that contains a newline, suggesting it is a multiline inline script
-deny[msg] {
+deny contains msg if {
   # Match all jobs in the workflow
   some job_id
   job := input.jobs[job_id]
