@@ -14,6 +14,7 @@ let
     terraform-docs
     yq-go
     bats
+    just
   ];
 
   # Python ecosystem for scripting, linting, and agentic workflows
