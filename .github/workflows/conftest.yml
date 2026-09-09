@@ -1,0 +1,21 @@
+name: Conftest Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  conftest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate with Conftest
+        env:
+          CONFTEST_VERSION: "v0.69.0"
+        run: ./bin/ci/run-conftest.sh
