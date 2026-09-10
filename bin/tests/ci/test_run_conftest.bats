@@ -16,39 +16,14 @@ setup() {
 
   export GITHUB_STEP_SUMMARY="$(mktemp)"
 
-  # Mock wget
-  cat << 'SCRIPT' > "${MOCK_BIN_DIR}/wget"
-#!/bin/bash
-echo "Mock wget called with: $@"
-SCRIPT
-  chmod +x "${MOCK_BIN_DIR}/wget"
-
-  # Mock tar
-  cat << 'SCRIPT' > "${MOCK_BIN_DIR}/tar"
-#!/bin/bash
-echo "Mock tar called with: $@"
-# create mock conftest binary
-for arg in "$@"; do
-    if [[ "$arg" == "-C" ]]; then
-        # The next arg is the directory
-        shift
-        dir="$1"
-        touch "${dir}/conftest"
-        chmod +x "${dir}/conftest"
-
-        # mock conftest to be a bash script that just returns success
-        cat << 'CONFTEST' > "${dir}/conftest"
+  # Mock conftest binary directly
+  cat << 'CONFTEST' > "${MOCK_BIN_DIR}/conftest"
 #!/bin/bash
 echo "1..1"
 echo "ok 1 - test.yml"
 exit 0
 CONFTEST
-        break
-    fi
-    shift
-done
-SCRIPT
-  chmod +x "${MOCK_BIN_DIR}/tar"
+  chmod +x "${MOCK_BIN_DIR}/conftest"
 }
 
 teardown() {
