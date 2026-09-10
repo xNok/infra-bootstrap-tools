@@ -1,4 +1,5 @@
 ---
+og_image: "/images/og/hugo.png"
 title: "Hugo"
 weight: 4
 ---

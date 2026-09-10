@@ -1,4 +1,5 @@
 ---
+og_image: "/images/og/gs1-getting-started.png"
 title: "🚀 Getting Started"
 slug: getting-started-deploy-your-infrastructure
 ---

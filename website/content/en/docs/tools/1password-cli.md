@@ -1,4 +1,5 @@
 ---
+og_image: "/images/og/1password-cli.png"
 title: "1Password CLI"
 weight: 2
 ---

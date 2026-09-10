@@ -1,4 +1,5 @@
 ---
+og_image: "/images/og/nix.png"
 title: Nix Environment
 description: Using Nix and Nix Flakes for reproducible development environments in the infra-bootstrap-tools project
 weight: 10

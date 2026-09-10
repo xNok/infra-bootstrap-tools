@@ -1,4 +1,5 @@
 ---
+og_image: "/images/og/overview.png"
 title: Overview
 url: "docs/overview"
 aliases:

@@ -1,4 +1,5 @@
 ---
+og_image: "/images/og/boilerplate.png"
 title: "Boilerplate (Gruntwork)"
 slug: boilerplate
 weight: 3

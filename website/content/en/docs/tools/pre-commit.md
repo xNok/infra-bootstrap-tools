@@ -1,4 +1,5 @@
 ---
+og_image: "/images/og/pre-commit.png"
 title: "Pre-commit: Your First Line of Defense for Clean Code"
 slug: pre-commit
 description: > 
