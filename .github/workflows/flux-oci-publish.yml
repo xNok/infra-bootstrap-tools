@@ -25,6 +25,7 @@ permissions:
 jobs:
   publish-fleet:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         shell: nix develop .#flux --command bash -eo pipefail {0}
@@ -56,6 +57,7 @@ jobs:
 
   publish-infra-addons:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         shell: nix develop .#flux --command bash -eo pipefail {0}
