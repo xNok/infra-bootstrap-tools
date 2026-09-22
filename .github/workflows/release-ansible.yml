@@ -40,6 +40,7 @@ jobs:
   publish:
     name: Build and Publish Ansible Collection
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         shell: nix develop .#ansible --command bash -eo pipefail {0}

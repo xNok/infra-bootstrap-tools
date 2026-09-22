@@ -23,11 +23,15 @@ concurrency:
   cancel-in-progress: false
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
+permissions:
+  contents: read
+
 jobs:
 
   validate:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         shell: nix develop .#ansible --command bash -eo pipefail {0}
@@ -48,6 +52,7 @@ jobs:
   lock:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -63,6 +68,7 @@ jobs:
   run-playbook:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         shell: nix develop .#ansible --command bash -eo pipefail {0}

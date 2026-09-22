@@ -48,6 +48,7 @@ jobs:
   publish:
     name: Build and Publish Python Package
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         shell: nix develop .#default --command bash -eo pipefail {0}

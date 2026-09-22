@@ -37,6 +37,7 @@ jobs:
   package-and-release:
     name: Package Stacks and Upload to Release
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         shell: nix develop .#default --command bash -eo pipefail {0}
