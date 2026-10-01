@@ -49,15 +49,15 @@ jobs:
       packages: write
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.release_tag || github.event.inputs.release_tag || github.ref }}
 
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
+        uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
 
       - name: Cache Nix store
-        uses: DeterminateSystems/magic-nix-cache-action@v8
+        uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
 
 
 
@@ -81,7 +81,7 @@ jobs:
 
       - name: Publish collection to Ansible Galaxy
         if: ${{ !(inputs.dry_run || github.event.inputs.dry_run) }}
-        uses: artis3n/ansible_galaxy_collection@v2
+        uses: artis3n/ansible_galaxy_collection@415a92b829b5898b6e8ca1dd7a69fe2a1e5fd4c0 # v2
         with:
           api_key: ${{ secrets.GALAXY_API_KEY }}
           collection_dir: ${{ inputs.collection_dir || 'ansible' }}
