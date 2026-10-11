@@ -19,9 +19,6 @@ HUGO_VERSION="$1"
 RUNNER_TEMP="$2"
 BASE_URL="$3"
 
-echo "Installing Hugo v${HUGO_VERSION}..."
-wget -O "${RUNNER_TEMP}/hugo.deb" "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
-sudo dpkg -i "${RUNNER_TEMP}/hugo.deb"
 
 echo "Building website with Hugo..."
 cd website

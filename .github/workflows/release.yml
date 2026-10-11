@@ -42,3 +42,27 @@ jobs:
       release_tag: ${{ github.ref_name }}
       package_dir: 'kubernetes'
       package_name: 'kubernetes-infra-addons'
+
+  publish-caddy:
+    if: startsWith(github.ref_name, 'caddy@')
+    uses: ./.github/workflows/release-docker.yml
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    with:
+      image_name: ${{ github.repository }}-caddy
+      context: ./ansible/roles/docker_swarm_app_caddy/assets
+      push_image: true
+
+  publish-openziti-bootstrap:
+    if: startsWith(github.ref_name, 'openziti-bootstrap@')
+    uses: ./.github/workflows/release-docker.yml
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    with:
+      image_name: ${{ github.repository }}-openziti-bootstrap
+      context: ./stacks/openziti/bootstrap
+      push_image: true
