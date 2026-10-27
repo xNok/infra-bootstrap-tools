@@ -14,8 +14,9 @@ Discover high-standard quality patterns in infrastructure as code across this re
    - Eliminating "works on my machine" issues using Nix (`flake.nix`) and Flox (`.flox/env/manifest.toml`), wrapped with a unified dispatcher (`ibt`).
 4. **GitOps & Immutable OCI Infrastructure Artifact Packaging (Flux CLI & GHCR)**
    - Packaging Docker Swarm stacks and Kubernetes manifests as immutable, versioned OCI artifacts pushed to GHCR instead of running ad-hoc raw git deployments.
-5. **Intentional & Human-Centric Release Management (Changesets)**
-   - Replacing noisy automated release bots with human-authored Change files (`.changeset/`) that clearly articulate release intent and semver impact across monorepo packages.
+5. **Multi-Granular Tree / Bill of Materials (BOM) Release Strategy (Changesets)**
+   - Hierarchical versioning architecture managing granular leaf packages (individual Ansible roles like `ansible-role-docker`, individual stacks like `docker-stack-n8n`), aggregator collection BOMs (`ansible/package.json`, `stacks/package.json`), and the root monorepo.
+   - Using Changesets to automatically propagate semver version bumps up the dependency tree while maintaining exact BOM bill-of-materials traceability and human-written changelogs.
 6. **Defense-in-Depth Secret Hygiene & Dynamic Credential Injection**
    - Utilizing pre-commit secret scanners, SOPS, 1Password CLI injection, and automated Docker Secret rotation roles in Ansible to avoid persistent plain-text credentials.
 7. **Modular, Idempotent IaC Architecture (Terraform + Ansible + Docker Swarm / K3s)**
