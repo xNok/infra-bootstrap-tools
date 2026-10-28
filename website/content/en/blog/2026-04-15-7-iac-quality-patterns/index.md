@@ -2,6 +2,7 @@
 title: "7 Infrastructure as Code Quality Patterns for Production-Grade Repositories"
 date: 2026-04-15
 author: xNok
+draft: true
 summary: "Discover 7 essential Infrastructure as Code (IaC) quality patterns implemented in infra-bootstrap-tools, covering Policy-as-Code, BATS testing, Nix environments, Tree/BOM release architecture, and secret hygiene."
 tags:
   - Infrastructure as Code

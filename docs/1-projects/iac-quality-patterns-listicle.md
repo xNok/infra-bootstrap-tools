@@ -2,7 +2,7 @@
 
 ## Goal
 
-Discover high-standard quality patterns in infrastructure as code across this repository (`infra-bootstrap-tools`) and write an engaging listicle introducing them to be published on the website under `website/content/en/blog/7-iac-quality-patterns/index.md`.
+Discover high-standard quality patterns in infrastructure as code across this repository (`infra-bootstrap-tools`) and write an engaging listicle introducing them to be published on the website under `website/content/en/blog/2026-04-15-7-iac-quality-patterns/index.md`.
 
 ## Discovered Patterns
 
@@ -27,5 +27,6 @@ Discover high-standard quality patterns in infrastructure as code across this re
 - Title: 7 Infrastructure as Code Quality Patterns for Production-Grade Repositories
 - Date: 2026-04-15
 - Author: xNok
-- Location: `website/content/en/blog/7-iac-quality-patterns/index.md`
+- Draft Status: `draft: true`
+- Location: `website/content/en/blog/2026-04-15-7-iac-quality-patterns/index.md`
 - Content Guidelines alignment: Follows `website/CONTENT_GUIDELINES.md`, includes clear frontmatter, code examples, structured headings, and SEO-friendly summaries/tags.
