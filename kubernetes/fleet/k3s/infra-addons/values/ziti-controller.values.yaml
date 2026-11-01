@@ -1,1 +1,3 @@
-{}
+clientApi:
+  advertisedHost: "${ROUTER_ADVERTISED_HOST:-openziti-ziti-controller-client.openziti.svc.cluster.local}"
+  advertisedPort: 1280

@@ -29,6 +29,12 @@
     port: 8441
     proto: tcp
 
+- name: Allow OpenZiti Controller Client API
+  community.general.ufw:
+    rule: allow
+    port: 1280
+    proto: tcp
+
 - name: Allow OpenZiti Edge Router
   community.general.ufw:
     rule: allow

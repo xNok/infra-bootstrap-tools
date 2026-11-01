@@ -36,7 +36,26 @@ if [ -n "$$AUTH0_ISSUER" ] && [ -n "$$AUTH0_JWKS_ENDPOINT" ] && [ -n "$$AUTH0_AU
         echo "Auth0 Auth Policy already exists."
     fi
 else
-    echo "No Auth0 configuration detected. Falling back to local Keycloak for Kind testing..."
+    echo "No Auth0 configuration detected. Checking for local Keycloak..."
+
+    dns_check=0
+    while [ "$$dns_check" -lt 3 ]; do
+        set +e
+        curl -s -m 2 "$$KEYCLOAK_DISCOVERY_URL" > /dev/null 2>&1
+        curl_rc=$$?
+        set -e
+        if [ "$$curl_rc" -eq 6 ]; then
+            dns_check=$$((dns_check + 1))
+            sleep 2
+        else
+            break
+        fi
+    done
+
+    if [ "$$dns_check" -ge 3 ]; then
+        echo "No external IdP (Auth0 or Keycloak) detected on this cluster. Skipping Ext JWT setup."
+        exit 0
+    fi
 
     attempt=0
     until curl -sf "$$KEYCLOAK_DISCOVERY_URL" > /dev/null 2>&1; do
