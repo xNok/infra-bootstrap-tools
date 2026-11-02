@@ -1,4 +1,7 @@
 edge:
   advertisedHost: "ziti-router.openziti.svc.cluster.local"
+  service:
+    type: ClusterIP
 ctrl:
   endpoint: "openziti-ziti-controller-client.openziti.svc.cluster.local:1280"
+

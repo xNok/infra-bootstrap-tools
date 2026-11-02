@@ -4,13 +4,3 @@ kind: Component
 resources:
   - namespace.yaml
   - keycloak.yaml
-
-generatorOptions:
-  disableNameSuffixHash: true
-  labels:
-    reconcile.fluxcd.io/watch: Enabled
-configMapGenerator:
-  - name: keycloak-realm-import
-    namespace: keycloak
-    files:
-      - ziti-realm.json=data/ziti-realm.json

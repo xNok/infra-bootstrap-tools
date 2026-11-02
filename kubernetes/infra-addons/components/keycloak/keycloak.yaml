@@ -77,3 +77,4 @@ spec:
         - name: realm-import
           configMap:
             name: keycloak-realm-import
+            optional: true
