@@ -14,6 +14,7 @@ let
     terraform-docs
     yq-go
     bats
+    conftest
   ];
 
   # Python ecosystem for scripting, linting, and agentic workflows

@@ -1,0 +1,50 @@
+version = 1
+
+[install]
+python3.pkg-path = "python3"
+git.pkg-path = "git"
+docker.pkg-path = "docker"
+pre-commit.pkg-path = "pre-commit"
+tenv.pkg-path = "tenv"
+terraform-docs.pkg-path = "terraform-docs"
+pip.pkg-path = "python3Packages.pip"
+yamllint.pkg-path = "python3Packages.yamllint"
+ansible.pkg-path = "ansible"
+ansible-lint.pkg-path = "ansible-lint"
+
+[vars]
+TENV_VALIDATION = "sha"
+TENV_AUTO_INSTALL = "true"
+
+[hook]
+on-activate = '''
+  echo "Bootstrapping development shell..."
+  tenv tf install
+
+  if [ ! -d ".venv" ]; then
+    echo "Creating Python virtual environment..."
+    python3 -m venv .venv
+  fi
+
+  # Note: The venv is activated here strictly to run pip installs during the hook execution.
+  # The actual user subshell activation is handled via aliases in [profile] or standard sourcing.
+  source .venv/bin/activate
+
+  echo "Installing Python dependencies from requirements.txt..."
+  pip install -r requirements.txt
+  pip install -r agentic/requirements.txt
+
+  echo "Installing Ansible Galaxy roles and collections..."
+  ansible-galaxy install -r requirements.yml
+
+  echo "Installing pre-commit hooks..."
+  pre-commit install --install-hooks
+'''
+
+[profile]
+common = '''
+  # Automatically activate the virtual environment for the user's interactive shell session
+  if [ -f ".venv/bin/activate" ]; then
+    source .venv/bin/activate
+  fi
+'''

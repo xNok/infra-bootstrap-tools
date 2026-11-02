@@ -48,11 +48,12 @@ def check_mcp_hub_health(mcp_hub_url: str, max_retries: int = 30, delay: int = 2
     return False
 
 
-def preload_github_mcp_server(mcp_hub_url: str, github_token: str) -> bool:
+def preload_github_mcp_server(session: requests.Session, mcp_hub_url: str, github_token: str) -> bool:
     """
     Preload GitHub MCP server to mcp-hub.
 
     Args:
+        session: The requests.Session to use for the HTTP request
         mcp_hub_url: Base URL of MCP Hub
         github_token: GitHub personal access token
 
@@ -69,7 +70,7 @@ def preload_github_mcp_server(mcp_hub_url: str, github_token: str) -> bool:
     }
 
     try:
-        response = requests.post(
+        response = session.post(
             f"{mcp_hub_url}/api/servers",
             json=config,
             headers={"Content-Type": "application/json"},
@@ -92,11 +93,12 @@ def preload_github_mcp_server(mcp_hub_url: str, github_token: str) -> bool:
         return False
 
 
-def preload_jules_mcp_server(mcp_hub_url: str, jules_api_key: str, schema_path: str) -> bool:
+def preload_jules_mcp_server(session: requests.Session, mcp_hub_url: str, jules_api_key: str, schema_path: str) -> bool:
     """
     Preload Jules MCP server to mcp-hub using OpenAPI spec.
 
     Args:
+        session: The requests.Session to use for the HTTP request
         mcp_hub_url: Base URL of MCP Hub
         jules_api_key: Jules API key
         schema_path: Path to jules.schema.json OpenAPI spec
@@ -122,7 +124,7 @@ def preload_jules_mcp_server(mcp_hub_url: str, jules_api_key: str, schema_path: 
     }
 
     try:
-        response = requests.post(
+        response = session.post(
             f"{mcp_hub_url}/api/servers",
             json=config,
             headers={"Content-Type": "application/json"},
@@ -161,14 +163,15 @@ def preload_mcp_servers(
     print("\nPreloading MCP servers in parallel...")
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        future_github = executor.submit(preload_github_mcp_server, mcp_hub_url, github_token)
-        future_jules = executor.submit(
-            preload_jules_mcp_server, mcp_hub_url, jules_api_key, schema_path
-        )
+        with requests.Session() as session:
+            future_github = executor.submit(preload_github_mcp_server, session, mcp_hub_url, github_token)
+            future_jules = executor.submit(
+                preload_jules_mcp_server, session, mcp_hub_url, jules_api_key, schema_path
+            )
 
-        # Wait for both to complete
-        success_github = future_github.result()
-        success_jules = future_jules.result()
+            # Wait for both to complete
+            success_github = future_github.result()
+            success_jules = future_jules.result()
 
     return success_github and success_jules
 

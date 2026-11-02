@@ -28,6 +28,12 @@ teardown() {
   run grep "### :test_tube: BATS Test Results" "$GITHUB_STEP_SUMMARY"
   [ "$status" -eq 0 ]
 
+  run grep "<details><summary>Click to expand</summary>" "$GITHUB_STEP_SUMMARY"
+  [ "$status" -eq 0 ]
+
+  run grep "</details>" "$GITHUB_STEP_SUMMARY"
+  [ "$status" -eq 0 ]
+
   run grep "ok 1 test pass" "$GITHUB_STEP_SUMMARY"
   [ "$status" -eq 0 ]
 
