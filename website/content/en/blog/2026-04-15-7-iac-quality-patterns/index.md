@@ -72,15 +72,13 @@ By running `conftest test .github/workflows/ -p policies/ci/` during CI validati
 
 ## 2. Decoupled CI Execution & Automated Shell Script Testing (BATS)
 
-That last policy brings us directly to my biggest pet peeve in modern DevOps: **embedding dozens of lines of bash inside GitHub Actions YAML files**.
+I have always hated to see inline bash or Python or any other language in the pipeline because I know for a fact those are untested and unlinted code. There is nothing worse than knowing things can be unreliable.
 
-When you write multiline shell scripts inside workflow YAML, you create untestable, opaque glue code. You can't run it locally, you can't lint it easily with `shellcheck`, and debugging it turns into an agonizing loop: make a change, commit, push, wait for GitHub Actions to trigger, watch it fail, and repeat.
+The other thing is the big missed opportunity: if a script is useful in CI, it should also be useful for me to do things when I need to. I should never have to write a script to do something the CI does, like building an image.
 
-To escape this trap:
+So my rule of thumb is that CI should be calling a build tool—Maven, Just, or Make. If that doesn't apply, then write a script: it should work locally, and it should be tested. But how do you test bash? Surprisingly, not many people know that bash has a test framework: the same way Python has pytest, bash has [BATS](https://github.com/bats-core/bats-core)—and it is great.
 
-1. **Extract Logic to Executable Scripts**: All CI workflows delegate to dedicated scripts in `bin/ci/` (e.g., `bin/ci/build-website.sh`, `bin/ci/ansible-lint.sh`, or `bin/ci/publish-flux-artifact.sh`).
-2. **Strict Bash Headers & Modular Helpers**: Every script enforces strict mode (`set -euo pipefail`), traps cleanup routines with `mktemp`, and leverages shared helpers in `bin/ci/lib/`.
-3. **Automated Unit Testing with BATS**: We treat our shell scripts just like Python or Go application code by writing unit tests with the [Bash Automated Testing System (BATS)](https://github.com/bats-core/bats-core) in `bin/tests/ci/`.
+In `infra-bootstrap-tools`, all CI workflows delegate to dedicated scripts under `bin/ci/` (e.g., `bin/ci/build-website.sh`, `bin/ci/ansible-lint.sh`, or `bin/ci/publish-flux-artifact.sh`). Every script enforces strict bash mode (`set -euo pipefail`), traps cleanup routines with `mktemp`, and leverages shared helpers in `bin/ci/lib/`. And just like application code, we write automated unit tests with BATS in `bin/tests/ci/`.
 
 Here is an example from [`bin/tests/ci/build-website.bats`](https://github.com/xNok/infra-bootstrap-tools/blob/main/bin/tests/ci/build-website.bats):
 

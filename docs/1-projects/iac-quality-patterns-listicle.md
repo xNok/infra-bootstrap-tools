@@ -69,6 +69,7 @@ Copilot commented on PR #233 pointing out 3 critical inaccuracies in the origina
 
 - [x] Captured voice characteristics and Copilot review comments.
 - [x] Rewrote `website/content/en/blog/2026-04-15-7-iac-quality-patterns/index.md` in xNok's authentic, first-person voice.
+- [x] Integrated user's revisions for Introduction, Section 1 (Conftest/OPA/ADR), and Section 2 (inline scripts/build tools/BATS).
 - [x] Fixed broken references: pointed to real BATS test file `bin/tests/ci/build-website.bats`, actual Ansible role `ansible/roles/utils_rotate_docker_secrets`, and authentic Nix-powered Flux OCI publish workflow.
 - [x] Verified Hugo site build with `nix develop .#docs` (61 pages built with 0 errors).
 - [x] Ran Conftest (16/16 policy checks passed) and BATS (30/30 unit tests passed).
