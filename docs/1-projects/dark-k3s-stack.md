@@ -116,6 +116,7 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Reorganized `infra-addons` component layouts: segregated non-K8s resources into `scripts/`, `values/`, and `data/` subdirectories.
 - [Completed] Decoupled controllers and configurations across `infra-addons`: consolidated generic automation jobs inside `components/openziti` with secure-by-default `ClusterIP` baselines, moved test realm config to `fleet/kind`, and enabled overlay-free fleet configuration.
 - [Completed] Validated consolidated architecture in Kind CI test suite (Test Flux Bootstrap run #41533551349 passed in 8m 36s).
+- [Completed] Added Changeset tracking (`.changeset/k3s-openziti-zero-trust.md`) for releases across `kubernetes-infra-addons`, `ansible-collection-infra-bootstrap-tools`, `ansible-role-k3s-flux-bootstrap`, `ansible-role-k3s-os-hardening`, and `ansible-role-k3s-server`.
 - [Pending] Zero-Trust access to K3s API server verification from user client device.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
 
