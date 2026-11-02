@@ -110,6 +110,9 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Configured OpenZiti external ingress and IP SANs via dynamic `${ROUTER_ADVERTISED_HOST}` substitution without committing public IPs.
 - [Completed] Verified zero-trust `k3s` service routing and generated mobile/laptop enrollment credentials.
 - [Completed] Opened draft Pull Request [#234](https://github.com/xNok/infra-bootstrap-tools/pull/234) with CI pipeline checks running.
+- [Completed] Fixed Keycloak security red flag: replaced plaintext admin credentials with `secretKeyRef` pointing to `keycloak-admin-credentials`, and added bootstrap secrets step in `test.sh`.
+- [Completed] Fixed `reconcile.fluxcd.io/watch` bug: switched from `annotations:` to `labels:` in `generatorOptions` across all kustomizations.
+- [Completed] Reorganized `infra-addons` component layouts: segregated non-K8s resources into `scripts/`, `values/`, and `data/` subdirectories.
 - [Pending] Zero-Trust access to K3s API server verification from user client device.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
 

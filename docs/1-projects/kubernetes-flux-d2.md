@@ -148,23 +148,23 @@ The component default (`default-trust-manager.values.yaml`) ships `app.trust.nam
 
 ## 2026-04-06 Runtime Debugging — OpenZiti Enrollment & Flux ConfigMap Watch
 
-### ConfigMap watch annotation required for immediate HelmRelease reconciliation
+### ConfigMap watch label required for immediate HelmRelease reconciliation
 
-Without the annotation `reconcile.fluxcd.io/watch: Enabled` on `valuesFrom` ConfigMaps, a HelmRelease only reconciles on its `interval` timer — it does **not** react to ConfigMap changes immediately. This means updating a default values file will silently wait up to `interval` before taking effect.
+Without the label `reconcile.fluxcd.io/watch: Enabled` on `valuesFrom` ConfigMaps, a HelmRelease only reconciles on its `interval` timer — it does **not** react to ConfigMap changes immediately. This is because Flux controllers watch ConfigMaps via the `--watch-configs-label-selector` flag which defaults to `reconcile.fluxcd.io/watch=Enabled`.
 
-**Fix**: add the annotation to every ConfigMap used as a `valuesFrom` source. Use `generatorOptions` at the kustomization level to apply it globally:
+**Fix**: add the label to every ConfigMap used as a `valuesFrom` source. Use `generatorOptions.labels` at the kustomization level to apply it globally:
 
 ```yaml
 # kustomization.yaml (Component or Kustomization)
 generatorOptions:
   disableNameSuffixHash: true
-  annotations:
+  labels:
     reconcile.fluxcd.io/watch: Enabled
 configMapGenerator:
   - name: default-cert-manager-values
     namespace: flux-system
     files:
-      - values.yaml=default-cert-manager.values.yaml
+      - values.yaml=values/default-cert-manager.values.yaml
 ```
 
 Apply this pattern in:

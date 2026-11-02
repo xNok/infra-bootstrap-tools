@@ -35,9 +35,15 @@ spec:
             - --import-realm
           env:
             - name: KEYCLOAK_ADMIN
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-credentials
+                  key: username
             - name: KEYCLOAK_ADMIN_PASSWORD
-              value: password
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-credentials
+                  key: password
           ports:
             - name: http
               containerPort: 8080

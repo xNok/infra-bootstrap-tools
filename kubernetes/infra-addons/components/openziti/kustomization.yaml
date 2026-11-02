@@ -10,22 +10,22 @@ resources:
 
 generatorOptions:
   disableNameSuffixHash: true
-  annotations:
+  labels:
     reconcile.fluxcd.io/watch: Enabled
 configMapGenerator:
   - name: ziti-router-enroll-script
     namespace: openziti
     files:
-      - enroll-router.sh
+      - enroll-router.sh=scripts/enroll-router.sh
   - name: ziti-ext-jwt-script
     namespace: openziti
     files:
-      - configure-ext-jwt.sh
+      - configure-ext-jwt.sh=scripts/configure-ext-jwt.sh
   - name: default-ziti-controller-values
     namespace: flux-system
     files:
-      - values.yaml=default-ziti-controller.values.yaml
+      - values.yaml=values/default-ziti-controller.values.yaml
   - name: default-ziti-router-values
     namespace: flux-system
     files:
-      - values.yaml=default-ziti-router.values.yaml
+      - values.yaml=values/default-ziti-router.values.yaml

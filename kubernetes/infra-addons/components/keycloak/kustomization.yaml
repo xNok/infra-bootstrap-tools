@@ -7,10 +7,10 @@ resources:
 
 generatorOptions:
   disableNameSuffixHash: true
-  annotations:
+  labels:
     reconcile.fluxcd.io/watch: Enabled
 configMapGenerator:
   - name: keycloak-realm-import
     namespace: keycloak
     files:
-      - ziti-realm.json
+      - ziti-realm.json=data/ziti-realm.json

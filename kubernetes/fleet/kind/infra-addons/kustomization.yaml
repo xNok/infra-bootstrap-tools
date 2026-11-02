@@ -7,7 +7,7 @@ resources:
 
 generatorOptions:
   disableNameSuffixHash: true
-  annotations:
+  labels:
     reconcile.fluxcd.io/watch: Enabled
 
 configMapGenerator:
