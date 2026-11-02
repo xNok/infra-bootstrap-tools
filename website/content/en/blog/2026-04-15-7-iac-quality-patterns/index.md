@@ -3,7 +3,7 @@ title: "7 Infrastructure as Code Quality Patterns for Production-Grade Repositor
 date: 2026-04-15
 author: xNok
 draft: false
-summary: "Why quick scripts don't cut it anymore: 7 Infrastructure as Code (IaC) quality patterns I rely on in infra-bootstrap-tools, from Policy-as-Code and BATS testing to Nix environments and BOM release management."
+summary: "From an OVH server for my Master's 10 years ago to a production-grade homelab: 7 Infrastructure as Code (IaC) quality patterns I rely on in infra-bootstrap-tools, from Policy-as-Code and BATS testing to Nix environments and BOM release management."
 tags:
   - Infrastructure as Code
   - DevOps
@@ -14,15 +14,9 @@ tags:
 
 # 7 Infrastructure as Code Quality Patterns for Production-Grade Repositories
 
-When I first started [`infra-bootstrap-tools`](https://github.com/xNok/infra-bootstrap-tools), it was simply my personal playground for homelab experiments, cloud VMs, and automation hacks. Like many engineers working in DevOps, I started with the basics: a few bash scripts to bootstrap machines, an Ansible playbook to configure Docker, and a small Terraform file to spin up DigitalOcean droplets.
+When I first started [`infra-bootstrap-tools`](https://github.com/xNok/infra-bootstrap-tools), it was simply my personal playground. I needed a way to manage an OVH webserver on which I was running experiments for my Master's degree 10 years ago. Ever since then, I've always had a server to manage some automations—mostly n8n for a very long time, along with some custom applications I have built. Having a place where you can deploy that only costs you a few bucks a month is a nerd's dream.
 
-At first, that works just fine. But as your infrastructure ambitions grow, managing a polyglot monorepo without strict software engineering standards quickly turns into a nightmare. 
-
-We’ve all lived through the horror stories:
-- A CI/CD pipeline mysteriously shits the bed at 2 AM on a Friday because a third-party GitHub Action author silently updated a floating tag (`@v3` or `@v4`).
-- A complex, forty-line inline bash script nested inside a GitHub Actions YAML file fails with an obscure exit code, forcing you into a painful "commit-and-pray" debugging loop just to test a single line.
-- An innocent change to one Ansible role forces you to run twenty unrelated roles across your clusters just in case something drifted.
-- You spend half a day debugging a teammate's environment only to discover they were running a different minor version of Terraform or Python.
+This repository has also been the launchpad into my DevOps career. I have learned so much on the journey, wrote countless articles, and landed side gigs as a tech writer. But that's maybe too much rambling! Today, I wanted to look back and see what I consider I did well on this repo and the key decisions I abide by as cornerstones in my work.
 
 In modern application engineering, we take comprehensive unit tests, type checkers, hermetic build environments, and granular release management for granted. Why should our **Infrastructure as Code (IaC)** be treated with any less rigor?
 
