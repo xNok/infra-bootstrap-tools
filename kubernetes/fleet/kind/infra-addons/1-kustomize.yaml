@@ -16,9 +16,7 @@ spec:
   components:
     - ../components/cert-manager
     - ../components/keycloak
-    - ../components/keycloak-config
     - ../components/openziti
-    - ../components/openziti-config
 
   # Substitute cluster-specific values (e.g. CLUSTER_NAME) into the manifests before applying.
   postBuild:

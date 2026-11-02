@@ -27,3 +27,7 @@ configMapGenerator:
     namespace: flux-system
     files:
       - values.yaml=values/ziti-router.values.yaml
+  - name: keycloak-realm-import
+    namespace: keycloak
+    files:
+      - ziti-realm.json=data/ziti-realm.json

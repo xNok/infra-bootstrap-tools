@@ -6,6 +6,4 @@ kind: Kustomization
 components:
   - components/cert-manager
   - components/keycloak
-  - components/keycloak-config
   - components/openziti
-  - components/openziti-config
