@@ -115,7 +115,7 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Fixed `reconcile.fluxcd.io/watch` bug: switched from `annotations:` to `labels:` in `generatorOptions` across all kustomizations.
 - [Completed] Reorganized `infra-addons` component layouts: segregated non-K8s resources into `scripts/`, `values/`, and `data/` subdirectories.
 - [Completed] Decoupled controllers and configurations across `infra-addons`: isolated `openziti-config` and `keycloak-config`, enforced secure-by-default `ClusterIP` baselines on controllers, and enabled overlay-free fleet configuration.
-- [In Progress] Validating decoupled controller/config components in Kind CI test suite.
+- [Completed] Validated decoupled controller/config components in Kind CI test suite (Test Flux Bootstrap run #41531575189 passed in 5m 13s).
 - [Pending] Zero-Trust access to K3s API server verification from user client device.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
 
