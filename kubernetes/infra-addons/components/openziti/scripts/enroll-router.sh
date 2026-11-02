@@ -7,7 +7,7 @@ CA_CERT=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
 K8S_NAMESPACE=$$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
 
 # Idempotency: skip if secret already exists
-HTTP_STATUS=$$(curl -sk -o /dev/null -w "%{http_code}" \
+HTTP_STATUS=$$(curl -s -o /dev/null -w "%{http_code}" \
   -H "Authorization: Bearer $${SA_TOKEN}" \
   --cacert "$${CA_CERT}" \
   "$${APISERVER}/api/v1/namespaces/$${K8S_NAMESPACE}/secrets/ziti-router-enrollment")
@@ -66,7 +66,7 @@ fi
 JWT_B64=$$(echo -n "$${JWT}" | base64 -w 0)
 
 # Create the Secret via Kubernetes API
-curl -sk -X POST \
+curl -s -X POST \
   -H "Authorization: Bearer $${SA_TOKEN}" \
   -H "Content-Type: application/json" \
   --cacert "$${CA_CERT}" \

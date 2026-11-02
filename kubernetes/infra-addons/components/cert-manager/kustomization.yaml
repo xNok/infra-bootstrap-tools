@@ -6,14 +6,14 @@ resources:
   - trust-manager.yaml
 generatorOptions:
   disableNameSuffixHash: true
-  annotations:
+  labels:
     reconcile.fluxcd.io/watch: Enabled
 configMapGenerator:
   - name: default-cert-manager-values
     namespace: flux-system
     files:
-      - values.yaml=default-cert-manager.values.yaml
+      - values.yaml=values/default-cert-manager.values.yaml
   - name: default-trust-manager-values
     namespace: flux-system
     files:
-      - values.yaml=default-trust-manager.values.yaml
+      - values.yaml=values/default-trust-manager.values.yaml

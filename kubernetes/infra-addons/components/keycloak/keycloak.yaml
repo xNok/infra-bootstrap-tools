@@ -35,9 +35,15 @@ spec:
             - --import-realm
           env:
             - name: KEYCLOAK_ADMIN
-              value: admin
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-credentials
+                  key: username
             - name: KEYCLOAK_ADMIN_PASSWORD
-              value: password
+              valueFrom:
+                secretKeyRef:
+                  name: keycloak-admin-credentials
+                  key: password
           ports:
             - name: http
               containerPort: 8080
@@ -65,9 +71,9 @@ spec:
             failureThreshold: 60
           volumeMounts:
             - name: realm-import
-              mountPath: /opt/keycloak/data/import/ziti-realm.json
-              subPath: ziti-realm.json
+              mountPath: /opt/keycloak/data/import
       volumes:
         - name: realm-import
           configMap:
             name: keycloak-realm-import
+            optional: true

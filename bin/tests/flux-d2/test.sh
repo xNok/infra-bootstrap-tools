@@ -126,7 +126,19 @@ validate_kustomize() {
   success "Kustomize entrypoints valid."
 }
 
+bootstrap_test_secrets() {
+  info "Provisioning bootstrap test secrets for Kind..."
+  kubectl create namespace keycloak --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create secret generic keycloak-admin-credentials \
+    -n keycloak \
+    --from-literal=username=admin \
+    --from-literal=password="admin_test_password" \
+    --dry-run=client -o yaml | kubectl apply -f -
+  success "Bootstrap test secrets provisioned."
+}
+
 bootstrap_flux() {
+  bootstrap_test_secrets
   info "Bootstrapping cluster from OCI..."
   kubectl apply -f "${ROOT_DIR}/kubernetes/fleet/${FLEET_NAME}/flux-system/flux-instance.yaml"
   success "FluxInstance applied."

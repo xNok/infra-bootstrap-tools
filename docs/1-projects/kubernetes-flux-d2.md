@@ -148,23 +148,23 @@ The component default (`default-trust-manager.values.yaml`) ships `app.trust.nam
 
 ## 2026-04-06 Runtime Debugging — OpenZiti Enrollment & Flux ConfigMap Watch
 
-### ConfigMap watch annotation required for immediate HelmRelease reconciliation
+### ConfigMap watch label required for immediate HelmRelease reconciliation
 
-Without the annotation `reconcile.fluxcd.io/watch: Enabled` on `valuesFrom` ConfigMaps, a HelmRelease only reconciles on its `interval` timer — it does **not** react to ConfigMap changes immediately. This means updating a default values file will silently wait up to `interval` before taking effect.
+Without the label `reconcile.fluxcd.io/watch: Enabled` on `valuesFrom` ConfigMaps, a HelmRelease only reconciles on its `interval` timer — it does **not** react to ConfigMap changes immediately. This is because Flux controllers watch ConfigMaps via the `--watch-configs-label-selector` flag which defaults to `reconcile.fluxcd.io/watch=Enabled`.
 
-**Fix**: add the annotation to every ConfigMap used as a `valuesFrom` source. Use `generatorOptions` at the kustomization level to apply it globally:
+**Fix**: add the label to every ConfigMap used as a `valuesFrom` source. Use `generatorOptions.labels` at the kustomization level to apply it globally:
 
 ```yaml
 # kustomization.yaml (Component or Kustomization)
 generatorOptions:
   disableNameSuffixHash: true
-  annotations:
+  labels:
     reconcile.fluxcd.io/watch: Enabled
 configMapGenerator:
   - name: default-cert-manager-values
     namespace: flux-system
     files:
-      - values.yaml=default-cert-manager.values.yaml
+      - values.yaml=values/default-cert-manager.values.yaml
 ```
 
 Apply this pattern in:
@@ -336,3 +336,48 @@ CLUSTER_NAME=kind FLEET_NAME=kind REGISTRY_PORT=5000 ./bin/tests/flux-d2/test.sh
 # 3) In GitHub Codespaces, enter the Flux-focused flake environment
 nix develop .#flux
 ```
+
+## 2026-11-02 Architecture Refinement: Controller vs Config Separation & Fleet Scalability
+
+### The Problem: Why Overlays Do Not Scale in a Fleet
+Traditional Kustomize workflows rely on directory overlays (`base/` + `overlays/<environment>/` or `overlays/<cluster>/`). In a multi-cluster fleet utilizing Flux D2 and OCI-based "Gitless GitOps", overlays present fundamental architectural issues:
+1. **Coupling & Artifact Isolation**: The `infra-addons` repository/layer is packaged and distributed as an immutable OCI artifact (`oci://.../manifests/kubernetes/infra-addons`). An overlay requires relative filesystem path traversal (`../../base`), which breaks when the base is consumed remotely via an `OCIRepository`.
+2. **Fleet Scaling Bottleneck**: If a fleet has dozens or hundreds of clusters, maintaining an overlay per cluster inside the shared `infra-addons` repository couples every cluster to the platform repo, polluting the shared catalog and violating separation of concerns.
+3. **In-Cluster Patch Fragility**: Using Flux `spec.patches` inside `Kustomization` manifests (such as patching certificate SANs or HelmRelease values) leads to brittle, unvalidated inline YAML strings that bypass linting and schema validation.
+
+### Design Principle: Secure by Default Controllers
+Shared infrastructure addons (`infra-addons`) should provide **controllers and operators only**, configured to be secure by default:
+- **Zero Exposure**: Ingress, public LoadBalancers, and external listeners are disabled out-of-the-box. Components communicate exclusively via internal cluster DNS (`cluster.local`) or loopback.
+- **Strict Security Baselines**: Pod Security Standards (Restricted), least-privilege RBAC, and zero hardcoded secrets/passwords or dummy users.
+- **Decoupled Configuration**: Controllers install CRDs and manage runtime lifecycles. They remain passive or baseline-secure until explicit Custom Resources (CRs) or configuration values are provided by the cluster.
+
+### Architectural Options on the Table
+
+#### Option 1: Two-Tier Flux Kustomizations with Fleet-Owned Configs (`infra-controllers` + `infra-configs`)
+- **Structure**:
+  - `infra-addons` (OCI artifact) provides strictly controllers and HelmReleases with secure baseline values (`default-<addon>-values`).
+  - Fleet (`kubernetes/fleet/<cluster>/`) defines two sequential Flux `Kustomization` resources:
+    1. `infra-controllers`: Reconciles `OCIRepository: infra-addons`, selecting activated controller components (`cert-manager`, `openziti`).
+    2. `infra-configs`: Reconciles `fleet/<cluster>/configs/` with `dependsOn: [infra-controllers]`.
+  - In `fleet/<cluster>/configs/`, the cluster declares native Kubernetes custom resources (e.g., `ClusterIssuer`, OpenZiti router enrollment/bootstrap jobs, Keycloak realm definitions, gateway routes).
+- **Evaluation**: Zero overlays, clean GitOps ownership boundaries, but cluster-specific configs that share common logic must be templated or standardized.
+
+#### Option 2: Parameterized Config Components in `infra-addons` + Data-Driven Fleet Configuration
+- **Structure**:
+  - `infra-addons` segregates each addon into `controllers/` and generic `configs/` components.
+  - Manifests in `configs/` use parameterized tokens (`${ROUTER_ADVERTISED_HOST}`, `${CLUSTER_NAME}`, `${AUTH_ISSUER_URL}`).
+  - Fleet clusters provide **data only** via ConfigMaps (`flux-runtime-info`, `cluster-env`) and HelmRelease values overrides (`${CLUSTER_NAME}-<addon>-values`), hydrated via Flux `postBuild.substituteFrom`.
+- **Evaluation**: Zero code duplication across fleet clusters, zero Kustomize overlays. Requires disciplined variable escaping (`$$VAR` for shell variables).
+
+#### Option 3: Flux Operator `ResourceSet` API (The Native ControlPlane D2 Pattern)
+- **Structure**:
+  - Leverages the Flux Operator's `ResourceSet` CRD (`fluxcd.controlplane.io/v1`).
+  - The fleet cluster specifies a high-level `ResourceSet` definition passing typed input parameters (e.g. `enabled: true`, `advertisedHost: "..."`).
+  - The `ResourceSet` controller dynamically synthesizes the required Flux `Kustomization` and `HelmRelease` objects.
+- **Evaluation**: Eliminates boilerplate across large fleets, strongly typed inputs, but introduces reliance on the ControlPlane `flux-operator` custom controller.
+
+#### Option 4: Operator-First Declarative CRDs
+- **Structure**:
+  - Replace imperative bootstrap scripts/Jobs with native Kubernetes operators (e.g., Keycloak Operator `KeycloakRealmImport`, OpenZiti Operator / CRDs).
+  - `infra-addons` deploys the operator; the fleet cluster config applies native CRDs.
+- **Evaluation**: True self-healing declarative GitOps, but dependent on the maturity and availability of operators for each component.

@@ -78,6 +78,20 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
+- name: Create cluster-env ConfigMap
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: cluster-env
+        namespace: flux-system
+      data:
+        ROUTER_ADVERTISED_HOST: "{{ ansible_default_ipv4.address }}"
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
 - name: Apply FluxInstance
   kubernetes.core.k8s:
     state: present

@@ -1,0 +1,21 @@
+{
+  "realm": "ziti",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "openziti",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "*"
+      ],
+      "webOrigins": [
+        "*"
+      ]
+    }
+  ]
+}
+

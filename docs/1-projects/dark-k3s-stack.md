@@ -77,14 +77,47 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
     1. Ensuring the local Kind cluster and container registry are active by executing `bin/k8s/setup-kind-local-registry.sh`.
     2. Running the full Flux D2/OpenZiti integration test suite via `bin/tests/flux-d2/test.sh`.
 
+- **Live Server Audit & Status (Production Host)**:
+  - **OS & Node Status**: Ubuntu 24.04.4 LTS, kernel 6.8.0-63-generic, uptime >475 days. K3s `v1.34.4+k3s1` is running and healthy as control-plane.
+  - **Running Workloads**:
+    - `cert-manager` (cert-manager, cainjector, webhook) & `trust-manager` running.
+    - `flux-operator` (v0.62.1) and all standard Flux controllers running.
+    - `openziti` controller and edge router running and connected.
+    - Legacy Docker Swarm is active with a standalone `portainer_agent:2.33.1` container (worker node).
+  - **GHCR PAT Resolved**:
+    - Updated `GitHub_Flux_Token` in 1Password vault `infra-bootstrap-tools`.
+    - Applied fresh credentials to `secret/flux-system` in `flux-system` namespace on the cluster.
+    - Both `OCIRepository/flux-system` and `OCIRepository/infra-addons` reconciled successfully (`READY: True`).
+    - Kustomizations `flux-system` and `infra-addons` successfully applied the latest OCI artifacts.
+- **OpenZiti Stack Configuration & External Ingress (Resolved)**:
+  - Controller client API configured to advertise on `${ROUTER_ADVERTISED_HOST}:1280`.
+  - Cert-manager patch injected into Kustomization `1-kustomize.yaml` adding `${ROUTER_ADVERTISED_HOST}` to `openziti-ziti-controller-web-identity-cert` IP SANs, resolving Go x509 IP verification panics.
+  - Router configured with `edge.advertisedHost: "${ROUTER_ADVERTISED_HOST}"`, `edge.advertisedPort: 8442`, LoadBalancer service, and `csr.sans.ip: ["${ROUTER_ADVERTISED_HOST}"]`.
+  - Re-enrolled `ziti-router` cleanly with IP SAN in certificate; router is healthy, 1/1 Running, and `isOnline: true`.
+  - Configured OpenZiti zero-trust overlay service `k3s` (intercepting `k3s.ziti:443` -> `kubernetes.default.svc:443`) with bind policy for `@ziti-router` and dial policy for `#k3s-clients`.
+  - Created client identities `mobile-client` and `laptop-client` with role attribute `#k3s-clients` and generated single-use enrollment tokens/QR codes.
+  - Ports 1280 (OpenZiti Controller Client API) and 8442 (OpenZiti Router Edge) opened in UFW; direct Kubernetes port 6443 blocked from public internet.
+
 ## Current State
-- Investigating existing Ansible roles and playbooks.
 - [Completed] Refactored `k3s_server` to use `config.yaml`.
 - [Completed] Fixed Flux OCI bootstrap resource kind.
 - [Completed] Implemented initial UFW rules in `k3s_os_hardening`.
-- [Completed] Fixed path mismatch in `flux-instance.yaml.j2` (changed `path: "./fleet/k3s"` to `path: "."`).
+- [Completed] Fixed path mismatch in `flux-instance.yaml.j2`.
 - [Completed] Added `infra-addons` OCI publishing on push to `main` in GitHub Actions workflow.
-- [Completed] Refactored and aligned `kind` and `k3s` infra-addons layouts with a nested `values/` directory and split installer resources.
-- [Completed] Enhanced integration test suite to comprehensively verify the functional readiness of the entire OpenZiti overlay stack.
-- [Completed] Added `test-flux-d2` target to the root `Makefile` to automate Kind cluster creation and Flux/OpenZiti integration testing.
-- [Completed] Defaulted the local Kind node image to `kindest/node:v1.32.0` to prevent system compatibility issues with bleeding-edge versions (e.g. `v1.35.0`), and updated the CI workflow (`flux-test.yml`) to use `helm/kind-action@v1.14.0`.
+- [Completed] Refactored and aligned `kind` and `k3s` infra-addons layouts.
+- [Completed] Verified live host status: control-plane node up, OpenZiti and Flux running.
+- [Completed] Unblocked Flux OCI sync with updated GitHub PAT from 1Password (`flux-system` & `infra-addons` OCI sources are healthy and reconciled).
+- [Completed] Configured OpenZiti external ingress and IP SANs via dynamic `${ROUTER_ADVERTISED_HOST}` substitution without committing public IPs.
+- [Completed] Verified zero-trust `k3s` service routing and generated mobile/laptop enrollment credentials.
+- [Completed] Opened draft Pull Request [#234](https://github.com/xNok/infra-bootstrap-tools/pull/234) with CI pipeline checks running.
+- [Completed] Fixed Keycloak security red flag: replaced plaintext admin credentials with `secretKeyRef` pointing to `keycloak-admin-credentials`, and added bootstrap secrets step in `test.sh`.
+- [Completed] Sanitized `ziti-realm.json`: removed hardcoded dummy test user with plaintext password and removed unused dummy client secret.
+- [Completed] Fixed `reconcile.fluxcd.io/watch` bug: switched from `annotations:` to `labels:` in `generatorOptions` across all kustomizations.
+- [Completed] Reorganized `infra-addons` component layouts: segregated non-K8s resources into `scripts/`, `values/`, and `data/` subdirectories.
+- [Completed] Decoupled controllers and configurations across `infra-addons`: consolidated generic automation jobs inside `components/openziti` with secure-by-default `ClusterIP` baselines, moved test realm config to `fleet/kind`, and enabled overlay-free fleet configuration.
+- [Completed] Validated consolidated architecture in Kind CI test suite (Test Flux Bootstrap run #41533551349 passed in 8m 36s).
+- [Completed] Added Changeset tracking (`.changeset/k3s-openziti-zero-trust.md`) for releases across `kubernetes-infra-addons`, `ansible-collection-infra-bootstrap-tools`, `ansible-role-k3s-flux-bootstrap`, `ansible-role-k3s-os-hardening`, and `ansible-role-k3s-server`.
+- [Pending] Zero-Trust access to K3s API server verification from user client device.
+- [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
+
+
