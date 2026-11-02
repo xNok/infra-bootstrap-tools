@@ -5,7 +5,9 @@ k3s_server_kubeconfig_mode: '644' # File mode for kubeconfig; set to '600' for o
 # OpenZiti Dark Configuration
 k3s_server_use_openziti_dark: false
 k3s_server_openziti_tls_san: "k3s.ziti"
-k3s_server_openziti_bind_address: "127.0.0.1"
+# Default to 0.0.0.0 so cluster agents can join over internal/LAN IPs while UFW blocks public access.
+# Can be overridden to 127.0.0.1 for strict single-node loopback.
+k3s_server_openziti_bind_address: "0.0.0.0"
 
 # Extra arguments (logic in tasks/main.yaml will construct this if not overridden)
 # Now managed via config.yaml, so keep this minimal or empty unless specific overrides needed

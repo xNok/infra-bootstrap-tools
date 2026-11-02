@@ -77,7 +77,7 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
     1. Ensuring the local Kind cluster and container registry are active by executing `bin/k8s/setup-kind-local-registry.sh`.
     2. Running the full Flux D2/OpenZiti integration test suite via `bin/tests/flux-d2/test.sh`.
 
-- **Live Server Audit & Status (Host `147.135.212.219` / `ns3118807`)**:
+- **Live Server Audit & Status (Production Host)**:
   - **OS & Node Status**: Ubuntu 24.04.4 LTS, kernel 6.8.0-63-generic, uptime >475 days. K3s `v1.34.4+k3s1` is running and healthy as control-plane.
   - **Running Workloads**:
     - `cert-manager` (cert-manager, cainjector, webhook) & `trust-manager` running.
@@ -105,7 +105,7 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Fixed path mismatch in `flux-instance.yaml.j2`.
 - [Completed] Added `infra-addons` OCI publishing on push to `main` in GitHub Actions workflow.
 - [Completed] Refactored and aligned `kind` and `k3s` infra-addons layouts.
-- [Completed] Verified live host `147.135.212.219` status: control-plane node up, OpenZiti and Flux running.
+- [Completed] Verified live host status: control-plane node up, OpenZiti and Flux running.
 - [Completed] Unblocked Flux OCI sync with updated GitHub PAT from 1Password (`flux-system` & `infra-addons` OCI sources are healthy and reconciled).
 - [Completed] Configured OpenZiti external ingress and IP SANs via dynamic `${ROUTER_ADVERTISED_HOST}` substitution without committing public IPs.
 - [Completed] Verified zero-trust `k3s` service routing and generated mobile/laptop enrollment credentials.

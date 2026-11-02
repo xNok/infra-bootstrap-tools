@@ -71,8 +71,7 @@ spec:
             failureThreshold: 60
           volumeMounts:
             - name: realm-import
-              mountPath: /opt/keycloak/data/import/ziti-realm.json
-              subPath: ziti-realm.json
+              mountPath: /opt/keycloak/data/import
       volumes:
         - name: realm-import
           configMap:
