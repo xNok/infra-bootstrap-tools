@@ -28,11 +28,15 @@ Let's dig in!
 
 ## 1. Policy-as-Code Hardening for CI/CD Pipelines
 
-CI/CD pipelines are the engine of modern DevOps, but unconstrained pipelines introduce severe supply chain risks and stability issues. In a busy repository, relying on manual code review to verify that someone pinned an action or added a timeout is a recipe for disaster.
+Ever since [Conftest](https://www.conftest.dev/) and Open Policy Agent (OPA) came out, I knew it was huge. I introduced OPA and Conftest for everything I could in my company: OPA policies in our Terraform Atlantis runners, OPA in Kubernetes repositories, OPA in GitLab pipelines, and more.
 
-Instead of hoping reviewers catch mistakes, we enforce our engineering standards automatically before code merges using [Conftest](https://www.conftest.dev/) and Open Policy Agent (OPA) Rego policies.
+This was the one shift that prevented repositories from going out of hand and let us define clear conventions. For instance, setting naming conventions in stone with a policy saved me so many headaches. The goal was never solely security (though it certainly helps!); instead of me playing the role of the nagging reviewer saying *"hey, this is the convention"*, a policy engine enforces it automatically and explicitly states when a rule is broken.
 
-In `infra-bootstrap-tools`, every workflow under `.github/workflows/` is statically tested against our policy rules defined in `policies/ci/`:
+What makes Conftest so awesome is that it parses so many configuration languages—YAML, JSON, Dockerfiles, HCL, and more. Any arbitrary pattern you define and want your team to stick with can become a policy. Teams can move freely along the "golden path", but if they ever need to stray, they must write a policy exception and state clearly right in the repo code *why* they did it differently.
+
+> This pattern is so much better than any Architecture Decision Record (ADR) ever written by a human or an AI. Nobody reads ADRs! Here, the policy exception lives directly in the folder that is breaking the rule.
+
+In `infra-bootstrap-tools`, I brought that same discipline to our CI/CD workflows under `.github/workflows/`. Every workflow is statically analyzed against strict policies defined in `policies/ci/`:
 
 - **Pinning Third-Party Actions to Immutable SHAs ([`pinned_actions.rego`](https://github.com/xNok/infra-bootstrap-tools/blob/main/policies/ci/pinned_actions.rego))**: Floating tags like `@v4` can be moved or compromised. We require all third-party GitHub Actions and reusable workflows to be pinned to full 40-character commit SHAs (with a human-readable tag comment, e.g. `uses: actions/checkout@11d5960a326... # v4`).
 - **Least-Privilege Job Permissions ([`job_permissions.rego`](https://github.com/xNok/infra-bootstrap-tools/blob/main/policies/ci/job_permissions.rego))**: Every job must declare an explicit `permissions:` block rather than inheriting broad default repository token permissions.
