@@ -93,7 +93,7 @@ jobs:
         if: ${{ env.INVENTORY != '' }}
         env:
           INVENTORY: ${{ secrets.ANSIBLE_INVENTORY }}
-        run: echo "$INVENTORY" > inventory/extra
+        run: ./bin/ci/write-inventory-extra.sh
 
       - name: run playbook
         env:
