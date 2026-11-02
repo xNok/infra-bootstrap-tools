@@ -109,6 +109,8 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Unblocked Flux OCI sync with updated GitHub PAT from 1Password (`flux-system` & `infra-addons` OCI sources are healthy and reconciled).
 - [Completed] Configured OpenZiti external ingress and IP SANs via dynamic `${ROUTER_ADVERTISED_HOST}` substitution without committing public IPs.
 - [Completed] Verified zero-trust `k3s` service routing and generated mobile/laptop enrollment credentials.
+- [Completed] Opened draft Pull Request [#234](https://github.com/xNok/infra-bootstrap-tools/pull/234) with CI pipeline checks running.
 - [Pending] Zero-Trust access to K3s API server verification from user client device.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
+
 
