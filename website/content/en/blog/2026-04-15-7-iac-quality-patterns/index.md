@@ -14,9 +14,9 @@ tags:
 
 # 7 Infrastructure as Code Quality Patterns for Production-Grade Repositories
 
-When I first started [`infra-bootstrap-tools`](https://github.com/xNok/infra-bootstrap-tools), it was simply my personal playground. I needed a way to manage an OVH webserver on which I was running experiments for my Master's degree 10 years ago. Ever since then, I've always had a server to manage some automations—mostly n8n for a very long time, along with some custom applications I have built. Having a place where you can deploy that only costs you a few bucks a month is a nerd's dream.
+When I first started [`infra-bootstrap-tools`](https://github.com/xNok/infra-bootstrap-tools), it was simply my personal playground. I needed to manage my OVH webserver on which I was running my experiments for my Master's 10 years ago. Ever since then, I always have had a server to manage some automation—mostly n8n for a very long time, and some custom applications I have built. Having a place you deploy and costs you a few bucks a month is a nerd dream.
 
-This repository has also been the launchpad into my DevOps career. I have learned so much on the journey, wrote countless articles, and landed side gigs as a tech writer. But that's maybe too much rambling! Today, I wanted to look back and see what I consider I did well on this repo and the key decisions I abide by as cornerstones in my work.
+This has also been my launchpad into my DevOps career. I have learned so much in the journey, wrote countless articles, and landed side gigs as a tech writer. But this is maybe too much blabbering! Today, I wanted to look back and see what I consider I did well on this repo and the key decisions I abide as cornerstones in my work.
 
 In modern application engineering, we take comprehensive unit tests, type checkers, hermetic build environments, and granular release management for granted. Why should our **Infrastructure as Code (IaC)** be treated with any less rigor?
 
@@ -28,15 +28,13 @@ Let's dig in!
 
 ## 1. Policy-as-Code Hardening for CI/CD Pipelines
 
-Ever since [Conftest](https://www.conftest.dev/) and Open Policy Agent (OPA) came out, I knew it was huge. I introduced OPA and Conftest for everything I could in my company: OPA policies in our Terraform Atlantis runners, OPA in Kubernetes repositories, OPA in GitLab pipelines, and more.
+Ever since [Conftest](https://www.conftest.dev/) and Open Policy Agent (OPA) came out, I knew it was big and I introduced it in my company: OPA and Conftest for everything—OPA policy in Terraform Atlantis runners, OPA in K8s repos, OPA in GitLab pipelines, and maybe more.
 
-This was the one shift that prevented repositories from going out of hand and let us define clear conventions. For instance, setting naming conventions in stone with a policy saved me so many headaches. The goal was never solely security (though it certainly helps!); instead of me playing the role of the nagging reviewer saying *"hey, this is the convention"*, a policy engine enforces it automatically and explicitly states when a rule is broken.
+This one shift stopped repos from going out of hand and helped define conventions. For instance, setting naming conventions in stone with policy saved me many headaches. The goal was never security (it does help), but instead of telling "this is the convention", a policy would enforce it for me and state when it is broken.
 
-What makes Conftest so awesome is that it parses so many configuration languages—YAML, JSON, Dockerfiles, HCL, and more. Any arbitrary pattern you define and want your team to stick with can become a policy. Teams can move freely along the "golden path", but if they ever need to stray, they must write a policy exception and state clearly right in the repo code *why* they did it differently.
+Conftest is awesome as it parses many, many configuration languages. Any arbitrary pattern you define and want your team to stick with can become a policy. That can do anything, but if they stray from the golden path they need to write a policy exception and state clearly in the repo code why they did it differently. And this pattern is much, much better than any ADR ever written by a human or an AI. No one reads ADRs; here the policy exception is in the folder that is breaking the rule.
 
-> This pattern is so much better than any Architecture Decision Record (ADR) ever written by a human or an AI. Nobody reads ADRs! Here, the policy exception lives directly in the folder that is breaking the rule.
-
-In `infra-bootstrap-tools`, I brought that same discipline to our CI/CD workflows under `.github/workflows/`. Every workflow is statically analyzed against strict policies defined in `policies/ci/`:
+In `infra-bootstrap-tools`, every workflow under `.github/workflows/` is statically tested against our policy rules defined in `policies/ci/`:
 
 - **Pinning Third-Party Actions to Immutable SHAs ([`pinned_actions.rego`](https://github.com/xNok/infra-bootstrap-tools/blob/main/policies/ci/pinned_actions.rego))**: Floating tags like `@v4` can be moved or compromised. We require all third-party GitHub Actions and reusable workflows to be pinned to full 40-character commit SHAs (with a human-readable tag comment, e.g. `uses: actions/checkout@11d5960a326... # v4`).
 - **Least-Privilege Job Permissions ([`job_permissions.rego`](https://github.com/xNok/infra-bootstrap-tools/blob/main/policies/ci/job_permissions.rego))**: Every job must declare an explicit `permissions:` block rather than inheriting broad default repository token permissions.
