@@ -52,9 +52,9 @@ Copilot commented on PR #233 pointing out 3 critical inaccuracies in the origina
    - *Real Code*: Styled Mermaid flowchart visualizing the 3 layers and separation of concerns.
 
 5. **Multi-Granular Tree Release Strategy & Bill of Materials (BOM) Management (Changesets)**
-   - *Pain*: Conventional commits (`semantic-release`) creating noisy, unemotional changelogs in a polyglot monorepo (Ansible, Docker Swarm stacks, Python, Terraform).
-   - *Implementation*: Why developer intent matters. Using npm workspaces and `package.json` across non-Node components to build an aggregator BOM (`ansible/package.json`, `stacks/package.json`). Changesets automatically computes semantic versions and cascades bumps up the tree.
-   - *Real Code*: Real snippet of `ansible/package.json` BOM dependencies and the changeset workflow.
+   - *Pain*: Conventional commits (`semantic-release`) creating noisy, unemotional changelogs in a polyglot monorepo across completely distinct runtimes.
+   - *Implementation*: Repurposing Changesets as a universal release orchestrator managing 5 distinct stacks: Ansible collection & roles, Docker Swarm stacks (`stacks/package.json`), Kubernetes addons, Python agentic tooling, and custom container images. Connected to a central tag dispatcher (`release.yml`).
+   - *Real Code*: Real snippets of `ansible/package.json` and `stacks/package.json` BOM dependencies and the Central Publish Workflow routing.
 
 6. **Defense-in-Depth Secret Hygiene: 1Password CLI, direnv & Dynamic Injection**
    - *Pain*: Accidental secret commits or unencrypted config values lingering on host disks.

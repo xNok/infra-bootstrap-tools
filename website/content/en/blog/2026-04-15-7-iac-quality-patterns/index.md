@@ -179,37 +179,65 @@ Every layer operates with strict boundaries and declarative idempotency. Backed 
 
 ## 5. Multi-Granular Tree Release Strategy & Bill of Materials (BOM) Management
 
-Release management in a polyglot infrastructure monorepo is notoriously tricky. This repository contains Ansible collections, individual Ansible roles, Docker Swarm stacks, and Python agent utilities.
+Release management in a polyglot infrastructure monorepo is notoriously tricky. This repository contains virtually zero Node.js code, yet it orchestrates:
+- **Ansible Collections & Roles**: Over 15 modular roles (`ansible/roles/*`) rolled up into a collection.
+- **Docker Swarm Stacks**: Production service definitions (`stacks/n8n`, `stacks/openziti`, `stacks/prefect`).
+- **Kubernetes Addons**: Helm charts and cluster manifests (`kubernetes/infra-addons/`).
+- **Python Automation Utilities**: AI workflows and agent tooling (`agentic/`).
+- **Custom Container Images**: OCI builds for custom Caddy and OpenZiti images (`caddy`, `openziti-bootstrap`).
 
 In [Intentional Releases: Why I Chose Changesets over Semantic-Release](/blog/intentional-releases-changesets/), I explained why purely automated commit parsing (like `semantic-release`) fails for infrastructure. It produces noisy changelogs full of commit hashes rather than communicating actual architectural intent to users.
 
-To solve this, we implemented a **Hierarchical Tree Release Architecture** using npm workspaces and [Changesets](https://github.com/changesets/changesets), even though this repository contains virtually no Node.js code:
+To solve this, we repurposed [Changesets](https://github.com/changesets/changesets) and npm workspaces as our **universal release orchestrator** across all of these languages and runtimes.
 
-### Multi-Level Package Architecture
+### 1. Hierarchical Bill of Materials (BOM) Architecture
 
-1. **Leaf Level (Individual Components)**: Every standalone role (e.g., `ansible/roles/docker`, `ansible/roles/k3s_server`) and stack maintains its own `package.json` with independent semantic versioning.
-2. **Aggregator Level (Bill of Materials - BOM)**: Parent directories like [`ansible/package.json`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/package.json) act as a **Bill of Materials (BOM)**. They pin the exact tested versions of all underlying roles:
+Instead of treating the entire monorepo as a single version, or letting every component drift into chaotic untracked states, we use a two-tier tree structure:
 
+- **Leaf Level (Individual Components)**: Every standalone role (e.g., `ansible/roles/docker`), stack (`stacks/n8n`), or Python package (`agentic/`) maintains its own `package.json` with independent semantic versioning.
+- **Aggregator Level (Bill of Materials - BOM)**: Parent directories act as BOM packages that pin the exact tested versions of their constituent components.
+
+For example, [`ansible/package.json`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/package.json) coordinates our Ansible ecosystem:
 ```json
 {
   "name": "ansible-collection-infra-bootstrap-tools",
-  "private": true,
   "version": "1.1.0",
-  "workspaces": [
-    "roles/*"
-  ],
   "dependencies": {
     "ansible-role-docker": "0.0.2",
     "ansible-role-k3s-server": "0.1.3",
-    "ansible-role-utils-rotate-docker-secrets": "0.0.1",
-    "ansible-role-utils-affected-roles": "0.0.3"
+    "ansible-role-utils-rotate-docker-secrets": "0.0.1"
   }
 }
 ```
 
-3. **Automated Tree Cascading**: When you submit a PR, Changesets prompts you for an intentional change description (`yarn changeset`). If you bump `ansible-role-docker`, Changesets automatically bubbles that bump up to the parent `ansible-collection-infra-bootstrap-tools` BOM package!
+And [`stacks/package.json`](https://github.com/xNok/infra-bootstrap-tools/blob/main/stacks/package.json) does the exact same for our container stacks:
+```json
+{
+  "name": "infra-bootstrap-tools-stacks",
+  "version": "1.0.4",
+  "dependencies": {
+    "docker-stack-n8n": "0.0.3",
+    "docker-stack-openziti": "0.1.0",
+    "docker-stack-prefect": "0.0.2"
+  }
+}
+```
 
-Consumers can choose to pin an individual role, or simply reference the parent collection BOM knowing that all constituent roles have been tested together.
+When you edit `docker-stack-n8n` and run `yarn changeset`, Changesets prompts you for human release notes. Because the parent stack declares `docker-stack-n8n` as an internal dependency, Changesets automatically cascades the bump up to the parent BOM!
+
+### 2. The Central Release Dispatcher
+
+When the Changesets release PR merges to `main`, Changesets creates git tags formatted as `<package>@<version>` (e.g., `ansible-collection-infra-bootstrap-tools@1.1.0` or `infra-bootstrap-tools-agentic@0.1.2`).
+
+Our [Central Publish Workflow (`.github/workflows/release.yml`)](https://github.com/xNok/infra-bootstrap-tools/blob/main/.github/workflows/release.yml) catches these tags and dispatches them to the exact downstream workflow required for that technology:
+
+- `ansible-collection-*@*` -> Dispatches to `release-ansible.yml` to publish the collection on Ansible Galaxy.
+- `infra-bootstrap-tools-agentic@*` -> Dispatches to `release-python.yml` to build wheels and publish Python packages.
+- `infra-bootstrap-tools-stacks@*` -> Dispatches to `release-stacks.yml` for Swarm stacks.
+- `kubernetes-infra-addons@*` -> Dispatches to `release-kubernetes.yml` for cluster addons.
+- `caddy@*` & `openziti-bootstrap@*` -> Dispatches to `release-docker.yml` to build and push multi-arch OCI images to GHCR.
+
+Consumers get the best of both worlds: you can consume an individual leaf component at its own granular cadence, or adopt a parent BOM tag knowing every piece in that release was tested together.
 
 ---
 
