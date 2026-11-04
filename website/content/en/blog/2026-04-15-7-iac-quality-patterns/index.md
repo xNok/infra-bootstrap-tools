@@ -1,9 +1,9 @@
 ---
-title: "7 Infrastructure as Code Quality Patterns for Production-Grade Repositories"
+title: "6 Infrastructure as Code Quality Patterns for Production-Grade Repositories"
 date: 2026-04-15
 author: xNok
 draft: false
-summary: "From an OVH server for my Master's 10 years ago to a production-grade homelab: 7 Infrastructure as Code (IaC) quality patterns I rely on in infra-bootstrap-tools, from Policy-as-Code and BATS testing to Nix environments and BOM release management."
+summary: "From an OVH server for my Master's 10 years ago to a production-grade homelab: 6 Infrastructure as Code (IaC) quality patterns I rely on in infra-bootstrap-tools, from Policy-as-Code and BATS testing to Nix environments, layered architecture, and 1Password secret hygiene."
 tags:
   - Infrastructure as Code
   - DevOps
@@ -12,7 +12,7 @@ tags:
   - Policy as Code
 ---
 
-# 7 Infrastructure as Code Quality Patterns for Production-Grade Repositories
+# 6 Infrastructure as Code Quality Patterns for Production-Grade Repositories
 
 When I first started [`infra-bootstrap-tools`](https://github.com/xNok/infra-bootstrap-tools), it was simply my personal playground. I needed to manage my OVH webserver on which I was running my experiments for my Master's 10 years ago. Ever since then, I always have had a server to manage some automation—mostly n8n for a very long time, and some custom applications I have built. Having a place you deploy and costs you a few bucks a month is a nerd dream.
 
@@ -20,7 +20,7 @@ This has also been my launchpad into my DevOps career. I have learned so much in
 
 In modern application engineering, we take comprehensive unit tests, type checkers, hermetic build environments, and granular release management for granted. Why should our **Infrastructure as Code (IaC)** be treated with any less rigor?
 
-Over the years, I've treated `infra-bootstrap-tools` as an engineering lab to tackle these friction points head-on. In this article, I want to walk you through **7 key quality patterns** I've implemented across the repository that elevate IaC from fragile glue scripts into a robust, production-grade system.
+Over the years, I've treated `infra-bootstrap-tools` as an engineering lab to tackle these friction points head-on. In this article, I want to walk you through **6 key quality patterns** I've implemented across the repository that elevate IaC from fragile glue scripts into a robust, production-grade system.
 
 Let's dig in!
 
@@ -130,35 +130,50 @@ nix develop .#docs
 nix develop .#docs --command hugo server
 ```
 
-For contributors who prefer an environment manifest, we also provide a declarative [Flox](https://flox.dev/) environment in `.flox/env/manifest.toml`. And for maximum backward compatibility, our lightweight `ibt` wrapper (`bin/bash/ibt.sh`) can still dispatch commands with auto-completion and container fallbacks.
+For contributors who prefer an environment manifest, we also provide a declarative [Flox](https://flox.dev/) environment in `.flox/env/manifest.toml`.
 
 No installation guides, no conflicting system libraries—just bit-for-bit reproducibility everywhere.
 
 ---
 
-## 4. GitOps & Immutable Infrastructure Artifact Packaging (Flux CLI & GHCR)
+## 4. Layered Architecture & Declarative Idempotency
 
-A classic operational anti-pattern is deploying changes to servers by SSHing in and running `git pull` followed by `docker compose up`, or having a cron job pull raw branches on cluster nodes. 
+When you first begin orchestrating infrastructure, the temptation is to build a single "God Playbook": provision the cloud VM, configure firewall rules, install the container runtime, and deploy the application all in one giant run.
 
-What happens when git is unreachable? What happens if someone pushes an untested commit to `main`? And how do you roll back reliably when your deployment relies on a live git checkout?
+The moment something fails in step 47, your server is stuck in an inconsistent intermediate state. Did the firewall lock you out? Are the container mounts half-created? Is the VM properly tagged?
 
-In `infra-bootstrap-tools`, infrastructure manifests are packaged and published as **immutable Open Container Initiative (OCI) artifacts**:
+To eliminate this fragility, we enforce a strict separation of concerns across three distinct architectural layers:
 
-1. Pushes to Kubernetes manifests trigger [`.github/workflows/flux-oci-publish.yml`](https://github.com/xNok/infra-bootstrap-tools/blob/main/.github/workflows/flux-oci-publish.yml).
-2. The workflow enters a hermetic `nix develop .#flux` shell and calls [`bin/ci/publish-flux-artifact.sh`](https://github.com/xNok/infra-bootstrap-tools/blob/main/bin/ci/publish-flux-artifact.sh).
-3. The script packages the manifests using the Flux CLI and pushes them as versioned OCI artifacts to the GitHub Container Registry (GHCR):
+```mermaid
+flowchart TD
+    subgraph Layer3 ["Layer 3: Declarative Workloads"]
+        W["Docker Swarm Stacks & Kubernetes Fleet Manifests<br/><i>Reconciled via GitOps & Compose</i>"]
+    end
 
-```bash
-# bin/ci/publish-flux-artifact.sh
-flux push artifact "oci://ghcr.io/${OWNER}/manifests/kubernetes/${ARTIFACT_NAME}:${SHORT_SHA}" \
-    --path="${ARTIFACT_PATH}" \
-    --source="${SOURCE_URL}" \
-    --revision="${HEAD_SHA}"
+    subgraph Layer2 ["Layer 2: Host Configuration & Bootstrap"]
+        A["Ansible Playbooks & Collections<br/><i>Idempotent OS hardening, K3s cluster, Docker runtime</i>"]
+    end
+
+    subgraph Layer1 ["Layer 1: Infrastructure Provisioning"]
+        T["Terraform / OpenTofu<br/><i>DigitalOcean Droplets, VPC networks, DNS records</i>"]
+    end
+
+    T -->|Provisions compute & networking| A
+    A -->|Bootstraps container engines & orchestrators| W
+
+    classDef layer1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1;
+    classDef layer2 fill:#ede7f6,stroke:#5e35b1,stroke-width:2px,color:#311b92;
+    classDef layer3 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20;
+    class Layer1,T layer1;
+    class Layer2,A layer2;
+    class Layer3,W layer3;
 ```
 
-4. Downstream cluster operators (Flux) pull the versioned OCI artifact and reconcile it into the cluster.
+- **Layer 1: Provisioning (Terraform)**: Solely responsible for cloud infrastructure lifecycles (VMs, VPCs, DNS). State is locked in a remote backend, treating virtual hardware as disposable, immutable resources.
+- **Layer 2: OS Configuration & Cluster Bootstrap (Ansible)**: Idempotently configures host settings, sysctl parameters, firewall rules (UFW), and cluster manager/agent nodes.
+- **Layer 3: Workload Deployment (Docker Swarm / Kubernetes)**: Pure declarative stack and fleet manifests managed via GitOps. Application updates never touch host packages or OS configurations.
 
-Because artifacts are tagged with the immutable commit SHA and cryptographically traceable back to source commits, we gain complete auditability, zero direct git access from cluster nodes, and effortless rollback.
+Every layer operates with strict boundaries and declarative idempotency. Backed by strict linting (`.ansible-lint`, `.yamllint.yaml`, `.terraform-version`), if you rerun our main playbooks against an already configured cluster, every single task reports `ok: 0 changed: 0`.
 
 ---
 
@@ -198,52 +213,54 @@ Consumers can choose to pin an individual role, or simply reference the parent c
 
 ---
 
-## 6. Defense-in-Depth Secret Hygiene & Dynamic Credential Injection
+## 6. Defense-in-Depth Secret Hygiene: 1Password CLI, direnv & Dynamic Injection
 
-Hardcoding passwords or long-lived API tokens inside infrastructure playbooks is an obvious security hazard. But even keeping plaintext `.env` files or secret values on host filesystems creates an unnecessary attack surface.
+Hardcoding passwords or long-lived API tokens inside infrastructure playbooks is an obvious security hazard. But even keeping plaintext `.env` files or decrypted secret keys on developer laptops creates an unnecessary attack surface.
 
-In `infra-bootstrap-tools`, secret hygiene is handled with defense-in-depth:
+In `infra-bootstrap-tools`, we treat secret hygiene with true defense-in-depth, relying heavily on [1Password CLI (`op`)](https://developer.1password.com/docs/cli/get-started/) and [direnv](https://direnv.net/) across every stage of our workflow:
 
-1. **Pre-Commit Guardrails**: Local `.pre-commit-config.yaml` runs `detect-private-key` and secret detection hooks before any git commit can be finalized.
-2. **Ephemeral Injection via 1Password CLI**: We avoid writing credentials to disk by leveraging `op run` or 1Password CLI integrations to dynamically inject secrets into environment variables at runtime.
-3. **Zero-Downtime Secret Rotation in Ansible**: For containerized workloads on Docker Swarm, secrets shouldn't be left as static files. We built dedicated utility roles like [`ansible/roles/utils_rotate_docker_secrets`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/roles/utils_rotate_docker_secrets/README.md) and `utils_rotate_docker_configs`.
+### 1. Zero Plaintext Secrets on Disk via `direnv` and `op run`
+Instead of maintaining hazardous `.env` files with raw API keys or database tokens on disk, our project's [`.envrc`](https://github.com/xNok/infra-bootstrap-tools/blob/main/.envrc) integrates `direnv` with the 1Password CLI. 
 
-When a database password or API token changes, `utils_rotate_docker_secrets` provisions a new versioned secret (e.g. `db_password_20260415`), updates the Docker Compose service definition to point to the new secret, triggers a rolling service update, and prunes the old secret—all with zero downtime and without persisting plaintext on target hosts.
-
----
-
-## 7. Layered Architecture & Declarative Idempotency
-
-When you first begin orchestrating infrastructure, the temptation is to build a single "God Playbook": provision the cloud VM, configure firewall rules, install the container runtime, and deploy the application all in one giant run.
-
-The moment something fails in step 47, your server is stuck in an inconsistent intermediate state.
-
-To prevent this, we enforce a strict separation of concerns across three architectural layers:
-
+Environment variables use 1Password secret references (`op://vault/item/field`). When running commands or launching tools, `op run` dynamically resolves those references into environment variables directly in process memory:
+```bash
+# Injects secrets into memory on the fly—zero credentials written to disk
+op run --env-file=.env.template -- terraform plan
 ```
-+-----------------------------------------------------------+
-| Layer 3: Application Workloads                            |
-| (Docker Swarm Stacks & Kubernetes Fleet Manifests)        |
-+-----------------------------------------------------------+
-                             |
-                             v
-+-----------------------------------------------------------+
-| Layer 2: Host Configuration & Orchestrator Bootstrap      |
-| (Ansible Roles: Docker, K3s, OS Hardening, Firewall)     |
-+-----------------------------------------------------------+
-                             |
-                             v
-+-----------------------------------------------------------+
-| Layer 1: Cloud Infrastructure Provisioning                |
-| (Terraform: DigitalOcean Droplets, VPCs, DNS Records)    |
-+-----------------------------------------------------------+
+When you exit the directory or the process terminates, the credentials vanish from memory.
+
+### 2. Hardware-Backed SSH Agent & Git Commit Signing
+We never store unencrypted SSH private keys in `~/.ssh`. Instead, the 1Password desktop app acts as our system SSH agent via `~/.1password/agent.sock`.
+
+Our SSH config routes all hosts through this socket:
+```text
+Host *
+  IdentityAgent ~/.1password/agent.sock
 ```
+Every SSH connection to remote servers queries 1Password for biometric/system authorization. Furthermore, every Git commit in this repo is cryptographically signed using `op-ssh-sign`, ensuring verifiable provenance without exposing key material.
 
-- **Layer 1: Provisioning (Terraform)**: Solely responsible for cloud infrastructure lifecycles (VMs, VPCs, DNS).
-- **Layer 2: OS Configuration & Cluster Bootstrap (Ansible)**: Idempotently configures host settings, sysctl parameters, firewall rules, and cluster manager/agent nodes.
-- **Layer 3: Workload Deployment (Docker Swarm / Kubernetes)**: Pure declarative stack and fleet manifests managed via GitOps.
+### 3. Runtime Secret Lookups in Ansible Playbooks
+When Ansible needs to bootstrap secrets—such as pulling GitHub tokens to configure Flux or inject cluster secrets—we avoid committing Ansible Vault files with shared passwords.
 
-Every playbook and stack is continuously validated by strict linters (`.ansible-lint`, `.yamllint.yaml`, `.terraform-version`). If you rerun our main playbooks against an already configured cluster, every single task reports `ok: 0 changed: 0`.
+Instead, roles like [`k3s_flux_bootstrap`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/roles/k3s_flux_bootstrap/README.md) and [`utils_ssh_add`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/roles/utils_ssh_add/README.md) use the `community.general.onepassword` lookup plugin:
+```yaml
+- name: Retrieve GitHub Flux Token from 1Password
+  ansible.builtin.set_fact:
+    github_token: "{{ lookup('community.general.onepassword', 'GitHub_Flux_Token', field='password') }}"
+```
+Secrets are retrieved in real-time from 1Password on the operator's machine and piped directly into the target cluster without ever being written to a temporary file.
+
+### 4. Zero-Downtime Secret Rotation in Docker Swarm
+For containerized services running on Docker Swarm, secrets shouldn't be left as static config files on remote nodes. We built dedicated utility roles like [`ansible/roles/utils_rotate_docker_secrets`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/roles/utils_rotate_docker_secrets/README.md) and `utils_rotate_docker_configs`.
+
+When an API token or database password changes, the role:
+1. Creates a newly versioned secret in Swarm (e.g. `db_password_20260415`).
+2. Updates the Swarm service definition to attach the new secret.
+3. Orchestrates a rolling service update with zero downtime.
+4. Prunes the deprecated secret once all tasks are healthy.
+
+### 5. Automated Pre-Commit Guardrails
+As a final safety net, our `.pre-commit-config.yaml` runs `detect-private-key` before any git commit can be finalized. If an engineer accidentally stages a private key or certificate, the commit is blocked before it ever touches Git history.
 
 ---
 
@@ -256,10 +273,9 @@ High quality in Infrastructure as Code isn't about finding a single silver-bulle
 | **1. Policy-as-Code** | Conftest & Rego v1 | Supply chain security, SHA pinning, timeout enforcement |
 | **2. Decoupled CI & Shell Testing** | BATS & Bash Strict Mode | Elimination of commit-and-pray loops and unverified glue scripts |
 | **3. Hermetic Environments** | Nix Flakes & Flox | "Works on my machine" syndrome and cross-platform drift |
-| **4. Immutable OCI Packaging** | Flux CLI & GHCR | Volatile git pulls, unverified deployments, and rollback friction |
+| **4. Layered Modularity** | Terraform + Ansible + Stacks | Fragile monolithic playbooks and non-idempotent configurations |
 | **5. Tree & BOM Releases** | Changesets & Workspaces | Granular role versioning with coordinated collection releases |
-| **6. Secret Hygiene** | 1Password CLI & Rotation Roles | Plaintext credential leaks and zero-downtime rotation |
-| **7. Layered Modularity** | Terraform + Ansible + Stacks | Fragile monolithic playbooks and non-idempotent configurations |
+| **6. Secret Hygiene & Dynamic Injection** | 1Password CLI, direnv & Rotation Roles | Plaintext credential leaks, disk persistence, and zero-downtime rotation |
 
 If you treat your infrastructure automation with the same engineering rigor you give to production software, your systems will be more reliable, testable, and maintainable.
 
