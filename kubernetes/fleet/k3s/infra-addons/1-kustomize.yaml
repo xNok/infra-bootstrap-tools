@@ -43,7 +43,7 @@ spec:
             - kustomize:
                 patches:
                   - patch: |
-                      - op: replace
+                      - op: add
                         path: /spec/ipAddresses
                         value:
                           - 127.0.0.1

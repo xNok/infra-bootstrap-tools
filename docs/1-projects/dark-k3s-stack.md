@@ -129,7 +129,17 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Resolved Flux reconciliation substitution bug for K3s OpenZiti stack:
   - Migrated cluster-specific host/IP overrides and cert-manager IP SAN patches from static ConfigMap generators into `Kustomization/infra-addons` (`1-kustomize.yaml`) using `HelmRelease` inline values and `postRenderers`.
   - Removed un-substituted `k3s-ziti-*-values` configMapGenerators to ensure automated GitOps reconciliations never overwrite cluster parameters.
+  - Used JSON6902 `op: add` on `/spec/ipAddresses` for cert-manager IP SAN persistence and strict `--replace-fail` patching in Nix `kubeztl`.
+- [Completed] Exposed Flux Operator Web UI (`flux-ui`) as a Zero-Trust Dark Service:
+  - Discovered and utilized the built-in Web UI / Status dashboard in `flux-operator` (listening on port 9080), avoiding redundant external dashboards.
+  - Resolved Go x509 SAN IP validation requirement (`Certificate.spec.ipAddresses`) and OpenZiti `os.ExpandEnv` host string evaluations.
+  - Provisioned OpenZiti dark service `flux-ui`:
+    - Intercept config: `flux.ziti:80` and `flux.ziti:9080`.
+    - Host config: `flux-operator.flux-system.svc.cluster.local:9080`.
+    - Bound terminator to `@ziti-router` and granted dial access to `#k3s-clients`.
+  - Verified end-to-end zero-trust HTTP 200 OK access using OpenZiti Go SDK and confirmed readiness for mobile phone browsing via Ziti Mobile Edge at `http://flux.ziti`.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
+
 
 
 

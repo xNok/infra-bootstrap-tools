@@ -47,10 +47,10 @@ let
     preBuild = ''
       chmod -R +w vendor
       substituteInPlace vendor/github.com/openziti/sdk-golang/ziti/ziti.go \
-        --replace-warn 'session.Service.ID' '*session.ServiceID'
+        --replace-fail 'session.Service.ID' '*session.ServiceID'
 
       substituteInPlace main.go \
-        --replace-warn 'if configFilePath == "" || serviceName == "" {' \
+        --replace-fail 'if configFilePath == "" || serviceName == "" {' \
           'if configFilePath == "" { if env := os.Getenv("ZCONFIG"); env != "" { configFilePath = env } else if home, err := os.UserHomeDir(); err == nil { p := filepath.Join(home, ".ziti", "laptop-client.json"); if _, err := os.Stat(p); err == nil { configFilePath = p } } }; if serviceName == "" { if env := os.Getenv("ZITI_SERVICE"); env != "" { serviceName = env } else { serviceName = "k3s" } }; if false {'
     '';
     doCheck = false;
