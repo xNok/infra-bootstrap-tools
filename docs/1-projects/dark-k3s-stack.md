@@ -139,6 +139,7 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
     - Bound terminator to `@ziti-router` and granted dial access to `#k3s-clients`.
   - Verified end-to-end zero-trust HTTP 200 OK access using OpenZiti Go SDK and confirmed readiness for mobile phone browsing via Ziti Mobile Edge at `http://flux.ziti`.
 - [Completed] Modularized `kubeztl` into a standalone Nix package (`bin/nix/pkgs/kubeztl.nix`) imported via `pkgs.callPackage` in `bin/nix/common.nix`, aligning with Nixpkgs packaging standards (`pkgs/by-name/ku/kubeztl/package.nix`) for upstream reuse or contribution.
+- [Completed] Documented comprehensive client access architecture in [docs/1-projects/dark-k3s-stack/client-access.md](dark-k3s-stack/client-access.md): dropped ad-hoc userspace port-forwarding helpers in favor of native OS-level transparent tunnelers (`ziti-edge-tunnel` via system systemd on Linux, `Ziti Mobile Edge` on mobile), explaining why Home Manager should not manage kernel TUN devices and providing full setup instructions.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
 
 
