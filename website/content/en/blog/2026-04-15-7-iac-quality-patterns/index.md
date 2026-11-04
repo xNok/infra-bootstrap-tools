@@ -118,7 +118,7 @@ We execute our entire test suite using [`bin/ci/lib/run-bats-tests.sh`](https://
 
 ## 3. Hermetic & Reproducible Development Environments (Nix Flakes & Flox)
 
-In [The Holy Grail of Development Environments: My Journey to Nix](/blog/journey-to-nix/), I shared how I bounced between bloated Docker toolchains (`tools.sh`) and custom bash installer scripts (`ibt`). Both kept falling short because of container startup lag, maintenance overhead, or platform incompatibilities between macOS, Ubuntu, and cloud workspaces.
+This has been my longest quest in software development. I have tried many solutions, and until a few years back none really felt right—Docker is definitely not the solution to everything. In [The Holy Grail of Development Environments: My Journey to Nix](/blog/journey-to-nix/), I covered the topic in depth, sharing how I bounced between bloated Docker toolchains (`tools.sh`) and custom bash installer scripts (`ibt`). Both kept falling short because of container startup lag, maintenance overhead, or platform incompatibilities between macOS, Ubuntu, and cloud workspaces.
 
 The solution that completely eliminated "works on my machine" in this repository is **Nix Flakes** (with **Flox** support as a lightweight alternative).
 
