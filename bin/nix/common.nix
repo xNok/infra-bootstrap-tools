@@ -44,14 +44,17 @@ let
       hash = "sha256-9o2U0YZYSmq9sny0gt/qSjgTR+xjpfu37dD2DbpuzCc=";
     };
     vendorHash = "sha256-O4N+irJqeS8Tl4Is58K72ciF0zg6z2B6cZa3cggnTOg=";
-    preBuild = ''
-      chmod -R +w vendor
-      substituteInPlace vendor/github.com/openziti/sdk-golang/ziti/ziti.go \
-        --replace-fail 'session.Service.ID' '*session.ServiceID'
-
+    postPatch = ''
       substituteInPlace main.go \
         --replace-fail 'if configFilePath == "" || serviceName == "" {' \
           'if configFilePath == "" { if env := os.Getenv("ZCONFIG"); env != "" { configFilePath = env } else if home, err := os.UserHomeDir(); err == nil { p := filepath.Join(home, ".ziti", "laptop-client.json"); if _, err := os.Stat(p); err == nil { configFilePath = p } } }; if serviceName == "" { if env := os.Getenv("ZITI_SERVICE"); env != "" { serviceName = env } else { serviceName = "k3s" } }; if false {'
+    '';
+    preBuild = ''
+      if [ -d vendor ]; then
+        chmod -R +w vendor
+        substituteInPlace vendor/github.com/openziti/sdk-golang/ziti/ziti.go \
+          --replace-fail 'session.Service.ID' '*session.ServiceID'
+      fi
     '';
     doCheck = false;
     meta = with pkgs.lib; {
