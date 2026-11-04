@@ -138,6 +138,7 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
     - Host config: `flux-operator.flux-system.svc.cluster.local:9080`.
     - Bound terminator to `@ziti-router` and granted dial access to `#k3s-clients`.
   - Verified end-to-end zero-trust HTTP 200 OK access using OpenZiti Go SDK and confirmed readiness for mobile phone browsing via Ziti Mobile Edge at `http://flux.ziti`.
+- [Completed] Modularized `kubeztl` into a standalone Nix package (`bin/nix/pkgs/kubeztl.nix`) imported via `pkgs.callPackage` in `bin/nix/common.nix`, aligning with Nixpkgs packaging standards (`pkgs/by-name/ku/kubeztl/package.nix`) for upstream reuse or contribution.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
 
 
