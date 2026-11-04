@@ -78,41 +78,34 @@ The other thing is the big missed opportunity: if a script is useful in CI, it s
 
 So my rule of thumb is that CI should be calling a build tool—Maven, Just, or Make. If that doesn't apply, then write a script: it should work locally, and it should be tested. But how do you test bash? Surprisingly, not many people know that bash has a test framework: the same way Python has pytest, bash has [BATS](https://github.com/bats-core/bats-core)—and it is great.
 
-In `infra-bootstrap-tools`, all CI workflows delegate to dedicated scripts under `bin/ci/` (e.g., `bin/ci/build-website.sh`, `bin/ci/ansible-lint.sh`, or `bin/ci/publish-flux-artifact.sh`). Every script enforces strict bash mode (`set -euo pipefail`), traps cleanup routines with `mktemp`, and leverages shared helpers in `bin/ci/lib/`. And just like application code, we write automated unit tests with BATS in `bin/tests/ci/`.
+When you adopt this pattern, your CI pipelines become remarkably clean. Instead of fifty lines of inline bash nested inside GitHub Actions YAML, every job simply calls a self-contained script:
 
-Here is an example from [`bin/tests/ci/build-website.bats`](https://github.com/xNok/infra-bootstrap-tools/blob/main/bin/tests/ci/build-website.bats):
-
-```bash
-#!/usr/bin/env bats
-
-setup() {
-  export MOCK_DIR="$(mktemp -d)"
-  export PATH="${MOCK_DIR}:${PATH}"
-  export GITHUB_STEP_SUMMARY="${MOCK_DIR}/step_summary.md"
-  touch "$GITHUB_STEP_SUMMARY"
-
-  # Mock hugo executable
-  cat << 'MOCK_EOF' > "${MOCK_DIR}/hugo"
-#!/usr/bin/env bash
-echo "mock hugo $@"
-MOCK_EOF
-  chmod +x "${MOCK_DIR}/hugo"
-}
-
-teardown() {
-  rm -rf "$MOCK_DIR"
-}
-
-@test "build-website.sh fails when missing arguments" {
-  run ./bin/ci/build-website.sh
-  [ "$status" -eq 1 ]
-  [[ "$output" == *"Usage:"* ]]
-}
+```yaml
+# .github/workflows/website.yml
+- name: Build Website
+  run: ./bin/ci/build-website.sh "${HUGO_VERSION}" "${{ runner.temp }}" "${{ steps.pages.outputs.base_url }}"
 ```
 
-We execute our entire test suite using [`bin/ci/lib/run-bats-tests.sh`](https://github.com/xNok/infra-bootstrap-tools/blob/main/bin/ci/lib/run-bats-tests.sh). It formats TAP output and automatically generates collapsible test result summaries directly inside GitHub's Step Summary.
+From a developer experience point of view, this changes everything:
 
-> Testing shell scripts with BATS turns fragile "glue code" into reliable software you can refactor without fear.
+- **Zero "commit-and-pray"**: If something breaks, you don't push twenty dummy commits to GitHub Actions just to debug a typo. You run the exact script locally on your machine with immediate feedback:
+  ```bash
+  ./bin/ci/build-website.sh 0.147.3 /tmp http://localhost:1313
+  ```
+- **Fast local test feedback**: You can test your shell scripts before pushing code with BATS:
+  ```bash
+  bats bin/tests/ci/
+  ```
+
+In GitHub Actions, running the entire test suite is just as simple:
+
+```yaml
+# .github/workflows/bats.yml
+- name: Run BATS tests
+  run: ./bin/ci/lib/run-bats-tests.sh
+```
+
+> If a script is useful in CI, it must be runnable locally. Decoupling CI execution gives you clean pipelines and instant feedback loops.
 
 ---
 

@@ -37,9 +37,9 @@ Copilot commented on PR #233 pointing out 3 critical inaccuracies in the origina
    - *Real Code*: Exact snippet from `policies/ci/inline_scripts.rego` showing the connection between policy and clean script extraction.
 
 2. **Decoupling CI Execution & Automated Shell Testing (BATS)**
-   - *Pain*: "Commit-and-pray" trial loops where you push commits just to see if a bash script inside YAML works.
-   - *Implementation*: Extracting scripts into `bin/ci/` (`set -euo pipefail`), sharing modular helpers in `bin/ci/lib/` (like `run-bats-tests.sh`), and writing real unit tests with BATS in `bin/tests/ci/build-website.bats`.
-   - *Real Code*: Actual `@test` blocks from `bin/tests/ci/build-website.bats` showing mocking and exit status assertions.
+   - *Pain*: "Commit-and-pray" trial loops where you push commits just to see if a bash script inside YAML works; lack of local reusability.
+   - *Implementation*: Keep CI pipelines clean by calling self-contained executable scripts (`./bin/ci/build-website.sh`) or build tools; test scripts locally with BATS (`bats bin/tests/ci/`).
+   - *Real Code*: Clean single-line workflow invocations from `.github/workflows/website.yml` and `.github/workflows/bats.yml`.
 
 3. **Hermetic & Reproducible Development Environments (Nix Flakes & Flox)**
    - *Pain*: "Works on my machine" syndrome across Ubuntu laptops, Gitpod, Codespaces, and CI runners.
