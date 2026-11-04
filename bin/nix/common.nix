@@ -33,14 +33,43 @@ let
     _1password-cli
   ];
 
+  # Zitified kubectl for OpenZiti zero-trust overlay access
+  kubeztl = pkgs.buildGoModule {
+    pname = "kubeztl";
+    version = "0.28.4";
+    src = pkgs.fetchFromGitHub {
+      owner = "openziti-test-kitchen";
+      repo = "kubeztl";
+      rev = "bee7d35265a74beb2e35fffb8f926e917c56b7c5";
+      hash = "sha256-9o2U0YZYSmq9sny0gt/qSjgTR+xjpfu37dD2DbpuzCc=";
+    };
+    vendorHash = "sha256-O4N+irJqeS8Tl4Is58K72ciF0zg6z2B6cZa3cggnTOg=";
+    preBuild = ''
+      chmod -R +w vendor
+      substituteInPlace vendor/github.com/openziti/sdk-golang/ziti/ziti.go \
+        --replace-warn 'session.Service.ID' '*session.ServiceID'
+
+      substituteInPlace main.go \
+        --replace-warn 'if configFilePath == "" || serviceName == "" {' \
+          'if configFilePath == "" { if env := os.Getenv("ZCONFIG"); env != "" { configFilePath = env } else if home, err := os.UserHomeDir(); err == nil { p := filepath.Join(home, ".ziti", "laptop-client.json"); if _, err := os.Stat(p); err == nil { configFilePath = p } } }; if serviceName == "" { if env := os.Getenv("ZITI_SERVICE"); env != "" { serviceName = env } else { serviceName = "k3s" } }; if false {'
+    '';
+    doCheck = false;
+    meta = with pkgs.lib; {
+      description = "Zitified kubectl client for OpenZiti zero-trust networks";
+      homepage = "https://github.com/openziti-test-kitchen/kubeztl";
+      license = licenses.asl20;
+      mainProgram = "kubeztl";
+    };
+  };
+
   # Kubernetes and GitOps configuration tools
-  fluxPackages = with pkgs; [
+  fluxPackages = (with pkgs; [
     jq
     kubectl
     kubernetes-helm
     kind
     fluxcd
-  ];
+  ]) ++ [ kubeztl ];
 
   # Documentation and site generation tools
   docsPackages = with pkgs; [
@@ -163,5 +192,9 @@ in
         withPreCommit = true;
       };
     };
+  };
+
+  packages = {
+    inherit kubeztl;
   };
 }

@@ -117,7 +117,19 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Decoupled controllers and configurations across `infra-addons`: consolidated generic automation jobs inside `components/openziti` with secure-by-default `ClusterIP` baselines, moved test realm config to `fleet/kind`, and enabled overlay-free fleet configuration.
 - [Completed] Validated consolidated architecture in Kind CI test suite (Test Flux Bootstrap run #41533551349 passed in 8m 36s).
 - [Completed] Added Changeset tracking (`.changeset/k3s-openziti-zero-trust.md`) for releases across `kubernetes-infra-addons`, `ansible-collection-infra-bootstrap-tools`, `ansible-role-k3s-flux-bootstrap`, `ansible-role-k3s-os-hardening`, and `ansible-role-k3s-server`.
-- [Pending] Zero-Trust access to K3s API server verification from user client device.
+- [Completed] PR #234 merged into `main` and released via Changesets.
+- [Completed] Reconciled and synced live K3s cluster with latest published OCI artifacts (`flux-system` and `infra-addons`).
+- [Completed] Verified healthy cluster state: all HelmReleases `Ready: True`, controller and router 1/1 Running with external IP SANs, and zero-trust `k3s` service terminator established.
+- [Completed] Generated fresh client enrollment credentials (`laptop-client.jwt`, `mobile-client.jwt`) and updated mobile QR code.
+- [Completed] Packaged and installed `kubeztl` (zitified kubectl) in repository Nix configuration (`bin/nix/common.nix`, `flake.nix`):
+  - Fixed OpenZiti Go SDK nil-pointer dereference in `cacheSession` against modern OpenZiti v1.7.2 controllers (`session.Service.ID` -> `*session.ServiceID`).
+  - Added smart default identity and service detection (`~/.ziti/laptop-client.json` and service `k3s`, with `ZCONFIG` and `ZITI_SERVICE` override support).
+  - Bundled in `ibt-flux` / `common.packages` and installed directly into active Nix profile (`nix profile add .#kubeztl`).
+  - Verified daemonless zero-trust cluster queries directly from PATH (`kubeztl get nodes`, `kubeztl get pods -A`).
+- [Completed] Resolved Flux reconciliation substitution bug for K3s OpenZiti stack:
+  - Migrated cluster-specific host/IP overrides and cert-manager IP SAN patches from static ConfigMap generators into `Kustomization/infra-addons` (`1-kustomize.yaml`) using `HelmRelease` inline values and `postRenderers`.
+  - Removed un-substituted `k3s-ziti-*-values` configMapGenerators to ensure automated GitOps reconciliations never overwrite cluster parameters.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
+
 
 

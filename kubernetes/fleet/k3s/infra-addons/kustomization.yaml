@@ -19,11 +19,3 @@ configMapGenerator:
     namespace: flux-system
     files:
       - values.yaml=values/trust-manager.values.yaml
-  - name: k3s-ziti-controller-values
-    namespace: flux-system
-    files:
-      - values.yaml=values/ziti-controller.values.yaml
-  - name: k3s-ziti-router-values
-    namespace: flux-system
-    files:
-      - values.yaml=values/ziti-router.values.yaml
