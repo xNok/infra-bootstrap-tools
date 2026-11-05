@@ -15,6 +15,7 @@ let
     yq-go
     bats
     conftest
+    kubectl
   ];
 
   # Python ecosystem for scripting, linting, and agentic workflows
@@ -33,14 +34,16 @@ let
     _1password-cli
   ];
 
+  # Zitified kubectl for OpenZiti zero-trust overlay access
+  kubeztl = pkgs.callPackage ./pkgs/kubeztl.nix { };
+
   # Kubernetes and GitOps configuration tools
-  fluxPackages = with pkgs; [
+  fluxPackages = (with pkgs; [
     jq
-    kubectl
     kubernetes-helm
     kind
     fluxcd
-  ];
+  ]) ++ [ kubeztl ];
 
   # Documentation and site generation tools
   docsPackages = with pkgs; [
@@ -163,5 +166,9 @@ in
         withPreCommit = true;
       };
     };
+  };
+
+  packages = {
+    inherit kubeztl;
   };
 }

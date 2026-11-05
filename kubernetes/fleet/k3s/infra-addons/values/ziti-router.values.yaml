@@ -1,16 +1,14 @@
 edge:
-  advertisedHost: "${ROUTER_ADVERTISED_HOST:-ziti-router.openziti.svc.cluster.local}"
+  advertisedHost: "ziti.nokwebspace.ovh"
   advertisedPort: 8442
   service:
     type: LoadBalancer
+    annotations:
+      external-dns.kubernetes.io/hostname: "ziti.nokwebspace.ovh"
+      external-dns.alpha.kubernetes.io/hostname: "ziti.nokwebspace.ovh"
 
 ctrl:
   endpoint: "openziti-ziti-controller-client.openziti.svc.cluster.local:1280"
-
-csr:
-  sans:
-    ip:
-      - "${ROUTER_ADVERTISED_HOST}"
 
 enrollmentJwtFromSecret: true
 enrollmentJwtSecretName: "ziti-router-enrollment"

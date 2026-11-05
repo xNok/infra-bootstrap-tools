@@ -1,0 +1,13 @@
+# Policy exceptions for kubernetes/infra-addons.
+# Evaluated as data by OPA Conftest policy: policies/kubernetes/allowed_addon_resources.rego.
+# Only approved non-standard resources (e.g. setup automation jobs) may be declared here.
+exceptions:
+  - kind: Job
+    namespace: openziti
+    reason: "OpenZiti router enrollment and ext-jwt configuration automation jobs"
+  - kind: Deployment
+    namespace: keycloak
+    reason: "Keycloak test identity provider deployment"
+  - kind: Service
+    namespace: keycloak
+    reason: "Keycloak test identity provider service"

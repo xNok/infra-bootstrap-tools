@@ -15,6 +15,8 @@ spec:
   # components are relative to the source root (infra-addons OCI root)
   components:
     - ../components/cert-manager
+    - ../components/external-secrets
+    - ../components/external-dns
     - ../components/openziti
 
   # Substitute cluster-specific values (e.g. CLUSTER_NAME) into the manifests before applying.
@@ -24,19 +26,3 @@ spec:
         name: flux-runtime-info
       - kind: ConfigMap
         name: cluster-env
-
-  patches:
-    - patch: |
-        apiVersion: cert-manager.io/v1
-        kind: Certificate
-        metadata:
-          name: openziti-ziti-controller-web-identity-cert
-          namespace: openziti
-        spec:
-          ipAddresses:
-            - 127.0.0.1
-            - "::1"
-            - ${ROUTER_ADVERTISED_HOST}
-      target:
-        kind: Certificate
-        name: openziti-ziti-controller-web-identity-cert

@@ -78,6 +78,34 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
+- name: Ensure external-secrets namespace exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: external-secrets
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Create 1Password Service Account secret for External Secrets Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: onepassword-service-account
+        namespace: external-secrets
+      type: Opaque
+      stringData:
+        token: "{{ k3s_flux_bootstrap_1password_service_account_token }}"
+  when: k3s_flux_bootstrap_1password_service_account_token is defined and k3s_flux_bootstrap_1password_service_account_token | length > 0
+  no_log: true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
 - name: Create cluster-env ConfigMap
   kubernetes.core.k8s:
     state: present
@@ -88,7 +116,9 @@
         name: cluster-env
         namespace: flux-system
       data:
-        ROUTER_ADVERTISED_HOST: "{{ ansible_default_ipv4.address }}"
+        CLUSTER_NAME: "{{ k3s_flux_bootstrap_cluster_name }}"
+        ROUTER_ADVERTISED_HOST: "{{ k3s_flux_bootstrap_dns_subdomain }}.{{ k3s_flux_bootstrap_dns_domain }}"
+        ONEPASSWORD_VAULT: "{{ k3s_flux_bootstrap_1password_vault }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 

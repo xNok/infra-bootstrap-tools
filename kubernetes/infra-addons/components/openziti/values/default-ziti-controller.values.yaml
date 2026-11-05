@@ -6,4 +6,10 @@ clientApi:
 ctrlPlane:
   advertisedHost: "openziti-ziti-controller-client.openziti.svc.cluster.local"
   advertisedPort: 1280
-
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

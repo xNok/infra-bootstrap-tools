@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - 0-source.yaml
   - 1-kustomize.yaml
+  - cluster-secret-store.yaml
+  - external-secret-digitalocean.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
@@ -27,3 +29,7 @@ configMapGenerator:
     namespace: flux-system
     files:
       - values.yaml=values/ziti-router.values.yaml
+  - name: k3s-external-dns-values
+    namespace: flux-system
+    files:
+      - values.yaml=values/external-dns.values.yaml

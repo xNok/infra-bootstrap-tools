@@ -1,0 +1,13 @@
+sources:
+  - service
+policy: upsert-only
+registry: txt
+txtOwnerId: "${CLUSTER_NAME}"
+interval: 1m
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 50m
+    memory: 64Mi
