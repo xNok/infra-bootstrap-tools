@@ -10,21 +10,21 @@ on:
       - ready_for_review
       - synchronize
     paths:
-      - .github/workflows/ansible.yml
+      - .github/workflows/ansible-play-docker-swarm.yml
       - 'ansible/**'
       - requirements.txt
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Enforce least privilege by default
+permissions:
+  contents: read
+
 # Ensure only one deployment runs at a time
 concurrency:
   group: ansible-deploy-${{ github.ref }}
   cancel-in-progress: false
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
-permissions:
-  contents: read
 
 jobs:
 
@@ -32,6 +32,8 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     defaults:
       run:
         shell: nix develop .#ansible --command bash -eo pipefail {0}
@@ -46,6 +48,9 @@ jobs:
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
 
+      - name: Restore CI scripts from default branch
+        run: ./bin/ci/restore-scripts-from-main.sh "${{ github.event.repository.default_branch || 'main' }}"
+
       - name: Run ansible-lint
         run: ./bin/ci/ansible-lint.sh
 
@@ -53,9 +58,15 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.repository.default_branch || 'main' }}
+
       # Lock if this is a PR so two PR cannot deploy at the same time
       - name: PR Lock
         if: github.event_name == 'pull_request'
@@ -69,6 +80,8 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
     defaults:
       run:
         shell: nix develop .#ansible --command bash -eo pipefail {0}
@@ -76,6 +89,7 @@ jobs:
     needs: [ validate, lock ]
     # The deployment environment thus provides the secrets for that env
     environment: docker_swarm
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -88,6 +102,9 @@ jobs:
       # Cache Nix store for faster subsequent runs
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
+
+      - name: Restore CI scripts from default branch
+        run: ./bin/ci/restore-scripts-from-main.sh "${{ github.event.repository.default_branch || 'main' }}"
 
       - name: write extra inventory to file
         if: ${{ env.INVENTORY != '' }}
