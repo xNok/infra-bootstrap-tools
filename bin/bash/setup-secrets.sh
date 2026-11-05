@@ -32,6 +32,14 @@ else
     echo "Item 'GitHub_Flux_Token' already exists."
 fi
 
+echo "Creating 'EXTERNAL_SECRETS_ONEPASSWORD_SERVICE_ACCOUNT' secrets..."
+create_item_if_missing "EXTERNAL_SECRETS_ONEPASSWORD_SERVICE_ACCOUNT" "Login" "${VAULT}" \
+    "credential=OP_SERVICE_ACCOUNT_TOKEN_PLACEHOLDER"
+
+echo "Creating 'EXTERNAL_DNS_DIGITALOCEAN_API_TOKEN' secrets..."
+create_item_if_missing "EXTERNAL_DNS_DIGITALOCEAN_API_TOKEN" "Login" "${VAULT}" \
+    "credential=DO_TOKEN_PLACEHOLDER"
+
 echo "Creating 'GitHub_Flux_App_Private_Key' secrets..."
 create_item_if_missing "GitHub_Flux_App_Private_Key" "Secure Note" "${VAULT}" \
     "notesPlain=PRIVATE_KEY_PEM_CONTENT"

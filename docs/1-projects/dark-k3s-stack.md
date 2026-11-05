@@ -97,6 +97,9 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
   - Configured OpenZiti zero-trust overlay service `k3s` (intercepting `k3s.ziti:443` -> `kubernetes.default.svc:443`) with bind policy for `@ziti-router` and dial policy for `#k3s-clients`.
   - Created client identities `mobile-client` and `laptop-client` with role attribute `#k3s-clients` and generated single-use enrollment tokens/QR codes.
   - Ports 1280 (OpenZiti Controller Client API) and 8442 (OpenZiti Router Edge) opened in UFW; direct Kubernetes port 6443 blocked from public internet.
+- **Ansible Collection Packaging & 1Password CLI on Linux**:
+  - `ansible/playbooks/k3s.yml` references roles via FQCN `xnok.infra_bootstrap_tools.*`, requiring `make install-collection` to build and install local modifications into `~/.ansible/collections`.
+  - On Linux, 1Password CLI app integration enforces that the calling process has primary group `onepassword-cli` (`gid 30001`). Running with `sg onepassword-cli` allows seamless integration with the desktop 1Password app.
 
 ## Current State
 - [Completed] Refactored `k3s_server` to use `config.yaml`.
@@ -147,9 +150,13 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Enforced strict OPA Conftest policy guardrail (`policies/kubernetes/allowed_addon_resources.rego`) ensuring `infra-addons` only contains generic controller resources, with data-driven exceptions in `policy-exceptions.yaml`.
 - [Completed] Sized resource requests and limits for small clusters and CI runners across all infra-addon defaults (external-secrets, external-dns, cert-manager, trust-manager, openziti), and brought `fleet/kind` and `bin/tests/flux-d2/test.sh` to full integration test parity.
 - [Completed] Strengthened automated testing suite for high merge confidence: added functional ESO secret synchronization and ExternalDNS service discovery tests in `bin/tests/flux-d2/test.sh`, and created a BATS test suite (`bin/tests/ci/test_kubeztl.bats`) verifying the Nix derivation and execution of `kubeztl`.
-- [Pending] Reconcile live cluster with 1Password Service Account token and verify ESO / ExternalDNS sync.
+- [Completed] Released and published packages via PR #240: `kubernetes-infra-addons@0.4.0`, `ansible-role-k3s-flux-bootstrap@0.4.0`, and `ansible-collection-infra-bootstrap-tools@1.2.1`.
+- [Completed] Built and installed local Ansible collection `xnok.infra_bootstrap_tools:1.0.7` via `make install-collection`, ensuring the updated `k3s_flux_bootstrap` tasks (`external-secrets` namespace, `onepassword-service-account` secret, `cluster-env` configmap) are recognized by Ansible.
+- [Completed] Resolved 1Password CLI Linux app integration group requirement (`sg onepassword-cli`) for desktop agent authorization.
+- [Completed] Reconciled live cluster with 1Password Service Account token and verified ESO / ExternalDNS sync:
+  - Resolved ESO 1Password SDK memory requirement (increased controller limit from 128Mi to 256Mi to prevent CGO OOMKill).
+  - Pinned `external-dns` container image to `v0.20.0` in `fleet/k3s/infra-addons/values/external-dns.values.yaml` to ensure compatibility with both Kubernetes EndpointSlices (`discovery.k8s.io/v1`) and the in-tree DigitalOcean provider.
+  - Standardized secret item naming and syntax (`EXTERNAL_DNS_DIGITALOCEAN_API_TOKEN/credential`).
+  - Generated fine-grained, least-privilege DigitalOcean Personal Access Token scoped strictly to `domain:read` and `domain:write`.
+  - Confirmed 100% cluster health: all HelmReleases `Ready: True`, all 17 pods across all namespaces `1/1 Running`, `ExternalSecret/digitalocean-dns` synced, and `external-dns` successfully communicating with DigitalOcean API.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
-
-
-
-

@@ -1,3 +1,5 @@
+image:
+  tag: v0.20.0
 provider:
   name: digitalocean
 env:
