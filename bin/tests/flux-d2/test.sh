@@ -72,6 +72,9 @@ wait_ready() {
     kubectl get fluxinstances -n flux-system -o yaml || true
 
     echo "ERROR: Timed out waiting for ${resource} in ${namespace}"
+    kubectl describe "${resource}" -n "${namespace}" || true
+    kubectl get pods -A || true
+    kubectl get helmrelease -n "${namespace}" || true
     kubectl describe fluxinstances -n flux-system
     kubectl describe ocirepository -n flux-system
     kubectl get kustomization -n flux-system -o yaml
