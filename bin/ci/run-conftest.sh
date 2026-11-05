@@ -11,10 +11,23 @@ OUTPUT_FILE=$(mktemp)
 
 trap 'rm -f "${OUTPUT_FILE}"' EXIT
 
-echo "Running conftest..."
+echo "Running conftest for GitHub Actions workflows..."
 set +e
-conftest test "${WORKFLOWS_DIR}"/*.yml -p "${POLICIES_DIR}" --all-namespaces --output tap > "${OUTPUT_FILE}" 2>&1
-EXIT_CODE=$?
+conftest test "${WORKFLOWS_DIR}"/*.yml -p "${POLICIES_DIR}" --all-namespaces --output tap >> "${OUTPUT_FILE}" 2>&1
+WORKFLOW_EXIT_CODE=$?
+
+K8S_EXIT_CODE=0
+if [ -d "${ROOT_DIR}/kubernetes/infra-addons" ] && [ -d "${ROOT_DIR}/policies/kubernetes" ]; then
+  echo "Running conftest for Kubernetes infra-addons..."
+  kubectl kustomize "${ROOT_DIR}/kubernetes/infra-addons" | conftest test - -p "${ROOT_DIR}/policies/kubernetes" --data "${ROOT_DIR}/kubernetes/infra-addons/policy-exceptions.yaml" --all-namespaces --output tap >> "${OUTPUT_FILE}" 2>&1
+  K8S_EXIT_CODE=$?
+fi
+
+if [ ${WORKFLOW_EXIT_CODE} -ne 0 ] || [ ${K8S_EXIT_CODE} -ne 0 ]; then
+  EXIT_CODE=1
+else
+  EXIT_CODE=0
+fi
 set -e
 
 # Output the results to the console

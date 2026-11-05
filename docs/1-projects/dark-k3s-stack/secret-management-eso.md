@@ -89,8 +89,8 @@ stringData:
   token: "{{ k3s_flux_bootstrap_1password_service_account_token }}"
 ```
 
-### Step 2: ESO ClusterSecretStore Configuration
-In `kubernetes/infra-addons/components/external-secrets/`:
+### Step 2: ClusterSecretStore Configuration (Fleet Configuration)
+In `kubernetes/fleet/k3s/infra-addons/cluster-secret-store.yaml`:
 ```yaml
 apiVersion: external-secrets.io/v1
 kind: ClusterSecretStore
@@ -99,7 +99,7 @@ metadata:
 spec:
   provider:
     onepasswordSDK:
-      vault: "{{ CLUSTER_VAULT_NAME }}"
+      vault: "${ONEPASSWORD_VAULT}"
       auth:
         serviceAccountSecretRef:
           name: onepassword-service-account
@@ -107,10 +107,10 @@ spec:
           key: token
 ```
 
-### Step 3: Consumer Addons Declare ExternalSecrets
-For example, for **ExternalDNS**:
+### Step 3: Consumer ExternalSecrets (Fleet / Workload Configuration)
+In `kubernetes/fleet/k3s/infra-addons/external-secret-digitalocean.yaml`:
 ```yaml
-apiVersion: external-secrets.io/v1beta1
+apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: digitalocean-dns

@@ -15,6 +15,7 @@ let
     yq-go
     bats
     conftest
+    kubectl
   ];
 
   # Python ecosystem for scripting, linting, and agentic workflows
@@ -39,7 +40,6 @@ let
   # Kubernetes and GitOps configuration tools
   fluxPackages = (with pkgs; [
     jq
-    kubectl
     kubernetes-helm
     kind
     fluxcd

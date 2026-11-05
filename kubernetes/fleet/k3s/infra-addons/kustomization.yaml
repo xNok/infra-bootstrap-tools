@@ -4,6 +4,8 @@ kind: Kustomization
 resources:
   - 0-source.yaml
   - 1-kustomize.yaml
+  - cluster-secret-store.yaml
+  - external-secret-digitalocean.yaml
 
 generatorOptions:
   disableNameSuffixHash: true

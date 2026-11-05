@@ -4,7 +4,6 @@ resources:
   - namespace.yaml
   - helm-repo.yaml
   - external-dns.yaml
-  - external-secret.yaml
 generatorOptions:
   disableNameSuffixHash: true
   labels:
