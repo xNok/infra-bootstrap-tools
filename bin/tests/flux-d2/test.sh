@@ -169,10 +169,92 @@ verify_infra_addons() {
   wait_ready "helmrelease/trust-manager" "flux-system" "3m"
 
   info "Waiting for external-secrets HelmRelease to become ready..."
-  wait_ready "helmrelease/external-secrets" "flux-system" "3m"
+  wait_ready "helmrelease/external-secrets" "flux-system" "5m"
+
+  info "Verifying External Secrets Operator end-to-end secret synchronization..."
+  cat <<'EOF' | kubectl apply -f -
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: test-fake-store
+  namespace: default
+spec:
+  provider:
+    fake:
+      data:
+      - key: /test/credential
+        value: "flux-e2e-secret-token"
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: test-eso-sync
+  namespace: default
+spec:
+  refreshInterval: 1m
+  secretStoreRef:
+    kind: SecretStore
+    name: test-fake-store
+  target:
+    name: test-eso-sync-secret
+    creationPolicy: Owner
+  data:
+  - secretKey: token
+    remoteRef:
+      key: /test/credential
+EOF
+
+  wait_ready "externalsecret/test-eso-sync" "default" "2m"
+
+  local secret_val
+  secret_val=$(kubectl get secret test-eso-sync-secret -n default -o jsonpath='{.data.token}' | base64 -d)
+  if [[ "${secret_val}" != "flux-e2e-secret-token" ]]; then
+    error "ExternalSecret value mismatch: got '${secret_val}', expected 'flux-e2e-secret-token'"
+    exit 1
+  fi
+  success "External Secrets Operator successfully synchronized secret from store."
+
+  kubectl delete externalsecret test-eso-sync -n default --ignore-not-found=true
+  kubectl delete secretstore test-fake-store -n default --ignore-not-found=true
+  kubectl delete secret test-eso-sync-secret -n default --ignore-not-found=true
 
   info "Waiting for external-dns HelmRelease to become ready..."
-  wait_ready "helmrelease/external-dns" "flux-system" "3m"
+  wait_ready "helmrelease/external-dns" "flux-system" "5m"
+
+  info "Verifying ExternalDNS service discovery and record registration..."
+  local test_host="test-app-${RANDOM}.test.local"
+  cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-externaldns-service
+  namespace: default
+  annotations:
+    external-dns.kubernetes.io/hostname: "${test_host}"
+    external-dns.kubernetes.io/target: "192.168.1.100"
+spec:
+  ports:
+  - port: 80
+    name: http
+EOF
+
+  local found_record=0
+  for _ in {1..16}; do
+    if kubectl logs -n external-dns -l app.kubernetes.io/name=external-dns --tail=50 2>&1 | grep -q "${test_host}"; then
+      found_record=1
+      break
+    fi
+    sleep 5
+  done
+
+  kubectl delete service test-externaldns-service -n default --ignore-not-found=true
+
+  if [[ ${found_record} -ne 1 ]]; then
+    error "ExternalDNS did not log record creation for ${test_host} within 80s!"
+    kubectl logs -n external-dns -l app.kubernetes.io/name=external-dns --tail=100 || true
+    exit 1
+  fi
+  success "ExternalDNS detected service and registered record for ${test_host}."
 }
 
 verify_openziti_stack() {

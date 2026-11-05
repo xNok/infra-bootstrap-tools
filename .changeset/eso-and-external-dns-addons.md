@@ -12,6 +12,7 @@ feat(addons): introduce External Secrets Operator (1Password SDK) and ExternalDN
   - Maintain 0 Kustomize patches and 0 postRenderers across fleet and addon definitions.
   - Add OPA Conftest policy (`policies/kubernetes/allowed_addon_resources.rego`) and `policy-exceptions.yaml` to strictly enforce controller-only resources in infra-addons.
   - Sized baseline resource requests and limits for small clusters/CI across all generic addon defaults, and brought `fleet/kind` and the Kind integration test suite to full parity.
+  - Expand Kind integration test suite with functional ESO secret synchronization and ExternalDNS service discovery verification, and add BATS test coverage for the Nix kubeztl derivation.
 - ansible-role-k3s-flux-bootstrap:
   - Replace direct DigitalOcean REST API record creation with in-cluster secret management.
   - Ensure `external-secrets` namespace and inject `Secret/onepassword-service-account` from 1Password service account token.

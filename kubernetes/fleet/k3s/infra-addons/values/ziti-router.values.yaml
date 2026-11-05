@@ -4,6 +4,7 @@ edge:
   service:
     type: LoadBalancer
     annotations:
+      external-dns.kubernetes.io/hostname: "ziti.nokwebspace.ovh"
       external-dns.alpha.kubernetes.io/hostname: "ziti.nokwebspace.ovh"
 
 ctrl:
