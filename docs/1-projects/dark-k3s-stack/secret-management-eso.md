@@ -53,7 +53,7 @@ We adopt the **1Password SDK (`onepasswordSDK`)** provider.
 graph TD
     subgraph 1P ["1Password Cloud"]
         Vault["Cluster Vault / infra-bootstrap-tools"]
-        SAToken["Service Account Token\n(Scoped read-only to Vault)"]
+        SAToken["Item: EXTERNAL_SECRETS_ONEPASSWORD_SERVICE_ACCOUNT\n(Scoped read-only to Vault)"]
     end
 
     subgraph Ansible ["Ansible Host Bootstrap"]
@@ -126,8 +126,7 @@ spec:
   data:
     - secretKey: api-token
       remoteRef:
-        key: "DigitalOcean"
-        property: "credential"
+        key: EXTERNAL_DNS_DIGITALOCEAN_API_TOKEN/credential
 ```
 
 ---
