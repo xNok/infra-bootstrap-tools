@@ -11,8 +11,12 @@ runs:
     - name: Checkout lock branch
       shell: bash
       run: |
-        git fetch origin lock-branch
-        git checkout lock-branch || git checkout --orphan lock-branch
+        if git fetch origin lock-branch; then
+          git checkout lock-branch
+        else
+          echo "Lock branch does not exist on origin. Nothing to unlock."
+          exit 0
+        fi
 
     - name: Remove lock file
       id: remove-lock
