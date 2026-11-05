@@ -27,4 +27,8 @@ configMapGenerator:
     namespace: flux-system
     files:
       - values.yaml=values/ziti-router.values.yaml
+  - name: k3s-external-dns-values
+    namespace: flux-system
+    files:
+      - values.yaml=values/external-dns.values.yaml
 

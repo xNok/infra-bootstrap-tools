@@ -78,22 +78,61 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Ensure DigitalOcean DNS A record for OpenZiti exists
-  ansible.builtin.uri:
-    url: "https://api.digitalocean.com/v2/domains/{{ k3s_flux_bootstrap_dns_domain }}/records"
-    method: POST
-    headers:
-      Authorization: "Bearer {{ k3s_flux_bootstrap_digitalocean_token }}"
-      Content-Type: "application/json"
-    body_format: json
-    body:
-      type: "A"
-      name: "{{ k3s_flux_bootstrap_dns_subdomain }}"
-      data: "{{ ansible_default_ipv4.address }}"
-      ttl: 300
-    status_code: [200, 201, 422]
+- name: Ensure external-secrets namespace exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: external-secrets
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Create 1Password Service Account secret for External Secrets Operator
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: onepassword-service-account
+        namespace: external-secrets
+      type: Opaque
+      stringData:
+        token: "{{ k3s_flux_bootstrap_1password_service_account_token }}"
+  when: k3s_flux_bootstrap_1password_service_account_token is defined and k3s_flux_bootstrap_1password_service_account_token | length > 0
+  no_log: true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Ensure external-dns namespace exists
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: external-dns
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+- name: Seed DigitalOcean API token secret for ExternalDNS
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: digitalocean-dns
+        namespace: external-dns
+      type: Opaque
+      stringData:
+        api-token: "{{ k3s_flux_bootstrap_digitalocean_token }}"
   when: k3s_flux_bootstrap_digitalocean_token is defined and k3s_flux_bootstrap_digitalocean_token | length > 0
   no_log: true
+  environment:
+    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
 - name: Create cluster-env ConfigMap
   kubernetes.core.k8s:
@@ -107,6 +146,7 @@
       data:
         CLUSTER_NAME: "{{ k3s_flux_bootstrap_cluster_name }}"
         ROUTER_ADVERTISED_HOST: "{{ k3s_flux_bootstrap_dns_subdomain }}.{{ k3s_flux_bootstrap_dns_domain }}"
+        ONEPASSWORD_VAULT: "{{ k3s_flux_bootstrap_1password_vault }}"
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 

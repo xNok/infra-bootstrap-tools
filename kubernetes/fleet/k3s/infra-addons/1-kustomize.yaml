@@ -15,6 +15,8 @@ spec:
   # components are relative to the source root (infra-addons OCI root)
   components:
     - ../components/cert-manager
+    - ../components/external-secrets
+    - ../components/external-dns
     - ../components/openziti
 
   # Substitute cluster-specific values (e.g. CLUSTER_NAME) into the manifests before applying.

@@ -1,0 +1,14 @@
+provider:
+  name: digitalocean
+env:
+  - name: DO_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: digitalocean-dns
+        key: api-token
+domainFilters:
+  - nokwebspace.ovh
+policy: upsert-only
+sources:
+  - service
+txtOwnerId: k3s

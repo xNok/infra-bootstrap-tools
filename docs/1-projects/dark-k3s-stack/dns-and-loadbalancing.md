@@ -29,35 +29,28 @@ When designing cloud-agnostic GitOps infrastructure, confusion often arises arou
 
 ---
 
-## 2. Why Ansible Manages the Node DNS on Bare-Metal VPS
+## 2. Evolution: From Static Ansible DNS to Dynamic ExternalDNS
 
-In managed clouds (AWS EKS, DigitalOcean Kubernetes), `external-dns` is the default choice because cloud controllers dynamically allocate LoadBalancer IPs from cloud pools.
+### Initial Baseline (Single Node Static VPS)
+On a single fixed-IP VPS, Ansible was initially configured to provision the DigitalOcean A record (`ziti.nokwebspace.ovh -> 147.135.212.219`) before cluster bootstrap to guarantee immediate DNS resolution with zero in-cluster overhead.
 
-On a **single bare-metal VPS**:
-1. **No Cloud LoadBalancer**: There is no AWS ELB or DigitalOcean Managed LB controller allocating external IPs.
-2. **Fixed Host Public IP**: The server has one static public IP (`147.135.212.219`) attached directly to its network interface at boot.
-3. **Pre-Reconciliation Guarantee**: Ansible discovers `ansible_default_ipv4.address` and creates the DigitalOcean A record (`ziti.nokwebspace.ovh -> 147.135.212.219`) **before** Kubernetes or OpenZiti start. When Flux reconciles OpenZiti, the domain is already resolvable worldwide.
-4. **Zero In-Cluster Overhead**: Avoids deploying an extra in-cluster controller pod, CRDs, and storing DigitalOcean API secrets inside Kubernetes just to publish one static node IP.
+### The Multi-Node / Burst Compute Challenge
+When expanding from 1 node to 2+ nodes (e.g. adding a second VPS or on-prem node for temporary burst compute), a static host-provisioning approach breaks down:
+1. **Manual Upkeep**: Adding or terminating nodes would require re-running Ansible playbooks manually from an external workstation to adjust DNS records.
+2. **Delayed Ingress**: New edge routers or workloads on temporary compute nodes would not be reachable until DNS is manually updated.
+3. **Ghost Records**: Terminated nodes would leave stale A records pointing to defunct IPs until manually cleaned up.
 
-### Ansible Automated Task Pattern
-In `ansible/roles/k3s_flux_bootstrap/tasks/main.yaml`:
-```yaml
-- name: Ensure DigitalOcean DNS A record for OpenZiti exists
-  ansible.builtin.uri:
-    url: "https://api.digitalocean.com/v2/domains/{{ k3s_flux_bootstrap_dns_domain }}/records"
-    method: POST
-    headers:
-      Authorization: "Bearer {{ k3s_flux_bootstrap_digitalocean_token }}"
-      Content-Type: "application/json"
-    body_format: json
-    body:
-      type: "A"
-      name: "{{ k3s_flux_bootstrap_dns_subdomain }}"
-      data: "{{ ansible_default_ipv4.address }}"
-      ttl: 300
-    status_code: [200, 201, 422]
-  when: k3s_flux_bootstrap_digitalocean_token is defined
-```
+### Why ExternalDNS + DNS Round-Robin is an Ideal Solution
+By running **ExternalDNS** as an in-cluster GitOps addon:
+1. **Autonomic Lifecycle**: ExternalDNS continuously watches Kubernetes `Service` and `Node` resources. When a new node joins K3s and ServiceLB (Klipper) schedules the edge router onto it, ExternalDNS immediately detects the new external IP and publishes an additional `A` record in DigitalOcean.
+2. **Native DNS Round-Robin**: DigitalOcean DNS supports multiple `A` records for the same hostname. Clients querying `ziti.nokwebspace.ovh` receive both IPs in round-robin order.
+3. **OpenZiti Mesh Synergy**:
+   - Unlike HTTP browsers where a dead IP can cause connection timeouts or 502 errors before DNS caches expire, OpenZiti SDKs and `ziti-edge-tunnel` natively iterate over all resolved DNS addresses until a healthy connection is made.
+   - Furthermore, OpenZiti edge routers interconnect into a mesh fabric. Traffic arriving at Router 1 on Node 1 is routed dynamically across the fabric to service terminators on Node 2 (and vice versa).
+4. **Clean Decoupling via Ansible Bootstrap**:
+   - Ansible's role narrows down to its proper scope: host bootstrap and initial secret provisioning.
+   - Ansible retrieves the DigitalOcean API token from 1Password and creates a single Kubernetes Secret (`digitalocean-dns`) in the `external-dns` namespace.
+   - From that point onward, the cluster manages its own external DNS records autonomically.
 
 ---
 

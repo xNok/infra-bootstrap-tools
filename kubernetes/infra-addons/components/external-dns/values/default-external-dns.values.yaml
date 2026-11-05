@@ -1,0 +1,6 @@
+sources:
+  - service
+policy: upsert-only
+registry: txt
+txtOwnerId: "${CLUSTER_NAME}"
+interval: 1m

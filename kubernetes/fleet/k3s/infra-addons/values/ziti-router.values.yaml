@@ -3,6 +3,8 @@ edge:
   advertisedPort: 8442
   service:
     type: LoadBalancer
+    annotations:
+      external-dns.alpha.kubernetes.io/hostname: "ziti.nokwebspace.ovh"
 
 ctrl:
   endpoint: "openziti-ziti-controller-client.openziti.svc.cluster.local:1280"
