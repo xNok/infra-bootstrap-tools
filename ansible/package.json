@@ -1,7 +1,7 @@
 {
     "name": "ansible-collection-infra-bootstrap-tools",
     "private": true,
-    "version": "1.2.0",
+    "version": "1.2.1",
     "workspaces": [
         "roles/*"
     ],
@@ -20,7 +20,7 @@
         "ansible-role-utils-rotate-docker-secrets": "0.0.1",
         "ansible-role-utils-ssh-add": "0.0.1",
         "ansible-role-k3s-agent": "0.1.2",
-        "ansible-role-k3s-flux-bootstrap": "0.3.0",
+        "ansible-role-k3s-flux-bootstrap": "0.4.0",
         "ansible-role-k3s-os-hardening": "0.2.0",
         "ansible-role-k3s-server": "0.1.4"
     }
