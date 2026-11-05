@@ -5,3 +5,6 @@ k3s_flux_bootstrap_cluster_name: "k3s"
 k3s_flux_bootstrap_flux_version: "2.x"
 k3s_flux_bootstrap_flux_operator_version: "0.41.1" # Latest version
 k3s_flux_bootstrap_github_token: ""
+k3s_flux_bootstrap_dns_domain: "nokwebspace.ovh"
+k3s_flux_bootstrap_dns_subdomain: "ziti"
+k3s_flux_bootstrap_digitalocean_token: "{{ lookup('env', 'DIGITALOCEAN_TOKEN') | default('') }}"

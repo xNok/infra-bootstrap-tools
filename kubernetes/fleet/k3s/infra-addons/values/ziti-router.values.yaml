@@ -1,0 +1,11 @@
+edge:
+  advertisedHost: "ziti.nokwebspace.ovh"
+  advertisedPort: 8442
+  service:
+    type: LoadBalancer
+
+ctrl:
+  endpoint: "openziti-ziti-controller-client.openziti.svc.cluster.local:1280"
+
+enrollmentJwtFromSecret: true
+enrollmentJwtSecretName: "ziti-router-enrollment"

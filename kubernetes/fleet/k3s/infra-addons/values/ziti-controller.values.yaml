@@ -1,0 +1,5 @@
+clientApi:
+  advertisedHost: "ziti.nokwebspace.ovh"
+  advertisedPort: 1280
+  service:
+    type: LoadBalancer
