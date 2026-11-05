@@ -25,3 +25,6 @@ Error: Process completed with exit code 128.
 - Added guard (`if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository`) to `lock` and `run-playbook` jobs to prevent untrusted fork pull requests from attempting deployment locks or accessing deployment environments.
 - Updated `.github/actions/pr-unlock/action.yml` to safely check if `lock-branch` exists on origin before attempting to fetch/checkout, avoiding step failures when no lock branch exists.
 - Cleaned up whitespace formatting on git push commands in `.github/actions/pr-lock/action.yml`.
+
+## Pull Request
+- Opened PR: [#239](https://github.com/xNok/infra-bootstrap-tools/pull/239)
