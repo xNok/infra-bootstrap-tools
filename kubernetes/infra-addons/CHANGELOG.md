@@ -1,5 +1,31 @@
 # kubernetes-infra-addons
 
+## 0.4.0
+
+### Minor Changes
+
+- a9c417c: feat(addons): introduce External Secrets Operator (1Password SDK) and ExternalDNS (DigitalOcean)
+
+  - kubernetes-infra-addons:
+    - Add generic `components/external-secrets` addon tracking upstream `external-secrets` chart with pure operator definitions.
+    - Add generic `components/external-dns` addon tracking upstream `kubernetes-sigs/external-dns` chart.
+    - Configure `fleet/k3s` with `ClusterSecretStore/onepassword` (onepasswordSDK), `ExternalSecret/digitalocean-dns`, and pure values for DigitalOcean provider.
+    - Maintain 0 Kustomize patches and 0 postRenderers across fleet and addon definitions.
+    - Add OPA Conftest policy (`policies/kubernetes/allowed_addon_resources.rego`) and `policy-exceptions.yaml` to strictly enforce controller-only resources in infra-addons.
+    - Sized baseline resource requests and limits for small clusters/CI across all generic addon defaults, and brought `fleet/kind` and the Kind integration test suite to full parity.
+    - Expand Kind integration test suite with functional ESO secret synchronization and ExternalDNS service discovery verification, and add BATS test coverage for the Nix kubeztl derivation.
+  - ansible-role-k3s-flux-bootstrap:
+    - Replace direct DigitalOcean REST API record creation with in-cluster secret management.
+    - Ensure `external-secrets` namespace and inject `Secret/onepassword-service-account` from 1Password service account token.
+    - Enrich `cluster-env` ConfigMap with `ONEPASSWORD_VAULT` for dynamic postBuild substitution.
+
+### Patch Changes
+
+- a9c417c: Standardize OpenZiti ingress and package kubeztl:
+  - Standardize OpenZiti controller and router on DNS hostname (`ziti.nokwebspace.ovh`) via ExternalDNS and cert-manager, eliminating fleet-level Kustomize patches.
+  - Remove un-substituted k3s-ziti-\*-values ConfigMap generators from root kustomization.
+  - Package kubeztl (zitified kubectl) derivation in Nix with OpenZiti SDK session caching patch and smart defaults.
+
 ## 0.3.0
 
 ### Minor Changes

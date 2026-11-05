@@ -1,5 +1,12 @@
 # ansible-collection-infra-bootstrap-tools
 
+## 1.2.1
+
+### Patch Changes
+
+- Updated dependencies [a9c417c]
+  - ansible-role-k3s-flux-bootstrap@0.4.0
+
 ## 1.2.0
 
 ### Minor Changes
