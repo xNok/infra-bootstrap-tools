@@ -145,6 +145,7 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Integrated External Secrets Operator (ESO) with native 1Password SDK provider in `kubernetes/infra-addons/components/external-secrets` and cluster configuration in `kubernetes/fleet/k3s/infra-addons/cluster-secret-store.yaml`.
 - [Completed] Integrated ExternalDNS as a generic GitOps addon in `kubernetes/infra-addons/components/external-dns` with DigitalOcean provider configuration in `kubernetes/fleet/k3s/infra-addons/external-secret-digitalocean.yaml`.
 - [Completed] Enforced strict OPA Conftest policy guardrail (`policies/kubernetes/allowed_addon_resources.rego`) ensuring `infra-addons` only contains generic controller resources, with data-driven exceptions in `policy-exceptions.yaml`.
+- [Completed] Sized resource requests and limits for small clusters and CI runners across all infra-addon defaults (external-secrets, external-dns, cert-manager, trust-manager, openziti), and brought `fleet/kind` and `bin/tests/flux-d2/test.sh` to full integration test parity.
 - [Pending] Reconcile live cluster with 1Password Service Account token and verify ESO / ExternalDNS sync.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
 

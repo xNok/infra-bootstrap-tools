@@ -164,6 +164,12 @@ verify_infra_addons() {
   info "Waiting for cert-manager HelmReleases to become ready..."
   wait_ready "helmrelease/cert-manager" "flux-system" "3m"
   wait_ready "helmrelease/trust-manager" "flux-system" "3m"
+
+  info "Waiting for external-secrets HelmRelease to become ready..."
+  wait_ready "helmrelease/external-secrets" "flux-system" "3m"
+
+  info "Waiting for external-dns HelmRelease to become ready..."
+  wait_ready "helmrelease/external-dns" "flux-system" "3m"
 }
 
 verify_openziti_stack() {

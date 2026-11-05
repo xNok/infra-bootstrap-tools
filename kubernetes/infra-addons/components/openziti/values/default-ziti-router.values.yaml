@@ -4,4 +4,10 @@ edge:
     type: ClusterIP
 ctrl:
   endpoint: "openziti-ziti-controller-client.openziti.svc.cluster.local:1280"
-
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

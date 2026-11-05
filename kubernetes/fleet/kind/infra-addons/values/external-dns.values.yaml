@@ -1,0 +1,8 @@
+provider:
+  name: inmemory
+domainFilters:
+  - test.local
+policy: upsert-only
+sources:
+  - service
+txtOwnerId: kind
