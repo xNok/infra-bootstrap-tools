@@ -56,18 +56,17 @@ Copilot commented on PR #233 pointing out 3 critical inaccuracies in the origina
    - *Implementation*: Repurposing Changesets as a universal release orchestrator managing 5 distinct stacks: Ansible collection & roles, Docker Swarm stacks (`stacks/package.json`), Kubernetes addons, Python agentic tooling, and custom container images. Connected to a central tag dispatcher (`release.yml`).
    - *Real Code*: Real snippets of `ansible/package.json` and `stacks/package.json` BOM dependencies and the Central Publish Workflow routing.
 
-6. **Defense-in-Depth Secret Hygiene: 1Password CLI, direnv & Dynamic Injection**
-   - *Pain*: Accidental secret commits or unencrypted config values lingering on host disks.
-   - *Implementation*: Pre-commit hooks (`detect-private-key`), 1Password CLI dynamic injection (`op run`), `.envrc` bridging via `direnv`, system SSH agent socket (`~/.1password/agent.sock`) with commit signing (`op-ssh-sign`), Ansible `onepassword` lookup plugin, and zero-downtime secret rotation roles in Docker Swarm (`ansible/roles/utils_rotate_docker_secrets`).
+6. **Secret Hygiene with 1Password & direnv**
+   - *Pain*: Accidental secret commits or unencrypted config values lingering on host disks; managing secrets across local, remote, and cluster environments.
+   - *Implementation*: "One vault per project" motto. Pre-commit hooks (`detect-private-key`), 1Password CLI dynamic injection (`op run`), `.envrc` bridging via `direnv`, system SSH agent socket (`~/.1password/agent.sock`) with commit signing (`op-ssh-sign`), Ansible `onepassword` lookup plugin, and zero-downtime secret rotation roles in Docker Swarm (`ansible/roles/utils_rotate_docker_secrets`).
    - *Real Code*: Excerpt showing dynamic secret rotation without storing plaintext on disk.
 
 ## Status & Progress
 
 - [x] Captured voice characteristics and Copilot review comments.
 - [x] Rewrote article in xNok's authentic, first-person voice.
-- [x] Integrated user's revisions for Introduction, Section 1 (Conftest/OPA/ADR), Section 2 (inline scripts/build tools/BATS/DX), and Section 3 (quest for reproducible environments/Docker/Nix).
+- [x] Integrated user's revisions for Introduction, Section 1 (Conftest/OPA/ADR), Section 2 (inline scripts/build tools/BATS/DX), Section 3 (quest for reproducible environments/Docker/Nix), Section 5 (intentional releases / commit messages vs user release notes), and Section 6 (one vault per project / 1Password across local, remote, cluster).
 - [x] Dropped deprecated `ibt` reference.
 - [x] Dropped weak Flux OCI section; promoted Layered Architecture to Section 4 with styled Mermaid diagram.
-- [x] Expanded Section 6 with comprehensive `direnv` and 1Password integration details (ephemeral injection, SSH socket, commit signing, Ansible lookups, Swarm rotation).
 - [x] Verified Hugo site build with `nix develop .#docs` (61 pages built with 0 errors).
 - [x] Ran Conftest (16/16 policy checks passed) and BATS (30/30 unit tests passed).

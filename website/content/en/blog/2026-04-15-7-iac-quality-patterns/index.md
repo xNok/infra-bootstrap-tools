@@ -179,16 +179,18 @@ Every layer operates with strict boundaries and declarative idempotency. Backed 
 
 ## 5. Multi-Granular Tree Release Strategy & Bill of Materials (BOM) Management
 
-Release management in a polyglot infrastructure monorepo is notoriously tricky. This repository contains virtually zero Node.js code, yet it orchestrates:
+I love versioning, but I hate automated release notes. Releases should be intentional, meaning a commit message is just not enough to tell users what really matters. Forcing a small release note to be added is much easier than asking for a clean commit history. Commits are rarely focused on the user—they are written for the reviewer, explaining what work was done rather than what changes on the operational side, and this separation of concerns is important.
+
+To achieve this, I couldn't find anything better than [Changesets](https://github.com/changesets/changesets). Even though this tool was created for the Node ecosystem, I felt it should be used for everything. And this is how I now manage releases for pretty much anything: from Python, to Ansible, to Docker stacks, and Terraform.
+
+In `infra-bootstrap-tools`, that means orchestrating:
 - **Ansible Collections & Roles**: Over 15 modular roles (`ansible/roles/*`) rolled up into a collection.
 - **Docker Swarm Stacks**: Production service definitions (`stacks/n8n`, `stacks/openziti`, `stacks/prefect`).
 - **Kubernetes Addons**: Helm charts and cluster manifests (`kubernetes/infra-addons/`).
 - **Python Automation Utilities**: AI workflows and agent tooling (`agentic/`).
 - **Custom Container Images**: OCI builds for custom Caddy and OpenZiti images (`caddy`, `openziti-bootstrap`).
 
-In [Intentional Releases: Why I Chose Changesets over Semantic-Release](/blog/intentional-releases-changesets/), I explained why purely automated commit parsing (like `semantic-release`) fails for infrastructure. It produces noisy changelogs full of commit hashes rather than communicating actual architectural intent to users.
-
-To solve this, we repurposed [Changesets](https://github.com/changesets/changesets) and npm workspaces as our **universal release orchestrator** across all of these languages and runtimes.
+In [Intentional Releases: Why I Chose Changesets over Semantic-Release](/blog/intentional-releases-changesets/), I covered this philosophy in depth. Here is how we make it work across non-Node runtimes:
 
 ### 1. Hierarchical Bill of Materials (BOM) Architecture
 
@@ -241,11 +243,13 @@ Consumers get the best of both worlds: you can consume an individual leaf compon
 
 ---
 
-## 6. Defense-in-Depth Secret Hygiene: 1Password CLI, direnv & Dynamic Injection
+## 6. Secret Hygiene with 1Password & direnv
 
-Hardcoding passwords or long-lived API tokens inside infrastructure playbooks is an obvious security hazard. But even keeping plaintext `.env` files or decrypted secret keys on developer laptops creates an unnecessary attack surface.
+I want all my secrets in one place. When working on GitHub, it is tempting to just use secrets provided by GitHub, but this is never the only place secrets are needed: you need them locally, on remote servers, inside clusters, and more.
 
-In `infra-bootstrap-tools`, we treat secret hygiene with true defense-in-depth, relying heavily on [1Password CLI (`op`)](https://developer.1password.com/docs/cli/get-started/) and [direnv](https://direnv.net/) across every stage of our workflow:
+*"One vault per project"*—this is my motto, backed by clean references rather than hardcoded credentials. [1Password](https://developer.1password.com/docs/cli/get-started/) has been the perfect tool for that.
+
+Across `infra-bootstrap-tools`, we integrate 1Password and [direnv](https://direnv.net/) across several different environments so credentials stay locked in memory and never sit as unencrypted files on disk:
 
 ### 1. Zero Plaintext Secrets on Disk via `direnv` and `op run`
 Instead of maintaining hazardous `.env` files with raw API keys or database tokens on disk, our project's [`.envrc`](https://github.com/xNok/infra-bootstrap-tools/blob/main/.envrc) integrates `direnv` with the 1Password CLI. 
@@ -303,7 +307,7 @@ High quality in Infrastructure as Code isn't about finding a single silver-bulle
 | **3. Hermetic Environments** | Nix Flakes & Flox | "Works on my machine" syndrome and cross-platform drift |
 | **4. Layered Modularity** | Terraform + Ansible + Stacks | Fragile monolithic playbooks and non-idempotent configurations |
 | **5. Tree & BOM Releases** | Changesets & Workspaces | Granular role versioning with coordinated collection releases |
-| **6. Secret Hygiene & Dynamic Injection** | 1Password CLI, direnv & Rotation Roles | Plaintext credential leaks, disk persistence, and zero-downtime rotation |
+| **6. Secret Hygiene** | 1Password CLI, direnv & Rotation Roles | Plaintext credential leaks, disk persistence, and zero-downtime rotation |
 
 If you treat your infrastructure automation with the same engineering rigor you give to production software, your systems will be more reliable, testable, and maintainable.
 
