@@ -71,7 +71,9 @@ jobs:
         run: ./bin/ci/lib/extract-version.sh
 
       - name: Update collection version
-        run: yq -i ".version = \"${{ steps.get_version.outputs.VERSION }}\"" ${{ inputs.collection_dir || 'ansible' }}/galaxy.yml
+        env:
+          VERSION: ${{ steps.get_version.outputs.VERSION }}
+        run: ./bin/ci/update-galaxy-version.sh ${{ inputs.collection_dir || 'ansible' }}
 
       - name: Build Ansible Collection
         id: build
