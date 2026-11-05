@@ -26,7 +26,7 @@ The following items are expected to exist in the `infra-bootstrap-tools` vault.
 ## Naming Convention
 
 Secret items follow the structured naming convention:
-`{consumer}_{resource server}_{what}`
+`{consumer}_{resource_server}_{what}`
 
 Examples:
 - `EXTERNAL_SECRETS_ONEPASSWORD_SERVICE_ACCOUNT`: Used by External Secrets Operator to authenticate with 1Password.

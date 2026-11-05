@@ -126,8 +126,7 @@ spec:
   data:
     - secretKey: api-token
       remoteRef:
-        key: "EXTERNAL_DNS_DIGITALOCEAN_API_TOKEN"
-        property: "credential"
+        key: EXTERNAL_DNS_DIGITALOCEAN_API_TOKEN/credential
 ```
 
 ---

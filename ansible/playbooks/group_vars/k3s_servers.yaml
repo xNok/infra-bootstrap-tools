@@ -4,10 +4,11 @@ k3s_flux_bootstrap_github_token: "{{
   vault='infra-bootstrap-tools', field='password')
   }}"
 k3s_flux_bootstrap_1password_service_account_token: "{{
-  lookup('env', 'OP_SERVICE_ACCOUNT_TOKEN') |
-  default(lookup('community.general.onepassword',
-                 'EXTERNAL_SECRETS_ONEPASSWORD_SERVICE_ACCOUNT',
-                 vault='infra-bootstrap-tools',
-                 field='credential',
-                 default=''), true)
+  lookup('env', 'OP_SERVICE_ACCOUNT_TOKEN')
+  if (lookup('env', 'OP_SERVICE_ACCOUNT_TOKEN') | length > 0)
+  else lookup('community.general.onepassword',
+              'EXTERNAL_SECRETS_ONEPASSWORD_SERVICE_ACCOUNT',
+              vault='infra-bootstrap-tools',
+              field='credential',
+              default='')
   }}"
