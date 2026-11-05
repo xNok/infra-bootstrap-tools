@@ -42,14 +42,14 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Restore CI scripts from default branch
-        run: ./bin/ci/restore-scripts-from-main.sh "${{ github.event.repository.default_branch || 'main' }}"
-
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
 
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
+
+      - name: Restore CI scripts from default branch
+        run: ./bin/ci/restore-scripts-from-main.sh "${{ github.event.repository.default_branch || 'main' }}"
 
       - name: Run ansible-lint
         run: ./bin/ci/ansible-lint.sh
@@ -95,9 +95,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - name: Restore CI scripts from default branch
-        run: ./bin/ci/restore-scripts-from-main.sh "${{ github.event.repository.default_branch || 'main' }}"
-
       # Install Nix with flakes support
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@da36cb69b1c3247ad7a1f931ebfd954a1105ef14 # v14
@@ -105,6 +102,9 @@ jobs:
       # Cache Nix store for faster subsequent runs
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
+
+      - name: Restore CI scripts from default branch
+        run: ./bin/ci/restore-scripts-from-main.sh "${{ github.event.repository.default_branch || 'main' }}"
 
       - name: write extra inventory to file
         if: ${{ env.INVENTORY != '' }}
