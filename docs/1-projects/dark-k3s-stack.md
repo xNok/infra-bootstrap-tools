@@ -126,10 +126,10 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
   - Added smart default identity and service detection (`~/.ziti/laptop-client.json` and service `k3s`, with `ZCONFIG` and `ZITI_SERVICE` override support).
   - Bundled in `ibt-flux` / `common.packages` and installed directly into active Nix profile (`nix profile add .#kubeztl`).
   - Verified daemonless zero-trust cluster queries directly from PATH (`kubeztl get nodes`, `kubeztl get pods -A`).
-- [Completed] Resolved Flux reconciliation substitution bug for K3s OpenZiti stack:
-  - Migrated cluster-specific host/IP overrides and cert-manager IP SAN patches from static ConfigMap generators into `Kustomization/infra-addons` (`1-kustomize.yaml`) using `HelmRelease` inline values and `postRenderers`.
-  - Removed un-substituted `k3s-ziti-*-values` configMapGenerators to ensure automated GitOps reconciliations never overwrite cluster parameters.
-  - Used JSON6902 `op: add` on `/spec/ipAddresses` for cert-manager IP SAN persistence and strict `--replace-fail` patching in Nix `kubeztl`.
+- [Completed] Standardized OpenZiti ingress and Nix dev tooling:
+  - Eliminated temporary fleet-side Kustomize patches and JSON6902 IP SAN postRenderers in favor of standard DNS hostnames (`ziti.nokwebspace.ovh`) via cert-manager and ExternalDNS.
+  - Removed un-substituted `k3s-ziti-*-values` configMapGenerators from the root fleet kustomization.
+  - Packaged `kubeztl` in Nix with OpenZiti SDK session caching patch and smart defaults using strict `--replace-fail`.
 - [Completed] Exposed Flux Operator Web UI (`flux-ui`) as a Zero-Trust Dark Service:
   - Discovered and utilized the built-in Web UI / Status dashboard in `flux-operator` (listening on port 9080), avoiding redundant external dashboards.
   - Resolved Go x509 SAN IP validation requirement (`Certificate.spec.ipAddresses`) and OpenZiti `os.ExpandEnv` host string evaluations.
@@ -142,8 +142,10 @@ Use FluxCD for GitOps, bootstrapped via Ansible using credentials from 1Password
 - [Completed] Documented comprehensive client access architecture in [docs/1-projects/dark-k3s-stack/client-access.md](dark-k3s-stack/client-access.md): dropped ad-hoc userspace port-forwarding helpers in favor of native OS-level transparent tunnelers (`ziti-edge-tunnel` via system systemd on Linux, `Ziti Mobile Edge` on mobile), explaining why Home Manager should not manage kernel TUN devices and providing full setup instructions.
 - [Completed] Restored decoupled "AWS Addon" architecture documented in [docs/1-projects/dark-k3s-stack/addon-architecture.md](dark-k3s-stack/addon-architecture.md): eliminated all 59 lines of inline RFC 6902 Kustomize patches in `fleet/k3s/infra-addons/1-kustomize.yaml` and all `postRenderers` in `infra-addons/components/openziti/controller.yaml` by transitioning from raw IP addresses to a DNS hostname (`ziti.nokwebspace.ovh`).
 - [Completed] Formulated DNS management & bare-metal LoadBalancer strategy documented in [docs/1-projects/dark-k3s-stack/dns-and-loadbalancing.md](dark-k3s-stack/dns-and-loadbalancing.md): clarified cert-manager vs external-dns vs Ansible roles, established Ansible bootstrap automation for DigitalOcean DNS, and defined on-prem multi-node LB roadmap (Klipper -> MetalLB / Kube-VIP).
-- [In Progress] Adopting ExternalDNS as a generic GitOps addon for dynamic multi-node DNS round-robin on temporary burst compute.
-- [In Progress] Designing External Secrets Operator (ESO) + 1Password SDK architecture documented in [docs/1-projects/dark-k3s-stack/secret-management-eso.md](dark-k3s-stack/secret-management-eso.md) to eliminate Ansible secret injection sprawl and enable dynamic in-cluster secret synchronization.
+- [Completed] Integrated External Secrets Operator (ESO) with native 1Password SDK provider in `kubernetes/infra-addons/components/external-secrets` and cluster configuration in `kubernetes/fleet/k3s/infra-addons/cluster-secret-store.yaml`.
+- [Completed] Integrated ExternalDNS as a generic GitOps addon in `kubernetes/infra-addons/components/external-dns` with DigitalOcean provider configuration in `kubernetes/fleet/k3s/infra-addons/external-secret-digitalocean.yaml`.
+- [Completed] Enforced strict OPA Conftest policy guardrail (`policies/kubernetes/allowed_addon_resources.rego`) ensuring `infra-addons` only contains generic controller resources, with data-driven exceptions in `policy-exceptions.yaml`.
+- [Pending] Reconcile live cluster with 1Password Service Account token and verify ESO / ExternalDNS sync.
 - [Pending] SSH Zitification & legacy Swarm / Portainer agent cleanup.
 
 

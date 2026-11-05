@@ -111,5 +111,5 @@ resolvectl status ziti-tunnel
 
 ## 5. Summary of Client Tools
 
-* **Day-to-day Kubernetes operations**: Use [`kubeztl`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/update_k3s_setup/bin/nix/pkgs/kubeztl.nix) in your terminal without needing any VPN or background daemon active.
+* **Day-to-day Kubernetes operations**: Use [`kubeztl`](../../../bin/nix/pkgs/kubeztl.nix) in your terminal without needing any VPN or background daemon active.
 * **Web UI / Browser access**: Run `ziti-edge-tunnel` on your laptop or `Ziti Mobile Edge` on your phone to resolve `http://flux.ziti` natively in your browser.

@@ -33,4 +33,3 @@ configMapGenerator:
     namespace: flux-system
     files:
       - values.yaml=values/external-dns.values.yaml
-

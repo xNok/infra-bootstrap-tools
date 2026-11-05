@@ -106,34 +106,6 @@
   environment:
     KUBECONFIG: /etc/rancher/k3s/k3s.yaml
 
-- name: Ensure external-dns namespace exists
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: external-dns
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-
-- name: Seed DigitalOcean API token secret for ExternalDNS
-  kubernetes.core.k8s:
-    state: present
-    definition:
-      apiVersion: v1
-      kind: Secret
-      metadata:
-        name: digitalocean-dns
-        namespace: external-dns
-      type: Opaque
-      stringData:
-        api-token: "{{ k3s_flux_bootstrap_digitalocean_token }}"
-  when: k3s_flux_bootstrap_digitalocean_token is defined and k3s_flux_bootstrap_digitalocean_token | length > 0
-  no_log: true
-  environment:
-    KUBECONFIG: /etc/rancher/k3s/k3s.yaml
-
 - name: Create cluster-env ConfigMap
   kubernetes.core.k8s:
     state: present

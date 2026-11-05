@@ -26,4 +26,3 @@ spec:
         name: flux-runtime-info
       - kind: ConfigMap
         name: cluster-env
-

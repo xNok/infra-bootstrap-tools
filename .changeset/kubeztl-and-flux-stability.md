@@ -2,7 +2,7 @@
 "kubernetes-infra-addons": patch
 ---
 
-Fix K3s fleet postBuild substitutions and IP SAN persistence for OpenZiti:
-- Migrate controller clientApi advertisedHost and router edge advertisedHost overrides into Kustomization/infra-addons patches with HelmRelease values and postRenderers.
+Standardize OpenZiti ingress and package kubeztl:
+- Standardize OpenZiti controller and router on DNS hostname (`ziti.nokwebspace.ovh`) via ExternalDNS and cert-manager, eliminating fleet-level Kustomize patches.
 - Remove un-substituted k3s-ziti-*-values ConfigMap generators from root kustomization.
-- Add kubeztl (zitified kubectl) derivation with OpenZiti SDK session caching patch and smart defaults.
+- Package kubeztl (zitified kubectl) derivation in Nix with OpenZiti SDK session caching patch and smart defaults.
