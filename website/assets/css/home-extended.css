@@ -1,7 +1,8 @@
 /* Additional styles for blog section on home page */
 
 .hero {
-  /* Keep the original hero section styles */
+  width: 100%;
+  padding-bottom: calc(var(--padding) * 4);
 }
 
 .section-container {
@@ -12,10 +13,12 @@
 
 .section-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: calc(var(--padding) * 2);
-  padding: 0 var(--padding);
+  justify-content: center;
+  gap: var(--padding_d2);
+  margin-bottom: calc(var(--padding) * 3);
+  text-align: center;
 }
 
 .section-header h2 {
@@ -37,6 +40,7 @@
 
 /* Blog section styles */
 .blog-section {
+  width: 100%;
   padding: calc(var(--padding) * 4) 0;
   background: var(--background-grey);
 }
@@ -49,6 +53,9 @@
 }
 
 .blog-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -62,6 +69,10 @@
 }
 
 .blog-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
   padding: calc(var(--padding) * 1.5);
 }
 
@@ -97,6 +108,7 @@
   display: flex;
   gap: var(--padding_d2);
   flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .tag {
@@ -110,12 +122,6 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--padding);
-  }
-
   .blog-grid {
     grid-template-columns: 1fr;
   }
