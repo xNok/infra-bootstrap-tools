@@ -1126,7 +1126,7 @@ kubernetes/
 │   │   ├── helm-repository.yaml                    # oci://ghcr.io/kubeopencode/helm-charts
 │   │   └── helm-release.yaml                       # Controller + Server
 │   │
-│   └── agents/                                     # Reusable Agent Catalogue
+│   └── kubeopencode-agents/                        # Reusable Agent Catalogue
 │       └── palette-agent/
 │           ├── kustomization.yaml
 │           ├── namespace.yaml                      # agentic-workflows
@@ -1144,7 +1144,7 @@ kubernetes/
             │   └── 1-dev-agent.yaml                # Flux Kustomization -> local dev-agent workload
             │
             └── palette-agent/                      # Opt-in to Workload Agent
-                ├── 0-catalogue.yaml                # Flux Kustomization -> sourceRef: apps, path: ./agents/palette-agent
+                ├── 0-catalogue.yaml                # Flux Kustomization -> sourceRef: apps, path: ./kubeopencode-agents/palette-agent
                 ├── 1-instance.yaml                 # Flux Kustomization -> cluster instance (dependsOn: catalogue)
                 ├── 1-instance/                     # Agent CR (standby: 15m)
                 └── external-secret-github.yaml     # Injects 1Password token into agentic-workflows

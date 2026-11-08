@@ -3,4 +3,4 @@ kind: Kustomization
 
 resources:
   - kubeopencode
-  - agents/palette-agent
+  - kubeopencode-agents/palette-agent

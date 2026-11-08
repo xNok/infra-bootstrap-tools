@@ -7,7 +7,7 @@ This directory houses the reusable application catalogues and sovereign agent te
 - **Platform Controllers**:
   - `kubernetes/apps/kubeopencode`: The shared, fleet-wide KubeOpenCode operator and API/UI server HelmRelease base.
 - **Agent Catalogue**:
-  - `kubernetes/apps/agents/palette-agent`: Reusable, cluster-agnostic blueprint for the Palette UX & Accessibility Agent (`AgentTemplate`, `CronTask`, scoped `RBAC`, `Namespace`).
+  - `kubernetes/apps/kubeopencode-agents/palette-agent`: Reusable, cluster-agnostic blueprint for the Palette UX & Accessibility Agent (`AgentTemplate`, `CronTask`, scoped `RBAC`, `Namespace`).
 
 ## Fleet Opt-In
 

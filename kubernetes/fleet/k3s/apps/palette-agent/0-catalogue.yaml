@@ -5,7 +5,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
-  path: ./agents/palette-agent
+  path: ./kubeopencode-agents/palette-agent
   prune: true
   retryInterval: 1m
   sourceRef:
