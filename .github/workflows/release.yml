@@ -43,6 +43,14 @@ jobs:
       package_dir: 'kubernetes'
       package_name: 'kubernetes-infra-addons'
 
+  publish-kubernetes-apps:
+    if: startsWith(github.ref_name, 'kubernetes-apps@')
+    uses: ./.github/workflows/release-kubernetes.yml
+    with:
+      release_tag: ${{ github.ref_name }}
+      package_dir: 'kubernetes'
+      package_name: 'kubernetes-apps'
+
   publish-caddy:
     if: startsWith(github.ref_name, 'caddy@')
     uses: ./.github/workflows/release-docker.yml

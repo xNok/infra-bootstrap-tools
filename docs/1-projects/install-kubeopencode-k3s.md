@@ -1150,6 +1150,25 @@ kubernetes/
                 └── external-secret-github.yaml     # Injects 1Password token into agentic-workflows
 ```
 
+---
+
+## 15. Packaging and OCI Publishing Pipelines
+
+To ensure `kubernetes/apps` can be consumed across any fleet cluster via Flux `OCIRepository` sources, we integrated it with the monorepo's release and CI packaging pipelines:
+
+1. **Package Workspace (`kubernetes/apps/package.json`)**:
+   - Registered `"name": "kubernetes-apps"`, `"version": "0.1.0"` under npm workspaces (`"workspaces": ["kubernetes/*"]`).
+   - Managed via Changesets (`.changeset/add-kubernetes-apps-catalogue.md`) for automated semantic versioning and release notes.
+
+2. **Continuous OCI Publishing (`.github/workflows/flux-oci-publish.yml`)**:
+   - Added `publish-apps` job running `./bin/ci/publish-flux-artifact.sh "${{ github.repository_owner }}" "./kubernetes/apps" "${{ github.event.repository.html_url }}" "apps"`.
+   - On pushes and pull requests affecting `kubernetes/**`, publishes `oci://ghcr.io/xnok/manifests/kubernetes/apps` tagged with commit SHA and `:latest`.
+
+3. **Versioned Release Workflow (`.github/workflows/release.yml`)**:
+   - Added `publish-kubernetes-apps` triggered on git tags matching `kubernetes-apps@*`.
+   - Calls `./bin/ci/release-kubernetes.sh`, dynamically parsing the tag and publishing immutable release artifacts tagged with the SemVer version (e.g. `:0.1.0`) and `:latest`.
+
+
 
 
 
