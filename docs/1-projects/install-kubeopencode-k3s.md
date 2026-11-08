@@ -1083,5 +1083,33 @@ When provisioning autonomous development agents (such as KubeOpenCode's `palette
    - Store the App ID and PEM Private Key in Kubernetes / External Secrets.
    - Use an automated token minter (or External Secrets Operator GitHub provider) to provide rotating 1-hour installation tokens to agent workloads.
 
+### 13.3 1Password & External Secrets Operator (ESO) Implementation
+
+For Phase 1, rather than distributing plaintext tokens or manual `kubectl` secret creation, credentials are fully managed declaratively using the existing `ClusterSecretStore/onepassword` (connected to vault `infra-bootstrap-tools`).
+
+1. **1Password Reference**: `op://infra-bootstrap-tools/KUBEOPENCODE_GITHUB_PAT/password`
+2. **ExternalSecret Manifest (`kubernetes/fleet/k3s/apps/palette-agent/1-instance/external-secret-github.yaml`)**:
+   ```yaml
+   apiVersion: external-secrets.io/v1
+   kind: ExternalSecret
+   metadata:
+     name: github-token-creds
+     namespace: agentic-workflows
+   spec:
+     refreshInterval: 1h
+     secretStoreRef:
+       kind: ClusterSecretStore
+       name: onepassword
+     target:
+       name: github-token-creds
+       creationPolicy: Owner
+     data:
+       - secretKey: GITHUB_TOKEN
+         remoteRef:
+           key: KUBEOPENCODE_GITHUB_PAT/password
+   ```
+3. **Automated Reconciliation**: Flux reconciles the `palette-agent-instance` Kustomization, which triggers ESO to retrieve the token from 1Password and populate the Secret `github-token-creds` in `agentic-workflows`.
+
+
 
 
