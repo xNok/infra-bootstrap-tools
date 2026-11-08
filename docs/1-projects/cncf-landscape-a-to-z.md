@@ -52,8 +52,7 @@ flowchart LR
 The operational assets for this strategy are organized into three focused playbooks:
 
 * 🗺️ **[Our CNCF Contributions & Article Roadmap](cncf-landscape-a-to-z/repo-contributions-roadmap.md)**:
-  * Prioritized publishing pipeline organized into 3 batches (8 flagship stories).
-  * Covers Flux D2 OCI GitOps, the Dark K3s stack, Helm values layering, KinD local CI, OPA Rego pipeline policies, Cosign container signing, cert-manager/trust-manager, and Kustomize Components.
+  * Prioritized publishing pipeline organized into 3 batches (8 stories) featuring tools **verified to be listed in the CNCF Landscape** with live profile links on `cncf-landscape-a-to-z.com` as proof (e.g., [Flux](https://cncf-landscape-a-to-z.com/tools/flux/), [Helm](https://cncf-landscape-a-to-z.com/tools/helm/), [OPA](https://cncf-landscape-a-to-z.com/tools/open_policy_agent_opa/), [Kubernetes](https://cncf-landscape-a-to-z.com/tools/kubernetes/), [Keycloak](https://cncf-landscape-a-to-z.com/tools/keycloak/), [Docker Swarm](https://cncf-landscape-a-to-z.com/tools/docker_swarm/), [Caddy](https://cncf-landscape-a-to-z.com/tools/caddy/), [Prefect](https://cncf-landscape-a-to-z.com/tools/prefect/), [Pydantic AI](https://cncf-landscape-a-to-z.com/tools/pydantic_ai/)).
   * Direct file links, technical narratives, and target search intents.
 
 * 🚀 **[Visibility & Cross-Promotion Flywheel](cncf-landscape-a-to-z/visibility-flywheel.md)**:
