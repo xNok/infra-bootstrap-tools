@@ -420,6 +420,9 @@ spec:
 3. **Resource Deduplication**: Flux Operator automatically deduplicates resources (e.g. if two agents share a namespace, the `Namespace` resource is applied only once).
 4. **Already Installed**: `flux-operator` is already active in `k3s` and `kind` (`flux-operator.yaml`).
 
+#### The Critical Limitation (The Homogeneity Trap):
+While ResourceSet is very effective for uniform, simple agent instances, real-world agent platforms (such as the official [kubeopencode-agent](https://github.com/kubeopencode/kubeopencode-agent)) feature complex, heterogeneous agents (e.g. `sre-agent`, `slack-agent`) with multi-resource satellite stacks, specialized RBAC, CronTasks, and custom skills. Forcing heterogeneous agents into a single ResourceSet template creates an unmaintainable "mega-template". See **Section 10** for the deep-dive analysis.
+
 ---
 
 ## 9. Architectural Synthesis: Agentic Platform, Agent Catalogue & Value Layering
@@ -546,3 +549,220 @@ kubernetes/
             │
             └── agent-catalogue.yaml                # Flux ResourceSet: Instantiates agents per namespace
 ```
+
+---
+
+## 10. Deep-Dive Analysis: The "Whole Agent" Architecture, SRE Agent Complexity & Multi-Tier Layering
+
+### 10.1 Real-World Case Study: `kubeopencode-agent` Anatomy
+A real-world inspection of upstream [`kubeopencode-agent`](https://github.com/kubeopencode/kubeopencode-agent) reveals that modern AI agents in Kubernetes are **composite systems** built on the **"Repo-as-Agent"** pattern.
+
+The repository exhibits a profound division of responsibilities:
+1. **The Cognitive Layer (Brain & Skills)**:
+   - `AGENTS.md` / `README.md`: Instruction set, execution principles, progressive disclosure checklists.
+   - `.claude/skills/`: Reusable specialized agent capabilities (e.g., `github-respond`, `slack-respond`).
+   - `workflows/`: Standard Operating Procedures (SOPs) for scheduled routines (`daily-pr-review.md`, `periodic-tiny-refactor.md`, `weekly-fix-vulnerabilities.md`).
+   - `.opencode/plugins/`: UI and runtime extensions (e.g. `@kubeopencode/opencode-slack-plugin`).
+   - `repos/repos.yaml`: External repository dependencies, cloned dynamically into worktrees on demand.
+2. **The Infrastructure Runtime Layer (Kubernetes CRDs)**:
+   - `AgentTemplate` (`kubeopencode-base`): Defines the container images (`agent-opencode` + `agent-devbox`), workspace directory, service account, resource quotas, git context hot-reloading (`HotReload: 5m`), proxy configs, and shared credentials.
+   - `Agent` (`kubeopencode-agent`, `slack-agent`): Thin resources referencing `templateRef: kubeopencode-base` with specialized standby timeouts, session PVC persistence (`size: 1Gi`), and rate limiting quotas.
+   - `CronTask`: Native KubeOpenCode scheduled task resources (`crontask-pr-review.yaml`, `crontask-tiny-refactor.yaml`).
+   - `deploy/rbac.yaml`: Granular permissions for the agent ServiceAccount (reading tasks, updating status, self-discovery, pod logs, configmaps).
+3. **The Satellite Platform Ecosystem (`deploy/sre/`)**:
+   - The SRE agent is not an isolated pod—it is an **operational capability bundle** containing:
+     - A full telemetry and alerting stack: `prometheus`, `node-exporter`, `kube-state-metrics`, `alertmanager`, `otel-collector`, and `rules/prometheus-rules.yaml`.
+     - Operational daemon CronJobs: `dns-guardian.yaml` (auto-syncing host.k3s.internal DNS entries with dynamic K3s node IPs, with dedicated Roles to patch CoreDNS and restart deployments).
+     - ChatOps gateways: `socket-mode-gateway.yaml` connecting Slack directly to agent task creation.
+
+---
+
+### 10.2 Why `ResourceSet` Fails as a Complex Agent Catalogue
+
+In Section 8.4, we evaluated the Flux Operator `ResourceSet` pattern. While `ResourceSet` is very attractive for homogeneous tenant generation (e.g. stamping out 50 identical namespaces with identical standard agent templates), **it breaks down when applied to heterogeneous, complex agents like `sre-agent`**:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                   THE RESOURCE-SET HOMOGENEITY TRAP                    │
+│                                                                        │
+│  ResourceSet Assumption:                                               │
+│  ┌──────────────┐   stamps out   ┌──────────────────────────────────┐  │
+│  │ inputs: [A,B]│───────────────▶│ Identical YAML skeleton for all  │  │
+│  └──────────────┘                │ (Namespace + SA + Role + Agent)  │  │
+│                                  └──────────────────────────────────┘  │
+│                                                                        │
+│  Real-World Heterogeneous Reality:                                     │
+│  - Dev Agent:     1 Agent CR + local namespace RBAC                    │
+│  - Slack Agent:   1 Agent CR + PVC persistence + Socket Mode Gateway   │
+│  - SRE Agent:     1 Agent CR + ClusterRoles + Prometheus stack         │
+│                   + Alertmanager + dns-guardian CronJob + CronTasks    │
+│                                                                        │
+│  Result if forced into ResourceSet:                                    │
+│  ❌ Massive "Mega-Template" full of brittle `<< if eq inputs.type >>` │
+│  ❌ Templating markdown workflows & bash scripts into raw strings      │
+│  ❌ Blast radius: changing 1 agent re-evaluates all cluster agents     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+1. **Heterogeneous vs Homogeneous Lifecycles**: An SRE agent requires cluster-wide node/pod inspection rights and auxiliary cron jobs, while a dev agent requires strictly scoped local namespace rights. Templating this in a single ResourceSet template requires massive conditional branching (`<< if eq inputs.type "sre" >>`).
+2. **Loss of Native Tooling**: Storing alerting rules, shell scripts, or Prometheus manifests inside a Go-templated ResourceSet string strips away linting, syntax validation, and Helm/Kustomize diff capabilities.
+3. **Coupled Blast Radius**: If the ResourceSet template has a syntax error, every agent across the entire cluster fails reconciliation simultaneously.
+
+---
+
+### 10.3 The "Whole Agent" Paradigm: Why Plain Helm/Kustomize Alone Falls Short
+
+The user rightly observed: *"the sre-agent is a lot more complex and would not work only package as kustomize or helm"*.
+
+Why does a plain Helm chart or plain Kustomize overlay fail to capture the "Whole Agent"?
+
+Because an AI Agent is fundamentally different from a traditional stateless microservice. An AI Agent has a **dual lifecycle**:
+
+| Dimension | Cognitive Lifecycle (The Brain) | Infrastructure Lifecycle (The Platform) |
+| :--- | :--- | :--- |
+| **Artifacts** | Prompts, `AGENTS.md`, `.claude/skills/`, `workflows/*.md`, OpenCode plugins. | `AgentTemplate`, `Agent` CR, ServiceAccount, RBAC, PVCs, CronJobs. |
+| **Authors** | Prompt engineers, SREs, developers. | Platform engineers, cluster administrators. |
+| **Velocity** | High velocity (multiple PRs daily; prompts and skills tuned constantly). | Low velocity (versioned platform releases, quarterly upgrades). |
+| **Deployment Mechanism** | **Dynamic Hot-Reloading** via Git/OCI context sync into pod workspace. | GitOps controller reconciliation (`HelmRelease`, `Kustomization`). |
+| **Impact of Updates** | Zero pod restart; changes active immediately on the next task invocation. | Pod recreation, container pull, rollout restart, potential session disruption. |
+
+**The Failure of Pure Helm Packaging**:
+If you attempt to package the "Whole Agent" as a monolithic Helm chart:
+- Every prompt change or skill addition requires cutting a new Helm chart version, pushing an OCI chart artifact, and triggering a full Kubernetes rollout.
+- Escaping complex markdown checklists, prompt templates, and bash scripts into Helm YAML values is notoriously brittle.
+- It conflates platform infrastructure (Prometheus, CoreDNS crons) with the agent's cognitive persona.
+
+---
+
+### 10.4 The 4-Tier Solution: Where Does the Overlay / Value Layering Go?
+
+To package, reuse, and customize complex agents like `sre-agent`, we separate the system into **4 cleanly delineated tiers**:
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                           TIER 1: AGENTIC PLATFORM                               │
+│  Scope: Cluster-wide Operator & Control Plane (Reusable across all clusters)     │
+│  Path:  kubernetes/apps/agentic-platform/kubeopencode/controller/                │
+│  Contains: HelmRepository, HelmRelease (kubeopencode controller, server, CRDs)   │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                       TIER 2: AGENT BRAIN / KNOWLEDGE BASE                       │
+│  Scope: Cognitive capabilities, prompts, skills, workflows (Repo-as-Agent)       │
+│  Source: Git repo or OCI artifact (e.g. github.com/kubeopencode/kubeopencode-agent)│
+│  Sync:   Hot-reloaded into agent container workspace via spec.contexts[type: Git]│
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                       TIER 3: REUSABLE AGENT BLUEPRINTS                          │
+│  Scope: Reusable Agent Catalog (Kustomize Components / AgentTemplate CRDs)       │
+│  Path:  kubernetes/apps/agents/<agent-name>/ (e.g. sre-agent, dev-agent)         │
+│  Contains: AgentTemplate CR, Agent CR, scoped RBAC, CronTasks, satellite rules   │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                   TIER 4: CLUSTER & ENVIRONMENT OVERLAYS                         │
+│  Scope: Cluster-specific instantiations, secrets, network values                 │
+│  Path:  kubernetes/fleet/<cluster>/apps/<namespace>/                             │
+│  Contains:                                                                       │
+│  - Flux Kustomization (dependsOn: [kubeopencode-controller, monitoring])         │
+│  - Namespace declaration                                                         │
+│  - SecretRefs (OpenAI / Anthropic / Kimi API keys, GitHub App, Slack tokens)    │
+│  - Cluster Proxy & DNS (http://host.k3s.internal:7897)                           │
+│  - Model selection & Standby timeout patches                                     │
+└──────────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Exactly Where Each Layering Element Lives:
+1. **The Brain (Skills, Prompts, Workflows)**: Lives in Git / OCI. It is referenced by `AgentTemplate.spec.contexts`. It updates independently of cluster infrastructure via dynamic git/OCI polling.
+2. **The Base Blueprint (The Catalogue)**: Lives in `kubernetes/apps/agents/<agent-name>/`. This defines what the agent *is* (its container images, its RBAC requirements, its CronTasks, and its satellite Prometheus rules).
+3. **The Cluster Overlay (The Values / Environment Layer)**: Lives in `kubernetes/fleet/<cluster>/apps/<workload>/`.
+   - Uses Kustomize patches or `valuesFrom` secrets.
+   - Binds the agent to a target namespace.
+   - Injects credentials (pointing to 1Password/SOPS/ExternalSecrets).
+   - Injects network endpoints (e.g. Clash proxy `host.k3s.internal:7897`, cluster Prometheus URL `http://prometheus-operated.monitoring:9090`).
+   - Declares Flux `dependsOn` dependencies ensuring CRDs and observability stacks exist prior to agent activation.
+
+---
+
+### 10.5 Structured BRAIN Evaluation: Benefits, Risks, Alternatives & Do Nothing
+
+#### 1. Benefits
+- **Full Support for Complex Heterogeneous Agents**: SRE agents can bundle Prometheus alerting rules, OpenTelemetry collectors, and `dns-guardian` CronJobs without polluting or destabilizing simple developer agents.
+- **Cognitive vs Platform Decoupling**: Prompt engineers and SREs iterate on skills and workflows in their git repository; platform engineers manage cluster RBAC and controller upgrades via GitOps. Neither blocks the other.
+- **Zero-Downtime Hot-Reloading**: Context updates (`HotReload: 5m`) refresh agent capabilities inside existing pods without incurring pod restarts, container pulls, or session drops.
+- **Least-Privilege Security**: RBAC is packaged strictly per agent capability. A general coding agent receives namespace-local task rights; only the SRE agent receives node/cluster diagnostic permissions.
+- **Multi-Cluster Portability**: The same agent blueprint in `kubernetes/apps/agents/sre/` can be instantiated on K3s, Kind, or EKS simply by applying a thin cluster overlay with local secrets and proxy endpoints.
+
+#### 2. Risks & Mitigations
+- **Risk: Context Sync Failure in Restricted / Air-Gapped Clusters**:
+  - *Detail*: If an agent pod cannot reach github.com to sync its `contexts`, the agent starts with an empty workspace.
+  - *Mitigation*: Package the cognitive repository as an OCI artifact (`quay.io/.../agent-brain:v1`) pushed to our internal container registry, or mount it as a local ConfigMap / PVC for offline K3s clusters.
+- **Risk: SRE Agent Blast Radius (High RBAC Privileges)**:
+  - *Detail*: An SRE agent with permissions to patch CoreDNS and restart deployments could destabilize cluster networking if prompted improperly.
+  - *Mitigation*: Separate diagnostic roles (`get, list, watch` on nodes and pods) from mutating operations. Mutating actions should be executed via dedicated, auditable CronJobs (like `dns-guardian`) or require human-in-the-loop task approval annotations.
+- **Risk: Secret Reference Misalignment**:
+  - *Detail*: A reusable agent blueprint expects a secret named `llm-credentials`, but the cluster overlay provisions `kimi-secret`.
+  - *Mitigation*: Establish strict contract naming conventions for secret references across all agents, documented in the catalogue README.
+
+#### 3. Alternatives Evaluated
+
+| Feature | Alternative 1: Flux ResourceSet Matrix | Alternative 2: Monolithic Helm Chart per Agent | Alternative 3: 4-Tier Decoupled Architecture (Recommended) |
+| :--- | :--- | :--- | :--- |
+| **Agent Complexity** | Limited to uniform, simple agents. | Supports complex agents, but prompts are baked into YAML strings. | **Full support**: Brain, CRDs, RBAC, and satellites are modularized. |
+| **Cognitive Velocity** | Low (editing prompts requires editing cluster GitOps YAML). | Low (requires cutting new Helm chart versions for prompt changes). | **Maximum**: Brain hot-reloads dynamically from Git/OCI without pod restarts. |
+| **Reusability** | Poor across clusters (templates tied to specific inputs). | Moderate (Helm values provide parameterization, but high boilerplate). | **High**: Blueprints are reusable across K3s, Kind, and cloud fleets. |
+| **Value Layering** | Hardcoded inside `inputs:` table in a single file. | Values files (`values.yaml` + `fleet-values.yaml`). | **Clean separation**: Base in `apps/agents/`, environment overlay in `fleet/<cluster>/`. |
+| **CRD Dependency Safety** | Built-in via `dependsOn: CustomResourceDefinition`. | Requires manual hooks or Flux Kustomization wrappers. | Flux Kustomization `dependsOn: [kubeopencode-controller]` guarantees safety. |
+
+#### 4. The "Do Nothing" Baseline Analysis
+- **Definition**: Retaining the current ad-hoc setup (`fleet/k3s/apps/kubeopencode/` containing controller + single `1-config` namespace).
+- **Consequences**:
+  - Impossible to run a complex SRE agent or Slack agent without jamming all monitoring, cronjobs, and Slack secrets into `kubeopencode-apps`.
+  - No mechanism to share agent definitions across clusters (`kind` vs `k3s`).
+  - No separation between prompt/skill development and infrastructure management.
+- **Conclusion**: Doing nothing blocks the transition to an autonomous, multi-agent platform.
+
+---
+
+### 10.6 Concrete Target Layout for `infra-bootstrap-tools`
+
+```
+kubernetes/
+├── apps/
+│   ├── agentic-platform/
+│   │   └── kubeopencode/
+│   │       └── controller/                            # Reusable Controller (HelmRelease)
+│   │           ├── namespace.yaml                     # kubeopencode-system
+│   │           ├── helm-repository.yaml               # oci://ghcr.io/kubeopencode/helm-charts
+│   │           ├── helm-release.yaml                  # Controller + server
+│   │           └── kustomization.yaml
+│   │
+│   └── agents/                                        # THE REUSABLE AGENT CATALOGUE
+│       ├── dev-agent/                                 # Lightweight dev agent
+│       │   ├── kustomization.yaml
+│       │   ├── rbac.yaml                              # Namespace-scoped task/pod access
+│       │   └── agent.yaml                             # Agent CR referencing base template
+│       │
+│       └── sre-agent/                                 # Complex operational agent bundle
+│           ├── kustomization.yaml
+│           ├── rbac.yaml                              # Cluster-wide diagnostic Role & ServiceAccount
+│           ├── agent-template.yaml                    # Base images, devbox, git context sync
+│           ├── agent.yaml                             # SRE Agent instance
+│           ├── crontasks/                             # Periodic health checks & refactors
+│           └── satellites/                            # dns-guardian CronJob, Prometheus alerting rules
+│
+└── fleet/
+    └── k3s/
+        └── apps/                                      # CLUSTER-SPECIFIC INSTANTIATIONS & OVERLAYS
+            ├── kustomization.yaml
+            ├── agentic-platform.yaml                  # Deploys kubeopencode controller
+            │
+            ├── dev-agent.yaml                         # Flux Kustomization -> apps/agents/dev-agent
+            │                                          # Overlay: namespace=dev, secretRef=dev-llm-creds
+            │
+            └── sre-agent.yaml                         # Flux Kustomization -> apps/agents/sre-agent
+                                                       # Overlay: namespace=monitoring, proxy=host.k3s.internal:7897,
+                                                       #          dependsOn=[kubeopencode-controller, monitoring]
+```
+
