@@ -253,6 +253,74 @@ spec:
 - [x] Created `1-config/` manifests (workload namespace, `kubeopencode-agent` ServiceAccount, scoped Role/RoleBinding, `dev-agent` CR, and `smoke-test` Task).
 - [x] Integrated `apps/` into `kubernetes/fleet/k3s/kustomization.yaml`.
 - [x] Opened Pull Request [#244](https://github.com/xNok/infra-bootstrap-tools/pull/244) for review.
+- [ ] Evaluate reusable controller vs. in-tree per-namespace agent workload architecture.
 - [ ] Deploy and verify controller pod health and CRD registration on K3s cluster.
 - [ ] Verify agent pod initialization and smoke test task completion.
 - [ ] Configure OpenZiti / port-forward access for the KubeOpenCode web UI (port 2746).
+
+---
+
+## 8. Architectural Evaluation: Reusable Controller & In-Tree Per-Namespace Agents
+
+### 8.1 The Proposed Concept
+Instead of coupling the controller and an ad-hoc single config layer inside `fleet/k3s/apps/kubeopencode/`:
+1. **Reusable Controller**: Package the KubeOpenCode operator installation (namespace, OCI HelmRepository, HelmRelease, and controller configuration) into a shared, reusable location (e.g. `kubernetes/apps/kubeopencode/controller/`), publishable or consumable across any fleet cluster (`k3s`, `kind`, production).
+2. **In-Tree Agent Workloads per Namespace**: Organize cluster-specific agent definitions around **application namespaces** in the cluster tree (e.g. `fleet/k3s/apps/<namespace>/` or `apps/<namespace>/`). Each application namespace defines its own Agent, ServiceAccount, RBAC, and credentials, with an explicit Flux dependency: `dependsOn: [kubeopencode-controller]`.
+
+```
+kubernetes/
+├── apps/                                      # SHARED / REUSABLE APPS
+│   └── kubeopencode/
+│       └── controller/                        # Controller & Server HelmRelease (reusable)
+│           ├── kustomization.yaml
+│           ├── namespace.yaml                 # kubeopencode-system
+│           ├── helm-repository.yaml           # oci://ghcr.io/kubeopencode/helm-charts
+│           └── helm-release.yaml              # Operator + UI server + CRDs
+│
+└── fleet/
+    └── k3s/
+        ├── flux-system/
+        ├── infra-addons/
+        └── apps/                              # IN-TREE CLUSTER WORKLOADS
+            ├── kustomization.yaml             # Coordinates controller + app namespaces
+            ├── kubeopencode-controller.yaml   # Flux Kustomization deploying reusable controller
+            │
+            ├── agentic/                       # Workload Namespace 1 (e.g. Prefect/AI flows)
+            │   ├── kustomization.yaml         # Flux Kustomization (dependsOn: kubeopencode-controller)
+            │   ├── namespace.yaml
+            │   ├── rbac.yaml                  # Scoped agent SA in 'agentic'
+            │   ├── agent.yaml                 # Agent tailored for workflow automation
+            │   └── tasks/
+            │
+            └── devbox/                        # Workload Namespace 2 (e.g. developer sandbox)
+                ├── kustomization.yaml         # Flux Kustomization (dependsOn: kubeopencode-controller)
+                ├── namespace.yaml
+                ├── rbac.yaml                  # Scoped agent SA in 'devbox'
+                ├── agent.yaml                 # Interactive dev agent with auto-standby
+                └── tasks/
+```
+
+### 8.2 Dimension Analysis & Evaluation
+
+| Dimension | Current Approach (Coupled `kubeopencode` folder) | Proposed Approach (Reusable Controller + In-Tree Namespace Agents) | Verdict |
+| :--- | :--- | :--- | :--- |
+| **Separation of Concerns** | Controller and single config are co-located under `fleet/k3s/apps/kubeopencode/`. | Platform operator separated from app/team workloads; each team owns their agent folder. | **Proposed is superior**: strictly aligns platform engineering with multi-tenant developer workloads. |
+| **Reusability Across Clusters** | Controller manifests are duplicated if added to `kind` or other clusters. | Shared controller manifests (`kubernetes/apps/kubeopencode/controller`) can be reused across all fleet clusters. | **Proposed is superior**: eliminates manifest duplication across `fleet/kind` and `fleet/k3s`. |
+| **Security & Blast Radius** | Single `kubeopencode-apps` namespace with one shared ServiceAccount. | Independent ServiceAccounts, Roles, and Secrets per namespace; agents cannot access adjacent workloads. | **Proposed is superior**: satisfies Kubernetes least-privilege principles and bounds prompt injection risks. |
+| **Operational Scalability** | Adding a new agent requires editing the monolithic config directory. | Onboarding a new agent/team is as simple as adding a new `apps/<namespace>/` folder. | **Proposed is superior**: declarative, modular, and non-blocking for teams. |
+| **GitOps Delivery & CRD Safety** | Flux Kustomization gates config behind controller readiness. | Flux Kustomizations per namespace all declare `dependsOn: [kubeopencode-controller]`. | **Both safe**, but proposed scales across N namespaces without race conditions. |
+| **CI/CD & Pipeline Complexity** | Minimal CI impact (everything lives in `fleet/k3s`). | Requires either publishing a shared `apps` OCI artifact or referencing via GitRepository. | **Trade-off**: Requires updating `.github/workflows/flux-oci-publish.yml` if using OCI. |
+
+### 8.3 Implementation Paths for Reusable Controller
+
+1. **Path A (Full Flux D2 — Dedicated `apps` OCI Artifact)**:
+   - Create `kubernetes/apps/kubeopencode/controller`.
+   - Update `.github/workflows/flux-oci-publish.yml` to publish `oci://ghcr.io/xnok/manifests/kubernetes/apps`.
+   - In `fleet/k3s`, declare `OCIRepository/apps` and `Kustomization/kubeopencode-controller`.
+   - *Best for*: Pure Gitless GitOps, matching how `infra-addons` is delivered.
+2. **Path B (GitRepository Source in Fleet)**:
+   - Fleet declares a `GitRepository` pointing to the repo, and a `Kustomization` targeting `./kubernetes/apps/kubeopencode/controller`.
+   - *Best for*: Avoiding OCI pipeline changes while keeping directories reusable in git.
+3. **Path C (Fleet Modular In-Tree Apps)**:
+   - In `fleet/k3s/apps/`: maintain `controller.yaml` deploying the upstream Helm chart, while converting `apps/` into modular namespaces (`apps/agentic/`, `apps/devbox/`, etc.).
+   - *Best for*: Immediate zero-overhead adoption while still achieving the per-namespace agent architecture.
