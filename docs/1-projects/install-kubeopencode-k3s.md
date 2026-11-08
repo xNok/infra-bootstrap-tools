@@ -253,7 +253,11 @@ spec:
 - [x] Created `1-config/` manifests (workload namespace, `kubeopencode-agent` ServiceAccount, scoped Role/RoleBinding, `dev-agent` CR, and `smoke-test` Task).
 - [x] Integrated `apps/` into `kubernetes/fleet/k3s/kustomization.yaml`.
 - [x] Opened Pull Request [#244](https://github.com/xNok/infra-bootstrap-tools/pull/244) for review.
-- [ ] Evaluate reusable controller vs. in-tree per-namespace agent workload architecture.
+- [x] Evaluated reusable controller vs. in-tree per-namespace agent workload architecture.
+- [x] Completed deep-dive analysis on the "Whole Agent" architecture and AgentTemplate catalogue pattern.
+- [x] Implemented the `palette-agent` catalogue entry in `kubernetes/apps/agents/palette-agent/`.
+- [x] Added `publish-apps` OCI publishing pipeline in `.github/workflows/flux-oci-publish.yml`.
+- [x] Wired `palette-agent` deployment into `kubernetes/fleet/k3s/apps/`.
 - [ ] Deploy and verify controller pod health and CRD registration on K3s cluster.
 - [ ] Verify agent pod initialization and smoke test task completion.
 - [ ] Configure OpenZiti / port-forward access for the KubeOpenCode web UI (port 2746).
