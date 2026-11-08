@@ -4,9 +4,12 @@ This directory houses the reusable application catalogues and sovereign agent te
 
 ## Catalogue Distribution & GitOps Synchronization
 
-- **Authoritative Blueprint**: `kubernetes/apps/agents/palette-agent` defines the reusable, cluster-agnostic blueprint for the Palette UX & Accessibility Agent.
-- **In-Fleet Deployment Bridge**: Because GitHub Actions workflow publishing (`oci://ghcr.io/.../apps`) is staged pending GitHub token `workflow` scope approval in `.github/workflows/flux-oci-publish.yml`, clusters currently synchronize the catalogue through the in-tree fleet path:
-  ```
-  kubernetes/fleet/k3s/apps/palette-agent/catalogue/
-  ```
-- **Target Architecture**: Once the OCI publishing workflow is active, `kubernetes/apps` will be published as an independent OCI artifact and consumed natively via `OCIRepository` across all fleet clusters.
+- **Platform Controllers**:
+  - `kubernetes/apps/kubeopencode`: The shared, fleet-wide KubeOpenCode operator and API/UI server HelmRelease base.
+- **Agent Catalogue**:
+  - `kubernetes/apps/agents/palette-agent`: Reusable, cluster-agnostic blueprint for the Palette UX & Accessibility Agent (`AgentTemplate`, `CronTask`, scoped `RBAC`, `Namespace`).
+
+## Fleet Opt-In
+
+Clusters in `kubernetes/fleet/<cluster>/apps/` opt into these shared apps via Flux `Kustomization` CRs referencing the `apps` `OCIRepository` (`oci://ghcr.io/xnok/manifests/kubernetes/apps`).
+

@@ -11,5 +11,5 @@ spec:
   timeout: 5m
   sourceRef:
     kind: OCIRepository
-    name: flux-system
-  path: "./apps/kubeopencode/0-controller"
+    name: apps
+  path: "./kubeopencode"

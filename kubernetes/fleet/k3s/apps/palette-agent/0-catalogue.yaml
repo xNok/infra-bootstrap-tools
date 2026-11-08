@@ -5,12 +5,12 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1h
-  path: ./apps/palette-agent/catalogue
+  path: ./agents/palette-agent
   prune: true
   retryInterval: 1m
   sourceRef:
     kind: OCIRepository
-    name: flux-system
+    name: apps
   targetNamespace: agentic-workflows
   dependsOn:
     - name: kubeopencode-controller

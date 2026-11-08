@@ -1,0 +1,13 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: OCIRepository
+metadata:
+  name: apps
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: oci://ghcr.io/xnok/manifests/kubernetes/apps
+  ref:
+    tag: latest
+  secretRef:
+    name: flux-system
+  provider: generic
