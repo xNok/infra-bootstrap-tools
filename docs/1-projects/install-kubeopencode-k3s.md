@@ -1053,4 +1053,35 @@ Conducted against high engineering, security, and GitOps standards.
 5. **ARC-02 Addressed (Catalogue Bridge)**:
    - Added [kubernetes/apps/README.md](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/install_kubeopencode_k3s_cluster/kubernetes/apps/README.md) documenting that `kubernetes/apps/` is the authoritative shared library blueprint, temporarily mirrored into `fleet/k3s` until GitHub Actions workflow scope allows OCI publishing.
 
+---
+
+## 13. Secret & Identity Strategy: GitHub App vs. Personal Access Token (PAT)
+
+When provisioning autonomous development agents (such as KubeOpenCode's `palette-agent`), selecting the appropriate authentication model for GitHub API and Git operations has significant implications for security, attribution, and CI/CD automation.
+
+### 13.1 Comparison Matrix
+
+| Dimension | Personal Access Token (PAT) | Fine-Grained PAT | GitHub App (Recommended for Production) |
+| :--- | :--- | :--- | :--- |
+| **Commit & PR Attribution** | Attributed to your personal user account (`@xNok`). | Attributed to your personal user account (`@xNok`). | Attributed to dedicated bot identity (`palette-agent[bot]`) with verified bot badge. |
+| **Audit & Blame Clarity** | **Poor**: Human commits and autonomous bot commits are indistinguishable in git blame. | **Poor**: Same identity blending as classic PAT. | **Excellent**: Clear cryptographic separation between human team members and automated agent actions. |
+| **Token Lifespan & Blast Radius** | Long-lived or non-expiring static secret. Leaked tokens remain valid until revoked. | Expirable (up to 365 days), but still a static token. | Short-lived installation access tokens (1 hour TTL) minted dynamically from private key. |
+| **Repository Scoping** | **Broad / All-or-nothing**: Accesses all user/org repos matching scopes. | **Scoped**: Restricted to specific target repositories. | **Strictly Scoped**: Only accessible to repositories where the App is explicitly installed. |
+| **CI / CD Pipeline Triggering** | Pull Requests opened by a PAT trigger standard `on: pull_request` GitHub Actions. | Same as classic PAT. | PRs opened by GitHub App trigger `on: pull_request` workflows cleanly without recursion blockers. |
+| **API Rate Limits** | Shared with your personal CLI/IDE limit (5,000 req/hr). | Shared with personal user limit (5,000 req/hr). | Dedicated rate limit pool per installation (5,000 to 12,500+ req/hr, scales with org). |
+| **Lifecycle Coupling** | Tied to employee/user account. Breaks on 2FA changes, password reset, or departure. | Tied to user account. | Organization/Repo owned asset. Fully independent of human member lifecycles. |
+
+### 13.2 Recommended Evolution Path
+
+1. **Phase 1 (Rapid Onboarding & Prototyping)**:
+   - Use a **Fine-Grained Personal Access Token (PAT)**.
+   - Scoped strictly to target repository `mekitmedia/cncf-landscape-a-to-z`.
+   - Permissions: `Contents: Read and write`, `Pull requests: Read and write`.
+   - Pass directly into namespace secret `github-token-creds`.
+2. **Phase 2 (Production Sovereign Agent Platform)**:
+   - Deploy a dedicated **GitHub App** (e.g., `Mekit AI Agents`).
+   - Store the App ID and PEM Private Key in Kubernetes / External Secrets.
+   - Use an automated token minter (or External Secrets Operator GitHub provider) to provide rotating 1-hour installation tokens to agent workloads.
+
+
 
