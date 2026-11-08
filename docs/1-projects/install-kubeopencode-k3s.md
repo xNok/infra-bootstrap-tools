@@ -419,3 +419,130 @@ spec:
 2. **Built-in CRD Safety**: `spec.dependsOn` natively checks `CustomResourceDefinition: agents.kubeopencode.io (ready: true)`. The operator will not template agents until the HelmRelease completes.
 3. **Resource Deduplication**: Flux Operator automatically deduplicates resources (e.g. if two agents share a namespace, the `Namespace` resource is applied only once).
 4. **Already Installed**: `flux-operator` is already active in `k3s` and `kind` (`flux-operator.yaml`).
+
+---
+
+## 9. Architectural Synthesis: Agentic Platform, Agent Catalogue & Value Layering
+
+### 9.1 The Long-Term Vision
+We are transitioning from a single one-off tool deployment to an **Agentic Platform Architecture**:
+1. **Agentic Platform (Control Plane / Operators as Apps)**:
+   - Infra-like platform services running as applications on the cluster.
+   - Core components: `kubeopencode` controller & UI server, and future additions like `kagent`, `agentgateway`, MCP hubs, or model routers.
+   - Reusable across clusters via a shared OCI package (`manifests/kubernetes/apps/agentic-platform`).
+2. **Agent Catalogue (Shared Agent Blueprints)**:
+   - A curated catalogue of reusable agents and tasks (e.g., `code-reviewer`, `ci-triage`, `docs-updater`, `general-devbox`).
+   - Defines standard profiles, toolchains, container images, and baseline model choices.
+3. **Cluster & Namespace Instantiations (The Overlay / Layering)**:
+   - The actual agents running in specific namespaces on a specific cluster (e.g., `agentic` namespace on K3s, `staging` namespace on Kind).
+
+---
+
+### 9.2 Where Does the Overlay / Value Layering Go?
+
+The central design question is: **Where do cluster-specific and namespace-specific overrides live relative to the shared catalogue and controller?**
+
+We identify two distinct layering boundaries:
+
+#### Boundary A: Platform Controller Layering
+- **Shared Base**: The chart reference and universal defaults (e.g. leader election, security contexts, metrics).
+- **Where the Overrides Go**:
+  - In `kubernetes/fleet/<cluster>/apps/agentic-platform/values.yaml` (or via `valuesFrom` ConfigMap).
+  - Configures cluster-specifics: ingress/OpenZiti hosts, storage classes, and replica counts (1 on K3s, 2 on cloud).
+
+#### Boundary B: Agent Catalogue Layering (The Workload Layer)
+An Agent requires both **catalogue traits** (profile, prompt, images, tools) and **local traits** (namespace, secret references, standby timeouts, resource quotas).
+
+Where does this layering live? Three concrete architectural options exist:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        OPTION 1: Kustomize Base & Overlays             │
+│                                                                        │
+│   Shared Catalogue (apps/)               Cluster Overlay (fleet/k3s/) │
+│  ┌────────────────────────┐             ┌───────────────────────────┐  │
+│  │ Base Agent CR          │◀────────────│ Patches:                  │  │
+│  │ - profile, tools, image│ (Kustomize) │ - namespace: agentic      │  │
+│  │ - default model        │             │ - secretRef: my-api-key   │  │
+│  └────────────────────────┘             │ - standby: 15m            │  │
+│                                         └───────────────────────────┘  │
+├────────────────────────────────────────────────────────────────────────┤
+│                        OPTION 2: Flux Operator ResourceSet             │
+│                                                                        │
+│   Shared Template (in RSet)              Cluster Inputs (in RSet)      │
+│  ┌────────────────────────┐             ┌───────────────────────────┐  │
+│  │ Template resources:    │◀────────────│ inputs:                   │  │
+│  │ - Namespace            │ (Go Template│ - name: reviewer          │  │
+│  │ - ServiceAccount, RBAC │ slim-sprig) │   namespace: team-a       │  │
+│  │ - Agent CR             │             │   model: gemini-2.5-pro   │  │
+│  └────────────────────────┘             └───────────────────────────┘  │
+├────────────────────────────────────────────────────────────────────────┤
+│                        OPTION 3: KubeOpenCode ConfigRef / Secret       │
+│                                                                        │
+│   Shared Template (ConfigMap)            Cluster Secret / CR           │
+│  ┌────────────────────────┐             ┌───────────────────────────┐  │
+│  │ opencode.json config   │◀────────────│ Agent.spec.configRef      │  │
+│  │ (prompts, provider cfg)│ (ConfigRef) │ Agent.spec.credentials    │  │
+│  └────────────────────────┘             └───────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 9.3 Structured Evaluation: Benefits, Risks, Alternatives & "Do Nothing"
+
+#### 1. Benefits of the Proposed Agentic Platform + Catalogue Model
+- **Platform Reusability**: KubeOpenCode (and future controllers like `kagent` or `agentgateway`) can be deployed to any fleet cluster (`k3s`, `kind`, production) from a single shared definition without duplicating manifests.
+- **Tenant & Workload Isolation**: Agents are partitioned into distinct namespaces with independent ServiceAccounts and Secrets. An agent executing code in `agentic` cannot access secrets in `ci-triage` or `kubeopencode-system`.
+- **Low-Friction Onboarding**: Adding an agent from the catalogue is declarative and takes minutes instead of writing raw RBAC, namespace, and agent YAML from scratch.
+- **Unified Extensibility**: As new agentic tools emerge (e.g. Model Context Protocol proxies, AI gateways), they plug into the `agentic-platform` layer without altering individual agent workflows.
+
+#### 2. Risks & Mitigations
+- **Risk: Template / Go-Template Complexity (in ResourceSet)**:
+  - *Risk*: Heavy use of slim-sprig syntax in YAML can be hard to read or debug.
+  - *Mitigation*: Keep the ResourceSet template strictly focused on standard RBAC + Agent boilerplate; keep complex OpenCode options inside standalone ConfigMaps or Agent CRs.
+- **Risk: Secret Exposure via GitOps**:
+  - *Risk*: Defining agents in Git might tempt teams to commit API keys.
+  - *Mitigation*: Standardize on `SecretRef` pointing to pre-provisioned Kubernetes Secrets (e.g., managed via 1Password/SOPS or External Secrets Operator).
+- **Risk: Upstream KubeOpenCode CRD Evolution**:
+  - *Risk*: `v1alpha1` schemas may introduce breaking changes across minor releases.
+  - *Mitigation*: Pin the Helm chart version in the controller release and validate upgrades on `kind` integration tests before promoting to `k3s`.
+
+#### 3. Alternatives Evaluated for Value Layering
+
+| Alternative | Where Layering Goes | Pros | Cons |
+| :--- | :--- | :--- | :--- |
+| **Alt A: Kustomize Base & Overlays** | Overlays in `fleet/<cluster>/apps/<app>/` patch base in `kubernetes/apps/` | Standard Kubernetes pattern; clear Git tree. | High file count; requires deep relative paths or OCI packaging of base. |
+| **Alt B: ResourceSet Inputs (Catalogue)** | `inputs:` table in `fleet/<cluster>/apps/agents.yaml` | **Zero directory sprawl**; single file declares all cluster agents; built-in CRD dependency gating. | Uses Flux Operator syntax (`<< inputs.x >>`). |
+| **Alt C: KubeOpenCode ConfigMap `configRef`** | OpenCode config in ConfigMap; secrets in Secret; thin Agent CR in fleet. | Native to KubeOpenCode; separates model config from credentials. | Doesn't automate Namespace and RBAC creation. |
+
+#### 4. The "Do Nothing" Baseline Analysis
+- **What "Do Nothing" Means**: Keeping our current commit where `0-controller` and `1-config` live together under `kubernetes/fleet/k3s/apps/kubeopencode/`.
+- **Consequences of Doing Nothing**:
+  - **No Cross-Cluster Reusability**: When we want KubeOpenCode on `fleet/kind` for local testing, we would have to copy the entire `0-controller/` directory, causing configuration drift.
+  - **Monolithic Agent Namespace**: All agents are dumped into `kubeopencode-apps`, sharing a single ServiceAccount and secret pool, violating least-privilege principles.
+  - **Poor Extensibility**: When adding `kagent` or `agentgateway`, we would have to invent another ad-hoc directory rather than having a recognized `agentic-platform` layer.
+- **Conclusion**: "Do Nothing" is sufficient for a 1-day smoke test, but fundamentally inadequate for an extensible agentic infrastructure stack.
+
+---
+
+### 9.4 Concrete Recommended Layout
+
+```
+kubernetes/
+├── apps/                                           # SHARED PLATFORM APPLICATIONS
+│   └── agentic-platform/
+│       └── kubeopencode/                           # Reusable Controller Layer
+│           ├── namespace.yaml                      # kubeopencode-system
+│           ├── helm-repository.yaml                # oci://ghcr.io/kubeopencode/helm-charts
+│           ├── helm-release.yaml                   # Controller, server, CRD config
+│           └── kustomization.yaml
+│
+└── fleet/
+    └── k3s/
+        └── apps/                                   # CLUSTER WORKLOAD & AGENT OVERLAYS
+            ├── kustomization.yaml
+            ├── agentic-platform.yaml               # Flux Kustomization pointing to apps/agentic-platform
+            │
+            └── agent-catalogue.yaml                # Flux ResourceSet: Instantiates agents per namespace
+```
