@@ -5,4 +5,3 @@ resources:
   - namespace.yaml
   - rbac.yaml
   - default-agent.yaml
-  - smoke-task.yaml

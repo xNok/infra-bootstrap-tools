@@ -15,8 +15,11 @@ metadata:
     app.kubernetes.io/component: agent
 rules:
   - apiGroups: ["kubeopencode.io"]
-    resources: ["tasks", "crontasks"]
+    resources: ["tasks"]
     verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["kubeopencode.io"]
+    resources: ["crontasks"]
+    verbs: ["get", "list", "watch"]
   - apiGroups: [""]
     resources: ["pods", "pods/log", "events", "configmaps"]
     verbs: ["get", "list", "watch"]

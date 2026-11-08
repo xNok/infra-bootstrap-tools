@@ -916,9 +916,11 @@ metadata:
   name: weekly-palette-improvements
 spec:
   schedule: "0 9 * * 4" # Weekly on Thursdays at 09:00 UTC
-  agentRef:
-    name: palette-agent
-  prompt: |
+  taskTemplate:
+    spec:
+      agentRef:
+        name: palette-agent
+      description: |
     You are "Palette" 🎨 - a UX-focused agent for this repository.
 
     Your mission is to implement exactly ONE small UX/accessibility improvement that is immediately visible, low-risk, and easy to review.
@@ -1016,5 +1018,39 @@ stringData:
 2. **KubeOpenCode Controller**: Wakes `palette-agent` from standby, mounting the latest `git` commit of `mekitmedia/cncf-landscape-a-to-z`.
 3. **Execution**: The devbox executor container executes Claude 3.7 Sonnet, inspecting the repo, picking an a11y improvement, running tests, committing, and opening a Pull Request via GitHub API.
 4. **Auto-Standby**: After task completion, the agent automatically suspends after 15 minutes idle, consuming **0 CPU and 0 RAM** on K3s until next Thursday.
+
+---
+
+## 12. Adversarial Code & Security Review (PR #244)
+
+Conducted against high engineering, security, and GitOps standards.
+
+### 12.1 Findings Matrix
+
+| ID | Severity | Category | Target | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **SEC-01** | **High** | Privilege Escalation | `palette-agent/rbac.yaml` | `palette-agent-role` grants `update` and `patch` verbs on `crontasks`. An untrusted or prompt-injected LLM can rewrite its own trigger, schedule, or prompt. |
+| **SEC-02** | **Medium** | Credential Exposure | `ServiceAccount` definitions | `automountServiceAccountToken` is not disabled. By default, Kubernetes mounts internal service account JWTs into devbox pods executing external target code. |
+| **SEC-03** | **Medium** | Supply Chain / Immutability | `agent-template.yaml` | Images are tagged `:latest` (`kubeopencode-agent-opencode:latest`, `kubeopencode-agent-devbox:latest`). Violates GitOps reproducibility and pins. |
+| **GIO-01** | **Critical** | Bootstrap Race Condition | `fleet/k3s/apps/palette-agent` | `kustomization.yaml` mixes Flux Kustomization CR (`0-catalogue.yaml`) with raw K8s CRs (`1-instance.yaml`). Root reconciler attempts to apply `kind: Agent` before controller CRDs are established. |
+| **GIO-02** | **Medium** | GitOps Purity | `kubeopencode/1-config` | `smoke-task.yaml` (`kind: Task`) is hardcoded in permanent Flux `resources`. Ephemeral verification jobs should not be tracked as continuous desired state. |
+| **ARC-01** | **Medium** | Architecture / Naming | `kubeopencode/1-config` | Misleading name `kubeopencode-config` actually deploys a sample `dev-agent`. Collides with expectation of controller settings vs agent workloads. |
+| **ARC-02** | **Low** | Code Duplication | `kubernetes/apps` vs `fleet/k3s` | Full duplication of `palette-agent` catalogue manifests between root `kubernetes/apps` and `fleet/k3s/apps/palette-agent/catalogue` due to workflow token scope limitations. |
+
+### 12.2 Remediation & Resolutions Implemented
+
+1. **GIO-01 Resolved (Bootstrap Ordering)**:
+   - Converted `1-instance.yaml` into a proper Flux `Kustomization` CR (`metadata.name: palette-agent-instance`) with `dependsOn: [{ name: palette-agent-catalogue }]`.
+   - Moved instance manifests to `kubernetes/fleet/k3s/apps/palette-agent/1-instance/agent.yaml`.
+   - Added `namespace.yaml` to `catalogue/` so `Namespace/agentic-workflows` is guaranteed to exist before any CR is applied.
+2. **SEC-01 Resolved (RBAC Privilege Escalation)**:
+   - In both `palette-agent/catalogue/rbac.yaml` and `kubernetes/apps/agents/palette-agent/rbac.yaml`, removed `update` and `patch` verbs on `crontasks`. Restricted `crontasks` verbs strictly to read-only (`get`, `list`, `watch`).
+3. **GIO-02 & ARC-01 Resolved (GitOps Purity & Naming)**:
+   - Removed `smoke-task.yaml` from continuous GitOps desired state.
+   - Renamed `kubeopencode-config` to `kubeopencode-dev-agent` (`1-dev-agent.yaml` pointing to `./apps/kubeopencode/1-dev-agent`), clarifying that it manages the devbox agent workload in `kubeopencode-apps`.
+4. **SEC-02/03 Evaluated (Floating Tags in GitOps)**:
+   - Following user guidance: in GitOps, tracking HEAD (`:latest`) is expected behavior for rapid-iteration agent runtimes. Rather than freezing tags, logged a dedicated project in [docs/1-projects/floating-tags-slsa-validation.md](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/install_kubeopencode_k3s_cluster/docs/1-projects/floating-tags-slsa-validation.md) to implement SHA digest mutation and SLSA provenance verification via admission control.
+5. **ARC-02 Addressed (Catalogue Bridge)**:
+   - Added [kubernetes/apps/README.md](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/install_kubeopencode_k3s_cluster/kubernetes/apps/README.md) documenting that `kubernetes/apps/` is the authoritative shared library blueprint, temporarily mirrored into `fleet/k3s` until GitHub Actions workflow scope allows OCI publishing.
 
 

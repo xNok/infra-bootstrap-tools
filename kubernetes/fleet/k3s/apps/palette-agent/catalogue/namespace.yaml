@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agentic-workflows
+  labels:
+    app.kubernetes.io/name: kubeopencode
+    app.kubernetes.io/part-of: agentic-workflows

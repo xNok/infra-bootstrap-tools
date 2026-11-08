@@ -1,7 +1,7 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
-  name: kubeopencode-config
+  name: kubeopencode-dev-agent
   namespace: flux-system
 spec:
   interval: 1h
@@ -14,4 +14,4 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: flux-system
-  path: "./apps/kubeopencode/1-config"
+  path: "./apps/kubeopencode/1-dev-agent"

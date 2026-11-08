@@ -1,24 +1,18 @@
-apiVersion: v1
-kind: Namespace
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
 metadata:
-  name: agentic-workflows
-  labels:
-    app.kubernetes.io/name: kubeopencode
-    app.kubernetes.io/part-of: agentic-workflows
----
-apiVersion: kubeopencode.io/v1alpha1
-kind: Agent
-metadata:
-  name: palette-agent
-  namespace: agentic-workflows
-  labels:
-    app.kubernetes.io/name: kubeopencode
-    app.kubernetes.io/component: agent
+  name: palette-agent-instance
+  namespace: flux-system
 spec:
-  # Inherits images, context repo, and credentials contract from catalogue template
-  templateRef:
-    name: palette-agent-template
-  profile: "Palette UX & Accessibility Agent for CNCF Landscape"
-  # Auto-suspends after 15m idle to preserve K3s cluster RAM and CPU
-  standby:
-    idleTimeout: 15m
+  interval: 1h
+  path: ./apps/palette-agent/1-instance
+  prune: true
+  retryInterval: 1m
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  targetNamespace: agentic-workflows
+  dependsOn:
+    - name: palette-agent-catalogue
+  timeout: 5m
+  wait: true
