@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeopencode-system
+  labels:
+    app.kubernetes.io/name: kubeopencode
+    app.kubernetes.io/part-of: kubeopencode

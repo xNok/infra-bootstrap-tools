@@ -1,0 +1,9 @@
+apiVersion: kubeopencode.io/v1alpha1
+kind: Task
+metadata:
+  name: smoke-test
+  namespace: kubeopencode-apps
+spec:
+  agentRef:
+    name: dev-agent
+  description: "Verify agent environment and report operating system and available tools."

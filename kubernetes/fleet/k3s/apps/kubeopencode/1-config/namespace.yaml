@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeopencode-apps
+  labels:
+    app.kubernetes.io/name: kubeopencode
+    app.kubernetes.io/component: workloads
