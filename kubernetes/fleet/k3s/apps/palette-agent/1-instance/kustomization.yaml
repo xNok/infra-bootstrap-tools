@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - agent.yaml
   - external-secret-github.yaml
+  - external-secret-llm.yaml
