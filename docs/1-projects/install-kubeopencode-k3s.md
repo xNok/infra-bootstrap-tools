@@ -907,7 +907,7 @@ spec:
         name: llm-api-creds
   # Default model & settings
   config:
-    model: anthropic/claude-3-7-sonnet
+    model: opencode/big-pickle
     share: disabled
 ```
 
