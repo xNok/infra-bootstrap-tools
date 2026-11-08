@@ -766,3 +766,251 @@ kubernetes/
                                                        #          dependsOn=[kubeopencode-controller, monitoring]
 ```
 
+---
+
+## 11. Worked Example: Migrating GitHub Actions Agent (`jules_palette_improvements`) to `AgentTemplate` Catalogue on K3s
+
+### 11.1 The Source Workflow
+We analyze a real-world automated agent workflow scheduled in GitHub Actions: [`jules_palette_improvements.yml`](https://github.com/mekitmedia/cncf-landscape-a-to-z/blob/main/.github/workflows/jules_palette_improvements.yml) from `mekitmedia/cncf-landscape-a-to-z`.
+
+```yaml
+# Source: .github/workflows/jules_palette_improvements.yml
+name: Scheduled Jules Palette Improvement
+on:
+  schedule:
+    - cron: '0 9 * * 4' # Weekly on Thursdays at 09:00 UTC
+  workflow_dispatch:
+jobs:
+  jules-palette:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: cat .github/prompts/palette_prompt.md
+      - uses: google-labs-code/jules-action@v1.0.0
+        with:
+          prompt: ${{ steps.prompt.outputs.prompt }}
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**Goal**: Google's `jules-action` will be decommissioned soon. We replace this GitHub Actions runner with a self-hosted, sovereign **Palette Agent** running on our K3s cluster, packaged cleanly through our Agent Catalogue.
+
+---
+
+### 11.2 Why `AgentTemplate` is the Key to Catalogue Distributability
+
+Traditional folder-based Kustomize overlays (`Approach B` with `patches/` directories) are **not cleanly distributable**:
+- They rely on fragile relative filesystem paths (`../../../../apps/agents/...`).
+- When packaged as an OCI artifact, relative paths outside the artifact break.
+
+KubeOpenCode's native **`AgentTemplate` CRD** solves this natively:
+- **`AgentTemplate` IS the catalogue artifact**: It bundles the runtime environment (container images, devbox with `gh` CLI and `git`, context repositories, proxy configuration, and credential contracts).
+- **`Agent` IS the cluster instance**: The cluster deployment only declares a minimal `Agent` CR pointing to `templateRef: { name: palette-agent }`, along with a `CronTask` for the schedule.
+
+---
+
+### 11.3 Step 1: The Catalogue Entry (`kubernetes/apps/agents/palette-agent/`)
+
+In the shared catalogue repository/OCI artifact:
+
+#### 1. `kubernetes/apps/agents/palette-agent/kustomization.yaml`
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - rbac.yaml
+  - agent-template.yaml
+  - crontask.yaml
+```
+
+#### 2. `kubernetes/apps/agents/palette-agent/rbac.yaml`
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: palette-agent-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: palette-agent-role
+rules:
+  - apiGroups: ["kubeopencode.io"]
+    resources: ["tasks", "crontasks"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "events"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: palette-agent-binding
+subjects:
+  - kind: ServiceAccount
+    name: palette-agent-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: palette-agent-role
+```
+
+#### 3. `kubernetes/apps/agents/palette-agent/agent-template.yaml`
+```yaml
+apiVersion: kubeopencode.io/v1alpha1
+kind: AgentTemplate
+metadata:
+  name: palette-agent-template
+spec:
+  # OpenCode binary + devbox executor equipped with git, gh cli, node, and python
+  agentImage: quay.io/kubeopencode/kubeopencode-agent-opencode:latest
+  executorImage: quay.io/kubeopencode/kubeopencode-agent-devbox:latest
+  workspaceDir: /workspace
+  serviceAccountName: palette-agent-sa
+  podSpec:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "250m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
+  # Target Repository Context: clones the target repo directly into workspace
+  contexts:
+    - name: cncf-landscape
+      type: Git
+      git:
+        repository: https://github.com/mekitmedia/cncf-landscape-a-to-z.git
+        ref: main
+        sync:
+          enabled: true
+          interval: 10m
+          policy: HotReload
+      mountPath: .
+  # Credential contracts: expects secrets in the running namespace
+  credentials:
+    - name: github
+      secretRef:
+        name: github-token-creds
+    - name: llm
+      secretRef:
+        name: llm-api-creds
+  # Default model & settings
+  config:
+    model: anthropic/claude-3-7-sonnet
+    share: disabled
+```
+
+#### 4. `kubernetes/apps/agents/palette-agent/crontask.yaml`
+Replaces the GitHub Actions schedule (`cron: '0 9 * * 4'`):
+```yaml
+apiVersion: kubeopencode.io/v1alpha1
+kind: CronTask
+metadata:
+  name: weekly-palette-improvements
+spec:
+  schedule: "0 9 * * 4" # Weekly on Thursdays at 09:00 UTC
+  agentRef:
+    name: palette-agent
+  prompt: |
+    You are "Palette" 🎨 - a UX-focused agent for this repository.
+
+    Your mission is to implement exactly ONE small UX/accessibility improvement that is immediately visible, low-risk, and easy to review.
+
+    Core rules:
+    - Prioritize accessibility (ARIA labels, keyboard focus, semantic markup, alt text, clearer empty/error states).
+    - Keep changes focused (<50 changed lines when possible).
+    - Use existing design/classes; no dependency additions.
+    - Avoid backend/performance/security work in this profile.
+
+    Before coding:
+    1. Read .Jules/palette.md (create if missing).
+    2. Identify the best single UX win.
+    3. If there is no clear UX win, stop and do not open a PR.
+
+    After coding:
+    1. Run relevant existing checks.
+    2. Open a PR summarizing What/Why/A11y impact.
+    3. Add a journal entry to .Jules/palette.md only for critical reusable lessons (not routine edits).
+```
+
+---
+
+### 11.4 Step 2: How to Add the Palette Agent to Your K3s Deployment
+
+On your K3s cluster, deploying the Palette Agent requires **only two files** in `kubernetes/fleet/k3s/apps/`:
+
+#### File 1: `kubernetes/fleet/k3s/apps/palette-agent.yaml`
+A Flux `Kustomization` that deploys the catalogue entry into the cluster under namespace `agentic-workflows`:
+```yaml
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: palette-agent
+  namespace: flux-system
+spec:
+  interval: 1h
+  prune: true
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: "./apps/agents/palette-agent"
+  targetNamespace: agentic-workflows
+  dependsOn:
+    - name: kubeopencode-controller
+```
+
+#### File 2: `kubernetes/fleet/k3s/apps/palette-agent-instance.yaml`
+The local cluster instance (the `Agent` CR) and its namespace:
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agentic-workflows
+---
+apiVersion: kubeopencode.io/v1alpha1
+kind: Agent
+metadata:
+  name: palette-agent
+  namespace: agentic-workflows
+spec:
+  # Inherits everything from the catalogue AgentTemplate!
+  templateRef:
+    name: palette-agent-template
+  profile: "Palette UX Improvement Agent for CNCF Landscape"
+  standby:
+    idleTimeout: "15m" # Shuts down container after 15m idle to preserve K3s RAM
+```
+
+#### File 3: The Secret (Provided via 1Password / SealedSecret / SOPS)
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-token-creds
+  namespace: agentic-workflows
+type: Opaque
+stringData:
+  GITHUB_TOKEN: "ghp_..." # Token with write permissions to mekitmedia/cncf-landscape-a-to-z
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: llm-api-creds
+  namespace: agentic-workflows
+type: Opaque
+stringData:
+  ANTHROPIC_API_KEY: "sk-ant-..."
+```
+
+---
+
+### 11.5 What Happens During Execution on K3s?
+1. **At 09:00 UTC on Thursday**: The `CronTask` triggers.
+2. **KubeOpenCode Controller**: Wakes `palette-agent` from standby, mounting the latest `git` commit of `mekitmedia/cncf-landscape-a-to-z`.
+3. **Execution**: The devbox executor container executes Claude 3.7 Sonnet, inspecting the repo, picking an a11y improvement, running tests, committing, and opening a Pull Request via GitHub API.
+4. **Auto-Standby**: After task completion, the agent automatically suspends after 15 minutes idle, consuming **0 CPU and 0 RAM** on K3s until next Thursday.
+
+
