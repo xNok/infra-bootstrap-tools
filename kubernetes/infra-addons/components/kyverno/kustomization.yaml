@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+resources:
+  - namespace.yaml
+  - helm-repo.yaml
+  - kyverno.yaml
+  - kyverno-policies.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+  labels:
+    reconcile.fluxcd.io/watch: Enabled
+
+configMapGenerator:
+  - name: default-kyverno-values
+    namespace: flux-system
+    files:
+      - values.yaml=values/default-kyverno.values.yaml
+  - name: default-kyverno-policies-values
+    namespace: flux-system
+    files:
+      - values.yaml=values/default-kyverno-policies.values.yaml

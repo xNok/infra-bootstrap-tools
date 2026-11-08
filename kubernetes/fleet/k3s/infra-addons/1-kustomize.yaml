@@ -18,6 +18,7 @@ spec:
     - ../components/external-secrets
     - ../components/external-dns
     - ../components/openziti
+    - ../components/kyverno
 
   # Substitute cluster-specific values (e.g. CLUSTER_NAME) into the manifests before applying.
   postBuild:
