@@ -81,20 +81,21 @@ kubernetes/fleet/k3s/
 │   └── values/
 ├── apps/
 │   └── kubeopencode/
-│       ├── kustomization.yaml             # Coordinates controller and config
-│       ├── 0-controller/                  # SYSTEM / CONTROLLER PLANE
+│       ├── kustomization.yaml             # Emits Flux Kustomization CRs
+│       ├── 0-controller.yaml              # Flux Kustomization: kubeopencode-controller
+│       ├── 1-config.yaml                  # Flux Kustomization: kubeopencode-config (dependsOn controller)
+│       ├── 0-controller/                  # SYSTEM / CONTROLLER PLANE (reconciled by 0-controller.yaml)
 │       │   ├── kustomization.yaml
 │       │   ├── namespace.yaml             # kubeopencode-system
 │       │   ├── helm-repository.yaml       # oci://ghcr.io/kubeopencode/helm-charts
-│       │   ├── helm-release.yaml          # HelmRelease with server enabled, CRD install
-│       │   └── values.yaml                # Controller & Server resource limits, config
-│       └── 1-config/                      # USER / WORKLOAD PLANE (dependsOn controller)
+│       │   └── helm-release.yaml          # HelmRelease with server enabled, CRD install
+│       └── 1-config/                      # USER / WORKLOAD PLANE (reconciled by 1-config.yaml)
 │           ├── kustomization.yaml
-│           ├── namespace.yaml             # kubeopencode-workloads or dedicated namespace
+│           ├── namespace.yaml             # kubeopencode-apps
 │           ├── rbac.yaml                  # Agent ServiceAccount + scoped Role/RoleBinding
-│           ├── secrets.yaml.example       # Template for LLM API keys / Git credentials
+│           ├── secrets.example.yaml       # Template for LLM API keys / Git credentials
 │           ├── default-agent.yaml         # Base Agent definition (e.g. devbox, model spec)
-│           └── sample-task.yaml           # Smoke-test Task verification
+│           └── smoke-task.yaml            # Smoke-test Task verification
 ```
 
 ### Key Differences Between Layers

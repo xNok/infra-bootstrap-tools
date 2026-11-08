@@ -1,0 +1,17 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: kubeopencode-config
+  namespace: flux-system
+spec:
+  interval: 1h
+  retryInterval: 1m
+  prune: true
+  wait: true
+  timeout: 5m
+  dependsOn:
+    - name: kubeopencode-controller
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+  path: "./apps/kubeopencode/1-config"
