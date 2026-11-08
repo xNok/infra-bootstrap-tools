@@ -324,3 +324,98 @@ kubernetes/
 3. **Path C (Fleet Modular In-Tree Apps)**:
    - In `fleet/k3s/apps/`: maintain `controller.yaml` deploying the upstream Helm chart, while converting `apps/` into modular namespaces (`apps/agentic/`, `apps/devbox/`, etc.).
    - *Best for*: Immediate zero-overhead adoption while still achieving the per-namespace agent architecture.
+
+---
+
+### 8.4 The `ResourceSet` Agent Catalogue Pattern
+
+The [Flux Operator ResourceSet API](https://fluxoperator.dev/docs/crd/resourceset/) offers an alternative pattern inspired by the multi-tenant pattern: **an Agent Catalogue**.
+
+Instead of writing 5 distinct Kubernetes manifests per agent across nested directories, a single `ResourceSet` defines the canonical agent runtime template, and uses `spec.inputs` as a lightweight catalogue:
+
+```yaml
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  name: kubeopencode-agents
+  namespace: flux-system
+  annotations:
+    fluxcd.controlplane.io/reconcile: "enabled"
+spec:
+  # Native CRD dependency gating: only generates agents after CRDs exist!
+  dependsOn:
+    - apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      name: agents.kubeopencode.io
+      ready: true
+
+  # The Agent Catalogue: Define all agents in one clean table
+  inputs:
+    - name: workflow-agent
+      namespace: agentic
+      profile: "AI workflow orchestrator"
+      model: "anthropic/claude-3-7-sonnet"
+      standby: "30m"
+    - name: dev-agent
+      namespace: default
+      profile: "General development agent"
+      model: "opencode/big-pickle"
+      standby: "15m"
+
+  # Canonical template generated for every catalogue entry
+  resources:
+    - apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: << inputs.namespace >>
+    - apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: kubeopencode-agent
+        namespace: << inputs.namespace >>
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: kubeopencode-agent-role
+        namespace: << inputs.namespace >>
+      rules:
+        - apiGroups: ["kubeopencode.io"]
+          resources: ["tasks"]
+          verbs: ["get", "list", "watch", "update", "patch"]
+        - apiGroups: [""]
+          resources: ["pods", "pods/log", "events"]
+          verbs: ["get", "list", "watch"]
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: kubeopencode-agent-rolebinding
+        namespace: << inputs.namespace >>
+      subjects:
+        - kind: ServiceAccount
+          name: kubeopencode-agent
+          namespace: << inputs.namespace >>
+      roleRef:
+        kind: Role
+        name: kubeopencode-agent-role
+        apiGroup: rbac.authorization.k8s.io
+    - apiVersion: kubeopencode.io/v1alpha1
+      kind: Agent
+      metadata:
+        name: << inputs.name >>
+        namespace: << inputs.namespace >>
+      spec:
+        profile: << inputs.profile | quote >>
+        workspaceDir: /workspace
+        serviceAccountName: kubeopencode-agent
+        standby:
+          idleTimeout: << inputs.standby | default "30m" | quote >>
+        config:
+          $schema: https://opencode.ai/config.json
+          model: << inputs.model | quote >>
+```
+
+#### Why the ResourceSet Pattern is Compelling:
+1. **Zero Boilerplate**: Adding a new agent in a new namespace is just adding 5 lines to `inputs` in a single file, rather than creating 5 new YAML files and nested folders.
+2. **Built-in CRD Safety**: `spec.dependsOn` natively checks `CustomResourceDefinition: agents.kubeopencode.io (ready: true)`. The operator will not template agents until the HelmRelease completes.
+3. **Resource Deduplication**: Flux Operator automatically deduplicates resources (e.g. if two agents share a namespace, the `Namespace` resource is applied only once).
+4. **Already Installed**: `flux-operator` is already active in `k3s` and `kind` (`flux-operator.yaml`).
