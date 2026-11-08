@@ -1,5 +1,11 @@
 # kubernetes-infra-addons
 
+## 0.4.1
+
+### Patch Changes
+
+- e8002f1: Fix ESO 1Password SDK memory limits, pin ExternalDNS to v0.20.0 for EndpointSlices and in-tree DigitalOcean provider, and update secret naming convention to `{consumer}_{resource server}_{what}`.
+
 ## 0.4.0
 
 ### Minor Changes
