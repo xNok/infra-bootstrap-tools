@@ -1140,8 +1140,7 @@ kubernetes/
             ├── 0-source.yaml                       # OCIRepository/apps source
             ├── kustomization.yaml                  # Coordinates app opt-ins
             ├── kubeopencode/                       # Opt-in to Platform Controller
-            │   ├── 0-controller.yaml               # Flux Kustomization -> sourceRef: apps, path: ./kubeopencode
-            │   └── 1-dev-agent.yaml                # Flux Kustomization -> local dev-agent workload
+            │   └── 0-controller.yaml               # Flux Kustomization -> sourceRef: apps, path: ./kubeopencode
             │
             └── palette-agent/                      # Opt-in to Workload Agent
                 ├── 0-catalogue.yaml                # Flux Kustomization -> sourceRef: apps, path: ./kubeopencode-agents/palette-agent

@@ -3,4 +3,3 @@ kind: Kustomization
 
 resources:
   - 0-controller.yaml
-  - 1-dev-agent.yaml
