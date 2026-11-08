@@ -106,6 +106,7 @@ resolvectl status ziti-tunnel
 | :--- | :--- | :--- | :--- | :--- |
 | `k3s` | `k3s.ziti:6443` | `127.0.0.1:6443` | `#k3s-clients` | Kubernetes API control plane |
 | `flux-ui` | `flux.ziti:80`<br>`flux.ziti:9080` | `flux-operator.flux-system.svc.cluster.local:9080` | `#k3s-clients` | Flux Operator status dashboard |
+| `opencode` | `opencode.ziti:80`<br>`opencode.ziti:2746` | `kubeopencode-server.kubeopencode-system.svc.cluster.local:2746` | `#k3s-clients` | KubeOpenCode Agentic UI Dashboard |
 
 ---
 

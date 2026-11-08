@@ -256,11 +256,11 @@ spec:
 - [x] Evaluated reusable controller vs. in-tree per-namespace agent workload architecture.
 - [x] Completed deep-dive analysis on the "Whole Agent" architecture and AgentTemplate catalogue pattern.
 - [x] Implemented the `palette-agent` catalogue entry in `kubernetes/apps/agents/palette-agent/`.
-- [x] Added `publish-apps` OCI publishing pipeline in `.github/workflows/flux-oci-publish.yml`.
 - [x] Wired `palette-agent` deployment into `kubernetes/fleet/k3s/apps/`.
-- [ ] Deploy and verify controller pod health and CRD registration on K3s cluster.
-- [ ] Verify agent pod initialization and smoke test task completion.
-- [ ] Configure OpenZiti / port-forward access for the KubeOpenCode web UI (port 2746).
+- [x] Rebased branch onto latest `origin/main` to leverage `kubeztl` Nix package and updated OpenZiti stack.
+- [x] Verified controller pod health (`kubeopencode-controller` & `kubeopencode-server` 1/1 Running) on K3s cluster.
+- [x] Verified agent pod initialization and smoke test task completion (`smoke-test-pod` Completed) in `kubeopencode-apps`.
+- [x] Configured OpenZiti zero-trust dark service `opencode.ziti` (intercepting ports 80 & 2746 -> server:2746) and verified live HTTP 200 web UI access.
 
 ---
 
