@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - flux-system
   - infra-addons
+  - apps
