@@ -1110,6 +1110,47 @@ For Phase 1, rather than distributing plaintext tokens or manual `kubectl` secre
    ```
 3. **Automated Reconciliation**: Flux reconciles the `palette-agent-instance` Kustomization, which triggers ESO to retrieve the token from 1Password and populate the Secret `github-token-creds` in `agentic-workflows`.
 
+---
+
+## 14. Architecture Alignment: 4-Tier Layout Implementation
+
+In accordance with Section 10.6, all shared application and platform definitions have been consolidated into `kubernetes/apps/`, completely decoupling cluster overlays in `kubernetes/fleet/` from base platform manifests.
+
+```
+kubernetes/
+├── apps/                                           # TIER 3: SHARED CATALOGUE & APPS
+│   ├── kustomization.yaml
+│   ├── kubeopencode/                               # Platform Controller (Shared App)
+│   │   ├── kustomization.yaml
+│   │   ├── namespace.yaml                          # kubeopencode-system
+│   │   ├── helm-repository.yaml                    # oci://ghcr.io/kubeopencode/helm-charts
+│   │   └── helm-release.yaml                       # Controller + Server
+│   │
+│   └── agents/                                     # Reusable Agent Catalogue
+│       └── palette-agent/
+│           ├── kustomization.yaml
+│           ├── namespace.yaml                      # agentic-workflows
+│           ├── rbac.yaml                           # Scoped agent RBAC (read-only crontasks)
+│           ├── agent-template.yaml                 # AgentTemplate CR
+│           └── crontask.yaml                       # CronTask CR
+│
+└── fleet/
+    └── k3s/
+        └── apps/                                   # TIER 4: CLUSTER OPT-IN & OVERLAYS
+            ├── 0-source.yaml                       # OCIRepository/apps source
+            ├── kustomization.yaml                  # Coordinates app opt-ins
+            ├── kubeopencode/                       # Opt-in to Platform Controller
+            │   ├── 0-controller.yaml               # Flux Kustomization -> sourceRef: apps, path: ./kubeopencode
+            │   └── 1-dev-agent.yaml                # Flux Kustomization -> local dev-agent workload
+            │
+            └── palette-agent/                      # Opt-in to Workload Agent
+                ├── 0-catalogue.yaml                # Flux Kustomization -> sourceRef: apps, path: ./agents/palette-agent
+                ├── 1-instance.yaml                 # Flux Kustomization -> cluster instance (dependsOn: catalogue)
+                ├── 1-instance/                     # Agent CR (standby: 15m)
+                └── external-secret-github.yaml     # Injects 1Password token into agentic-workflows
+```
+
+
 
 
 
