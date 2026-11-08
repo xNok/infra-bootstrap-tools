@@ -261,6 +261,10 @@ spec:
 - [x] Verified controller pod health (`kubeopencode-controller` & `kubeopencode-server` 1/1 Running) on K3s cluster.
 - [x] Verified agent pod initialization and smoke test task completion (`smoke-test-pod` Completed) in `kubeopencode-apps`.
 - [x] Configured OpenZiti zero-trust dark service `opencode.ziti` (intercepting ports 80 & 2746 -> server:2746) and verified live HTTP 200 web UI access.
+- [x] Provisioned `KUBEOPENCODE_OPENCODE_GO` in 1Password Connect vault `infra-bootstrap-tools`.
+- [x] Created `ExternalSecret/llm-token-creds` in `kubernetes/fleet/k3s/apps/palette-agent/1-instance/external-secret-llm.yaml`.
+- [x] Verified `palette-agent-server` pod transition to `2/2 Running` and `Agent/palette-agent` transition to `READY: true`.
+- [x] Verified live task execution and completion (`Task/qwe` -> `Completed` via `qwe-pod`).
 
 ---
 
@@ -1166,6 +1170,60 @@ To ensure `kubernetes/apps` can be consumed across any fleet cluster via Flux `O
 3. **Versioned Release Workflow (`.github/workflows/release.yml`)**:
    - Added `publish-kubernetes-apps` triggered on git tags matching `kubernetes-apps@*`.
    - Calls `./bin/ci/release-kubernetes.sh`, dynamically parsing the tag and publishing immutable release artifacts tagged with the SemVer version (e.g. `:0.1.0`) and `:latest`.
+
+---
+
+## 16. Resolving Agent Standby / Server Initialization and Task Execution
+
+### 16.1 Root Cause Analysis: Missing LLM Credential Contract
+During post-merge cluster verification, while `0-catalogue` and `1-instance` Kustomizations reconciled, the `palette-agent` remained in `Starting` phase (`READY: false`) and queued tasks (e.g. `task.kubeopencode.io/qwe`) were not picked up.
+
+Inspecting the cluster state revealed:
+1. `AgentTemplate/palette-agent-template` specifies two credential contracts under `spec.credentials`:
+   - `github-token-creds` (injected via ESO from `KUBEOPENCODE_GITHUB_PAT/password`)
+   - `llm-api-creds` (expected secret for LLM API keys)
+2. The agent pod `palette-agent-server-dbfd5f8f6-49j29` failed with `CreateContainerConfigError`:
+   ```text
+   Error: secret "llm-api-creds" not found
+   ```
+3. Controller loop logs indicated:
+   ```text
+   agent server not ready, remaining queued
+   ```
+   KubeOpenCode gates task dispatching on `agent.status.ready == true`, which requires the background server pod to be `2/2 Running` with passing HTTP readiness probes on `:4096/session/status`.
+
+### 16.2 Resolution via 1Password & External Secrets Operator
+1. **1Password Secret Provisioning**:
+   - Item `KUBEOPENCODE_OPENCODE_GO` was created in 1Password vault `infra-bootstrap-tools`.
+   - Contains OpenCode API Key (`oc_sk_...`) under the `password` field.
+2. **GitOps ExternalSecret Configuration (`external-secret-llm.yaml`)**:
+   ```yaml
+   apiVersion: external-secrets.io/v1
+   kind: ExternalSecret
+   metadata:
+     name: llm-token-creds
+     namespace: agentic-workflows
+   spec:
+     refreshInterval: 1h
+     secretStoreRef:
+       kind: ClusterSecretStore
+       name: onepassword
+     target:
+       name: llm-api-creds
+       creationPolicy: Owner
+     data:
+       - secretKey: OPENCODE_API_KEY
+         remoteRef:
+           key: KUBEOPENCODE_OPENCODE_GO/password
+       - secretKey: ANTHROPIC_API_KEY
+         remoteRef:
+           key: KUBEOPENCODE_OPENCODE_GO/password
+   ```
+3. **Execution & Verification**:
+   - Replaced failing pod; new pod `palette-agent-server` immediately reached `2/2 Running`.
+   - `Agent/palette-agent` transitioned to `READY: true`.
+   - `Task/qwe` automatically transitioned from `Queued` -> `Running` (`qwe-pod` executing database migrations and task steps) -> `Completed`.
+
 
 
 
