@@ -11,9 +11,10 @@ spec:
   templateRef:
     name: palette-agent-template
   profile: "Palette UX & Accessibility Agent for CNCF Landscape"
-  # Override default model with free OpenCode model
+  # Override default model with Google Gemini Flash-Lite model
   config:
-    model: opencode/big-pickle
+    model: google/gemini-flash-lite-latest
+
   # Auto-suspends after 15m idle to preserve K3s cluster RAM and CPU
   standby:
     idleTimeout: 15m

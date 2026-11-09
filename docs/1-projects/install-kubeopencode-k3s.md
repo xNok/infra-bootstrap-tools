@@ -1224,6 +1224,21 @@ Inspecting the cluster state revealed:
    - `Agent/palette-agent` transitioned to `READY: true`.
    - `Task/qwe` automatically transitioned from `Queued` -> `Running` (`qwe-pod` executing database migrations and task steps) -> `Completed`.
 
+### 16.3 BYO Google / Gemini Flash-Lite Model Configuration
+To ensure high availability and bypass third-party free quota rate limits, BYO Google integration was enabled using `KUBEOPENCODE_GOOGLE_API_KEY/password` in 1Password:
+1. **Credentials Mapping in `ExternalSecret/llm-token-creds`**:
+   - `GOOGLE_GENERATIVE_AI_API_KEY`: Required by OpenCode Google provider SDK.
+   - `GEMINI_API_KEY` / `GOOGLE_API_KEY`: Fallback keys.
+2. **Model Selection**:
+   - `google/gemini-flash-lite-latest`: Fast, reliable, low-cost reasoning model.
+3. **Live Verification**:
+   - Executed live `Task/test-gemini` pod, confirming immediate execution and completion:
+     ```text
+     > build · gemini-flash-lite-latest
+     Hello! I confirm I am running on Gemini Flash-Lite.
+     ```
+
+
 
 
 

@@ -42,7 +42,8 @@ spec:
         name: llm-api-creds
   # Default LLM Configuration
   config:
-    model: opencode/big-pickle
+    model: google/gemini-flash-lite-latest
     share: disabled
     autoupdate: false
+
 
