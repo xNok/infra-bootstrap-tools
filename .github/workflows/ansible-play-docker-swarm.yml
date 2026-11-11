@@ -6,7 +6,6 @@ on:
       - main
     types:
       - opened
-      - edited
       - ready_for_review
       - synchronize
     paths:
@@ -23,8 +22,8 @@ permissions:
 
 # Ensure only one deployment runs at a time
 concurrency:
-  group: ansible-deploy-${{ github.ref }}
-  cancel-in-progress: false
+  group: ansible-deploy-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
 
