@@ -185,7 +185,9 @@ Create a dedicated, fast workflow `.github/workflows/ci-policies.yml`:
   - `.github/workflows/release-changeset.yml` & `release-kubernetes.yml`: Added explicit permissions.
 
 ### Verification Results
-- **Conftest Policy Suite**: `176 tests, 176 passed, 0 warnings, 0 failures, 0 exceptions`.
-- **YAML Linter (`yamllint`)**: Passed with 0 errors across all workflow files.
+- **Rebase onto main**: Rebased cleanly onto `origin/main` (`b486360`), resolving conflicts across workflow timeouts, SHA action pins, permissions, and cluster deployment tracking.
+- **Conftest Policy Suite**: `187 tests, 187 passed, 0 warnings, 0 failures, 0 exceptions`.
+- **Pre-commit Suite**: 100% passed across all files (`yamllint`, `shellcheck`, `ansible-lint`, `terraform-docs`, `conftest`).
 - **Nix Shell Execution (`CI=true`)**: Evaluates instantly with 0 interactive hooks triggered.
+- **Pull Request**: [#251](https://github.com/xNok/infra-bootstrap-tools/pull/251) on branch `ci_runner_optimization_security`.
 
