@@ -1,6 +1,10 @@
 theme: e25dx
-baseURL: 'https://xnok.github.io/infra-bootstrap-tools/'
 enableGitInfo: true
+enableRobotsTXT: true
+
+baseURL: https://xnok.github.io/infra-bootstrap-tools
+disableKinds: [ taxonomy, term ]
+
 defaultContentLanguage: en
 
 languages:
@@ -13,10 +17,9 @@ languages:
     params:
       description: IaC configurations to boostrap and manage a small self-hosted project or homelab
 
-# To omit the Google Analytics script, put a ~ in place of the G-XXXXXXXXXX below.
 services:
   googleAnalytics:
-    ID: G-1368982DJ1
+    ID: G-1368982DJ1 # To omit, put a ~ here
 
 markup:
   highlight:
@@ -28,18 +31,16 @@ markup:
       attribute:
         block: true
         title: true
+  tableOfContents:
+    pre: <nav id="TableOfContents" aria-label="Table of Contents">
+    post: </nav>
 
 params:
-  title: Infra Bootstrap Tools
-  description: IaC configurations to boostrap and manage a small self-hosted project or homelab
-  images:
-  - infra-bootstrap-tools.webp
   project:
-    # To omit the startYear, put a ~ in its place.
-    startYear: 2022
+    startYear: 2022  # To omit, put a ~ here
     presentYear: 2025
-    github:
-      repo: xNok/infra-bootstrap-tools
+    repo:
+      main: xNok/infra-bootstrap-tools
     themeColor:
       light: '#ffffff'
       dark: '#101010'
@@ -48,11 +49,50 @@ params:
     name: xNok
     url: https://github.com/username/xNok
 
+  pagination:
+    size: 6
+
+  og_image: infra-bootstrap-tools.webp
+  enableOGXSEO: true # No automated OG image generation
+  enablePageFind: true # Run pagefind --site dir after build
+
+  services:
+    umami: ~ # To omit, put a ~ here & remove id, scriptPath lines
+#      id: xxx
+#      scriptPath: https://cloud.umami.is/script.js
+
   home:
     heading: Learn
     headingSegment2: Infrastructure-as-Code
     description: For Small self-hosted project or Homelab
     getStartedPath: /docs
 
-  social:
-    twitter: AlexCouedelo
+#  social:
+#    twitter: AlexCouedelo
+
+menus:
+  main:
+    - identifier: home
+      name: Home
+      pageRef: /
+      weight: 1
+      params:
+        icon: home
+    - identifier: docs
+      name: Documentation
+      pageRef: /docs
+      weight: 2
+      params:
+        icon: menu_book
+    - identifier: blog
+      name: Blog
+      pageRef: /blog
+      weight: 3
+      params:
+        icon: news
+#    - identifier: about
+#      name: About Me
+#      pageRef: /page/about
+#      weight: 4
+#      params:
+#        icon: account_circle

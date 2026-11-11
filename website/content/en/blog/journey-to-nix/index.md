@@ -10,8 +10,6 @@ tags:
   - Gitpod
 ---
 
-# The Holy Grail of Development Environments: My Journey to Nix
-
 I am always bouncing between different projects and environments, whether it is for side projects, exploring new tools, or working on an article. Overall, I quickly got fed up with having to set up my local machine to adapt to each and every project. Then I started to use cloud environments like Gitpod and GitHub Codespaces extensively, where the environment itself is ephemeral and reproducible.
 
 But that created another problem. While the cloud environment solves one aspect, it doesn't really solve the local and CI environment problem. Managing toolchains still required two to three different configuration paradigms.

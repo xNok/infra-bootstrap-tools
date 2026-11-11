@@ -1,0 +1,15 @@
+badge: Ansible · Terraform · Homelab
+
+svg: hero.svg
+
+title: For Small Self-hosted Projects <br/> or Homelabs
+
+description: Manage your home lab with Docker Swarm and Portainer
+
+btn_primary:
+  label: Get Started
+  url: /docs
+
+btn_secondary:
+  label: Contribute
+  url: https://github.com/xNok/infra-bootstrap-tools
