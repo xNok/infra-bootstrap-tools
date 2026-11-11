@@ -26,7 +26,7 @@ repos:
     hooks:
       - id: conftest
         name: Conftest Policies
-        entry: conftest test -p policies/ci
+        entry: conftest test -p policies/ci --all-namespaces
         language: system
         files: ^\.github/workflows/.*\.ya?ml$
         pass_filenames: true
