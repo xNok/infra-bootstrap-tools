@@ -4,9 +4,23 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '.github/workflows/**'
+      - 'policies/**'
+      - 'kubernetes/infra-addons/**'
+      - 'bin/ci/run-conftest.sh'
   push:
     branches:
       - main
+    paths:
+      - '.github/workflows/**'
+      - 'policies/**'
+      - 'kubernetes/infra-addons/**'
+      - 'bin/ci/run-conftest.sh'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   conftest:
