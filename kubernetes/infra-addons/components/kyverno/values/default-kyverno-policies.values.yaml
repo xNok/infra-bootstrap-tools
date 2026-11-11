@@ -1,0 +1,3 @@
+# Default component values for Kyverno Policies.
+# Clusters can override these values via ${CLUSTER_NAME}-kyverno-policies-values.
+validationFailureAction: Audit

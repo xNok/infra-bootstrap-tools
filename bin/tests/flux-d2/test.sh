@@ -296,6 +296,19 @@ verify_keycloak_stack() {
   success "ziti-ext-jwt-config job completed successfully."
 }
 
+verify_kyverno_stack() {
+  info "Waiting for kyverno HelmRelease to become ready..."
+  wait_ready "helmrelease/kyverno" "flux-system" "5m"
+
+  info "Waiting for kyverno-policies HelmRelease to become ready..."
+  wait_ready "helmrelease/kyverno-policies" "flux-system" "5m"
+
+  info "Verifying kyverno pods are healthy and running..."
+  kubectl wait --for=condition=ready pod --all -n kyverno --timeout=5m
+  kubectl get pods -n kyverno
+  success "Kyverno stack verified successfully."
+}
+
 # --- Main Routine ---
 
 main() {
@@ -305,6 +318,7 @@ main() {
   validate_kustomize
   bootstrap_flux
   verify_infra_addons
+  verify_kyverno_stack
   verify_openziti_stack
   verify_keycloak_stack
 

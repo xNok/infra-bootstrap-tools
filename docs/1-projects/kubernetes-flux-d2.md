@@ -77,6 +77,14 @@ kubernetes/
         controller.yaml
         ziti-host.yaml
         namespace.yaml
+      kyverno/                   # Kustomize Component (kind: Component)
+        kustomization.yaml       # configMapGenerator for default-kyverno-*-values
+        default-kyverno.values.yaml
+        default-kyverno-policies.values.yaml
+        helm-repo.yaml
+        kyverno.yaml
+        kyverno-policies.yaml
+        namespace.yaml
 ```
 
 ### Flux Kustomization dependency chain
