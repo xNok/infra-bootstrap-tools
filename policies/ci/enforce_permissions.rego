@@ -14,6 +14,14 @@ deny contains msg if {
 	msg := sprintf("Workflow does not declare top-level 'permissions', and job '%v' is missing explicit permissions. Follow least-privilege principles.", [job_id])
 }
 
+# Deny top-level write permissions: top-level should be read-only (e.g. contents: read) and jobs should raise permissions.
+deny contains msg if {
+	is_object(input.permissions)
+	some scope, perm in input.permissions
+	perm == "write"
+	msg := sprintf("Top-level permission '%v: write' violates least privilege. Top-level permissions must be restricted to read (e.g. 'contents: read'), and individual jobs should raise permissions only where needed.", [scope])
+}
+
 # Deny broad write-all permissions
 deny contains msg if {
 	input.permissions == "write-all"

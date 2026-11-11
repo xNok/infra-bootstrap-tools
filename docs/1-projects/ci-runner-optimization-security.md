@@ -169,23 +169,24 @@ Create a dedicated, fast workflow `.github/workflows/ci-policies.yml`:
 - **Trigger Hardening**: Removed `edited` event type triggers from `.github/workflows/website.yml` and `.github/workflows/ansible-play-docker-swarm.yml`. Fixed dead path `.github/workflows/ansible.yml`.
 - **Security Policy Suite (`policies/ci/`)**:
   - `inline_scripts.rego`: Modernized to Rego v1 to forbid multiline scripts in workflow YAML.
-  - `enforce_permissions.rego`: Enforces explicit top-level or job-level least-privilege permissions, denies `write-all`.
+  - `enforce_permissions.rego`: Enforces strict top-level read-only permissions (`contents: read`), denies top-level `write` permissions (requiring jobs to raise permissions only when needed), and denies `write-all`.
   - `enforce_concurrency.rego`: Enforces concurrency groups with `cancel-in-progress: true` (or dynamic PR condition).
   - `no_pr_publish.rego`: Forbids pushing/publishing artifacts to registries on `pull_request` events.
   - `no_script_injection.rego`: Detects untrusted GitHub context expression interpolation in shell commands.
   - `limit_retention.rego`: Enforces explicit `retention-days` on `actions/upload-artifact`.
 - **Automated Policy Enforcement**: Added `.github/workflows/ci-policies.yml` to automatically lint all workflows against the Rego policy suite.
 - **Workflow Remediations**:
+  - Standardized top-level `permissions: contents: read` across all workflows, elevating write permissions strictly at the job level where needed.
   - `.github/workflows/flux-oci-publish.yml`: Removed `pull_request` trigger to eliminate unreviewed GHCR `:latest` pushes. Added concurrency and GitHub `environment:` tracking (`cluster-k3s`, `cluster-kind`, `cluster-infra-addons`) for first-class deployment visibility and protection rules.
   - `.github/workflows/flux-test.yml`: Added concurrency with `cancel-in-progress: true`, explicit permissions.
-  - `.github/workflows/bats.yml`: Added concurrency with `cancel-in-progress: true`.
+  - `.github/workflows/bats.yml`: Added concurrency with `cancel-in-progress: true`, explicit permissions.
   - `.github/workflows/docker-caddy-publish.yml` & `docker-openziti-bootstrap-publish.yml`: Added `cancel-in-progress` and permissions.
   - `.github/workflows/website.yml`: Isolated PR concurrency from pages deploy queue, restricted permissions, added conditional upload and artifact retention.
   - `.github/workflows/ansible-play-docker-swarm.yml`: Decoupled PR lint validation from live deployment to `docker_swarm`, eliminated redundant standalone `lock` job.
   - `.github/workflows/release-changeset.yml` & `release-kubernetes.yml`: Added explicit permissions.
 
 ### Verification Results
-- **Conftest Policy Suite**: `160 tests, 160 passed, 0 warnings, 0 failures, 0 exceptions`.
+- **Conftest Policy Suite**: `176 tests, 176 passed, 0 warnings, 0 failures, 0 exceptions`.
 - **YAML Linter (`yamllint`)**: Passed with 0 errors across all workflow files.
 - **Nix Shell Execution (`CI=true`)**: Evaluates instantly with 0 interactive hooks triggered.
 
