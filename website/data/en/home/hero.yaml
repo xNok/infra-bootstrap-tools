@@ -8,7 +8,7 @@ description: Manage your home lab with Docker Swarm and Portainer
 
 btn_primary:
   label: Get Started
-  url: /docs
+  url: /infra-bootstrap-tools/docs
 
 btn_secondary:
   label: Contribute

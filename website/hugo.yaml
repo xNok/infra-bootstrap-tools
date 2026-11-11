@@ -40,14 +40,14 @@ params:
     startYear: 2022  # To omit, put a ~ here
     presentYear: 2025
     repo:
-      main: xNok/infra-bootstrap-tools
+      main: https://github.com/xNok/infra-bootstrap-tools
     themeColor:
       light: '#ffffff'
       dark: '#101010'
 
   author:
     name: xNok
-    url: https://github.com/username/xNok
+    url: https://github.com/xNok
 
   pagination:
     size: 6
