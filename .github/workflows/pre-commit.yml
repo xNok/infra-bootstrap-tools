@@ -1,16 +1,11 @@
-name: CI Policies & Security Checks
+name: Pre-commit Checks
 
 on:
+  pull_request:
   push:
     branches:
       - main
-    paths:
-      - '.github/workflows/**'
-      - 'policies/ci/**'
-  pull_request:
-    paths:
-      - '.github/workflows/**'
-      - 'policies/ci/**'
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -20,12 +15,14 @@ permissions:
   contents: read
 
 jobs:
-  policy-check:
-    name: OPA / Conftest Policy Verification
+  pre-commit:
+    name: Run Pre-commit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
-        shell: nix develop .#default --command bash -eo pipefail {0}
+        shell: nix develop .#full --command bash -eo pipefail {0}
 
     steps:
       - name: Checkout code
@@ -37,5 +34,5 @@ jobs:
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@v8
 
-      - name: Run Conftest Policy Checks
-        run: conftest test .github/workflows/*.yml -p policies/ci
+      - name: Run pre-commit hooks
+        run: pre-commit run --all-files

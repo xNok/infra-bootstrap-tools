@@ -149,9 +149,11 @@ run_stack() {
     return 1
   fi
   local components=()
+  # shellcheck disable=SC2034
   local use_local=0
   for arg in "$@"; do
     if [[ "$arg" == "local" ]]; then
+      # shellcheck disable=SC2034
       use_local=1
     else
       components+=("$arg")
@@ -180,6 +182,7 @@ run_stack() {
   echo "Running stack: $stack_name"
   echo "Using files: ${files[*]}"
   # Build docker compose command with multiple -f flags
+  # shellcheck disable=SC2046
   docker compose $(printf -- '-f %q ' "${files[@]}") up
 }
 

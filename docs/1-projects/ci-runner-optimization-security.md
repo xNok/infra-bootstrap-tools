@@ -173,8 +173,7 @@ Create a dedicated, fast workflow `.github/workflows/ci-policies.yml`:
   - `enforce_concurrency.rego`: Enforces concurrency groups with `cancel-in-progress: true` (or dynamic PR condition).
   - `no_pr_publish.rego`: Forbids pushing/publishing artifacts to registries on `pull_request` events.
   - `no_script_injection.rego`: Detects untrusted GitHub context expression interpolation in shell commands.
-  - `limit_retention.rego`: Enforces explicit `retention-days` on `actions/upload-artifact`.
-- **Automated Policy Enforcement**: Added `.github/workflows/ci-policies.yml` to automatically lint all workflows against the Rego policy suite.
+- **Automated Policy & Quality Enforcement**: Integrated `conftest` directly as a local hook in `.pre-commit-config.yaml` and created `.github/workflows/pre-commit.yml` to run the unified pre-commit suite (yamllint, shellcheck, ansible-lint, terraform-docs, conftest) in CI, eliminating fragmented one-off workflow files.
 - **Workflow Remediations**:
   - Standardized top-level `permissions: contents: read` across all workflows, elevating write permissions strictly at the job level where needed.
   - `.github/workflows/flux-oci-publish.yml`: Removed `pull_request` trigger to eliminate unreviewed GHCR `:latest` pushes. Added concurrency and GitHub `environment:` tracking (`cluster-k3s`, `cluster-kind`, `cluster-infra-addons`) for first-class deployment visibility and protection rules.

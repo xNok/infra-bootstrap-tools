@@ -22,3 +22,11 @@ repos:
     rev: v1.86.0
     hooks:
       - id: terraform_docs
+  - repo: local
+    hooks:
+      - id: conftest
+        name: Conftest Policies
+        entry: conftest test -p policies/ci
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
+        pass_filenames: true
