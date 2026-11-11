@@ -176,7 +176,7 @@ Create a dedicated, fast workflow `.github/workflows/ci-policies.yml`:
   - `limit_retention.rego`: Enforces explicit `retention-days` on `actions/upload-artifact`.
 - **Automated Policy Enforcement**: Added `.github/workflows/ci-policies.yml` to automatically lint all workflows against the Rego policy suite.
 - **Workflow Remediations**:
-  - `.github/workflows/flux-oci-publish.yml`: Removed `pull_request` trigger to eliminate unreviewed GHCR `:latest` pushes. Added concurrency.
+  - `.github/workflows/flux-oci-publish.yml`: Removed `pull_request` trigger to eliminate unreviewed GHCR `:latest` pushes. Added concurrency and GitHub `environment:` tracking (`cluster-k3s`, `cluster-kind`, `cluster-infra-addons`) for first-class deployment visibility and protection rules.
   - `.github/workflows/flux-test.yml`: Added concurrency with `cancel-in-progress: true`, explicit permissions.
   - `.github/workflows/bats.yml`: Added concurrency with `cancel-in-progress: true`.
   - `.github/workflows/docker-caddy-publish.yml` & `docker-openziti-bootstrap-publish.yml`: Added `cancel-in-progress` and permissions.
