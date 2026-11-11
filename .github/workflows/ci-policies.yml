@@ -1,0 +1,41 @@
+name: CI Policies & Security Checks
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/**'
+      - 'policies/ci/**'
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'policies/ci/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  policy-check:
+    name: OPA / Conftest Policy Verification
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: nix develop .#default --command bash -eo pipefail {0}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v14
+
+      - name: Cache Nix store
+        uses: DeterminateSystems/magic-nix-cache-action@v8
+
+      - name: Run Conftest Policy Checks
+        run: conftest test .github/workflows/*.yml -p policies/ci
