@@ -134,6 +134,8 @@ For contributors who prefer an environment manifest, we also provide a declarati
 
 No installation guides, no conflicting system libraries—just bit-for-bit reproducibility everywhere.
 
+> If setup requires a multi-page README, your environment is already broken. Hermetic toolchains eliminate "works on my machine" before it even starts.
+
 ---
 
 ## 4. Layered Architecture & Declarative Idempotency
@@ -174,6 +176,8 @@ flowchart TD
 - **Layer 3: Workload Deployment (Docker Swarm / Kubernetes)**: Pure declarative stack and fleet manifests managed via GitOps. Application updates never touch host packages or OS configurations.
 
 Every layer operates with strict boundaries and declarative idempotency. Backed by strict linting (`.ansible-lint`, `.yamllint.yaml`, `.terraform-version`), if you rerun our main playbooks against an already configured cluster, every single task reports `ok: 0 changed: 0`.
+
+> Resist the temptation of the "God Playbook". Strict separation of concerns and true idempotency are what keep complex infrastructure predictable.
 
 ---
 
@@ -241,6 +245,8 @@ Our [Central Publish Workflow (`.github/workflows/release.yml`)](https://github.
 
 Consumers get the best of both worlds: you can consume an individual leaf component at its own granular cadence, or adopt a parent BOM tag knowing every piece in that release was tested together.
 
+> Commit messages are written for reviewers to explain what was built; release notes are written for operators to explain what changed. Releases should always be intentional.
+
 ---
 
 ## 6. Secret Hygiene with 1Password & direnv
@@ -293,6 +299,8 @@ When an API token or database password changes, the role:
 
 ### 5. Automated Pre-Commit Guardrails
 As a final safety net, our `.pre-commit-config.yaml` runs `detect-private-key` before any git commit can be finalized. If an engineer accidentally stages a private key or certificate, the commit is blocked before it ever touches Git history.
+
+> One vault per project, zero secrets on disk. If a credential ever lives in plaintext on your filesystem, it's only a matter of time before it leaks.
 
 ---
 

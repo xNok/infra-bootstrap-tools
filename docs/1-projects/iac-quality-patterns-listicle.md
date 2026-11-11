@@ -68,5 +68,6 @@ Copilot commented on PR #233 pointing out 3 critical inaccuracies in the origina
 - [x] Integrated user's revisions for Introduction, Section 1 (Conftest/OPA/ADR), Section 2 (inline scripts/build tools/BATS/DX), Section 3 (quest for reproducible environments/Docker/Nix), Section 5 (intentional releases / commit messages vs user release notes), and Section 6 (one vault per project / 1Password across local, remote, cluster).
 - [x] Dropped deprecated `ibt` reference.
 - [x] Dropped weak Flux OCI section; promoted Layered Architecture to Section 4 with styled Mermaid diagram.
+- [x] Added concluding takeaway lesson/quote blockquotes to all 6 patterns for structural consistency.
 - [x] Verified Hugo site build with `nix develop .#docs` (61 pages built with 0 errors).
 - [x] Ran Conftest (16/16 policy checks passed) and BATS (30/30 unit tests passed).
