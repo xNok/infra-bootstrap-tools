@@ -38,7 +38,7 @@ markup:
 params:
   project:
     startYear: 2022  # To omit, put a ~ here
-    presentYear: 2025
+    presentYear: 2026
     repo:
       main: https://github.com/xNok/infra-bootstrap-tools
     themeColor:
