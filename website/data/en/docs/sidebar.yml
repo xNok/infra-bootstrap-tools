@@ -15,6 +15,7 @@
     - title: Portainer
 
 - title: Tools Showcase
+  groupSection: tools
   pages:
     - title: Pre-commit
     - title: 1Password CLI
