@@ -117,7 +117,7 @@ labels:
 ## Resources
 
 ### Internal Documentation
-- [Caddy Web Server Documentation](../../website/content/en/docs/a1.caddy.md)
+- [Caddy Web Server Documentation](../../website/content/en/docs/c1.caddy.md)
 - [Ansible Role: docker_swarm_app_caddy](../../ansible/roles/docker_swarm_app_caddy/README.md)
 - [Blog: Automating SSL with Caddy](../../website/content/en/blog/automating-ssl-caddy.md)
 
