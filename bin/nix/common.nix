@@ -73,38 +73,41 @@ let
       # Automatically install the correct version of Terraform when invoked
       export TENV_AUTO_INSTALL=true
 
-      # Pre-install the pinned Terraform version so tenv shims resolve immediately (e.g. for pre-commit hooks)
-      tenv tf install
+      # In CI environments, skip interactive setup hooks to prevent redundant downloads and save runner minutes.
+      if [ -z "${CI:-}" ]; then
+        # Pre-install the pinned Terraform version so tenv shims resolve immediately (e.g. for pre-commit hooks)
+        tenv tf install
 
-      ${lib.optionalString withVenv ''
-      if [ ! -d ".venv" ]; then
-        echo "Creating Python virtual environment..."
-        python -m venv .venv
+        ${lib.optionalString withVenv ''
+        if [ ! -d ".venv" ]; then
+          echo "Creating Python virtual environment..."
+          python -m venv .venv
+        fi
+
+        echo "Activating Python virtual environment..."
+        source .venv/bin/activate
+        ''}
+
+        ${lib.optionalString withRootRequirements ''
+        echo "Installing Python dependencies from requirements.txt..."
+        pip install -r requirements.txt
+        ''}
+
+        ${lib.optionalString withAgenticRequirements ''
+        echo "Installing Python dependencies from agentic/requirements.txt..."
+        pip install -r agentic/requirements.txt
+        ''}
+
+        ${lib.optionalString withAnsibleGalaxy ''
+        echo "Installing Ansible Galaxy roles and collections..."
+        ansible-galaxy install -r requirements.yml
+        ''}
+
+        ${lib.optionalString withPreCommit ''
+        echo "Installing pre-commit hooks..."
+        pre-commit install --install-hooks
+        ''}
       fi
-
-      echo "Activating Python virtual environment..."
-      source .venv/bin/activate
-      ''}
-
-      ${lib.optionalString withRootRequirements ''
-      echo "Installing Python dependencies from requirements.txt..."
-      pip install -r requirements.txt
-      ''}
-
-      ${lib.optionalString withAgenticRequirements ''
-      echo "Installing Python dependencies from agentic/requirements.txt..."
-      pip install -r agentic/requirements.txt
-      ''}
-
-      ${lib.optionalString withAnsibleGalaxy ''
-      echo "Installing Ansible Galaxy roles and collections..."
-      ansible-galaxy install -r requirements.yml
-      ''}
-
-      ${lib.optionalString withPreCommit ''
-      echo "Installing pre-commit hooks..."
-      pre-commit install --install-hooks
-      ''}
 
       echo "${name} shell ready."
     '';

@@ -33,3 +33,12 @@ configMapGenerator:
     namespace: flux-system
     files:
       - values.yaml=values/external-dns.values.yaml
+  - name: k3s-kyverno-values
+    namespace: flux-system
+    files:
+      - values.yaml=values/kyverno.values.yaml
+  - name: k3s-kyverno-policies-values
+    namespace: flux-system
+    files:
+      - values.yaml=values/kyverno-policies.values.yaml
+

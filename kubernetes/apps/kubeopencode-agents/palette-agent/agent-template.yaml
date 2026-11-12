@@ -42,6 +42,8 @@ spec:
         name: llm-api-creds
   # Default LLM Configuration
   config:
-    model: anthropic/claude-3-7-sonnet
+    model: google/gemini-flash-lite-latest
     share: disabled
     autoupdate: false
+
+

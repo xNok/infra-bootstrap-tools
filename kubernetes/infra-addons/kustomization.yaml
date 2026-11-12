@@ -9,3 +9,4 @@ components:
   - components/external-dns
   - components/keycloak
   - components/openziti
+  - components/kyverno

@@ -1,0 +1,10 @@
+# Default component values for Kyverno.
+# Clusters can override these values via ${CLUSTER_NAME}-kyverno-values.
+admissionController:
+  replicas: 1
+backgroundController:
+  replicas: 1
+cleanupController:
+  replicas: 1
+reportsController:
+  replicas: 1

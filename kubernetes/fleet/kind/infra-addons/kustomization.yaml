@@ -39,3 +39,12 @@ configMapGenerator:
     namespace: keycloak
     files:
       - ziti-realm.json=data/ziti-realm.json
+  - name: kind-kyverno-values
+    namespace: flux-system
+    files:
+      - values.yaml=values/kyverno.values.yaml
+  - name: kind-kyverno-policies-values
+    namespace: flux-system
+    files:
+      - values.yaml=values/kyverno-policies.values.yaml
+

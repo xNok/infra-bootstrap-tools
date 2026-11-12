@@ -18,12 +18,14 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   publish-oci:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
     defaults:
       run:
         shell: nix develop .#flux --command bash -eo pipefail {0}

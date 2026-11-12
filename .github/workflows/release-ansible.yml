@@ -36,6 +36,9 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     name: Build and Publish Ansible Collection
