@@ -4,5 +4,6 @@ kind: Kustomization
 resources:
   - kubeopencode
   - kubeopencode-agents/palette-agent
+  - tenants/policies
   - tenants/cncf-landscape-a-to-z
   - tenants/infra-bootstrap-tools
