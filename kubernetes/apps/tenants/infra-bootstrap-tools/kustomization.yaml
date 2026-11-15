@@ -1,9 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
+  - base
   - namespace.yaml
-  - tenant-rbac.yaml
-  - controller-rbac.yaml
-  - network-policy.yaml
   - github-app-token.yaml
-  - flux-source.yaml
+  - controller-rbac.yaml
+  - applier-rbac.yaml
+  - network-policy.yaml
+patches:
+  - path: patch-agent-template.yaml
