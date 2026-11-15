@@ -1,0 +1,41 @@
+apiVersion: kubeopencode.io/v1alpha1
+kind: AgentTemplate
+metadata:
+  name: infra-bootstrap-base
+  namespace: tenant-infra-bootstrap-tools
+  labels:
+    app.kubernetes.io/part-of: infra-bootstrap-tools
+    app.kubernetes.io/component: agent-template
+spec:
+  # OpenCode container images
+  agentImage: ghcr.io/kubeopencode/kubeopencode-agent-opencode:latest
+  executorImage: ghcr.io/kubeopencode/kubeopencode-agent-devbox:latest
+  attachImage: ghcr.io/kubeopencode/kubeopencode-agent-attach:latest
+
+  workspaceDir: /workspace
+  serviceAccountName: kubeopencode-agent
+
+  # Git context with auto-sync: mounts repository at /workspace
+  contexts:
+    - name: repository
+      type: Git
+      git:
+        repository: https://github.com/xNok/infra-bootstrap-tools.git
+        ref: main
+        sync:
+          enabled: true
+          interval: 5m
+          policy: HotReload
+      mountPath: .
+
+  # OpenCode LLM configuration
+  config:
+    $schema: https://opencode.ai/config.json
+    model: google/gemini-flash-lite-latest
+    small_model: google/gemini-flash-lite-latest
+
+  # Concurrency limits and rate limiting
+  maxConcurrentTasks: 3
+  quota:
+    maxTaskStarts: 20
+    windowSeconds: 3600

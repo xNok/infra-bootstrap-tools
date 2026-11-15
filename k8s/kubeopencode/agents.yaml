@@ -1,0 +1,14 @@
+apiVersion: kubeopencode.io/v1alpha1
+kind: Agent
+metadata:
+  name: infra-bootstrap-agent
+  namespace: tenant-infra-bootstrap-tools
+  labels:
+    app.kubernetes.io/part-of: infra-bootstrap-tools
+    app.kubernetes.io/component: agent
+spec:
+  templateRef:
+    name: infra-bootstrap-base
+  profile: "Infra Bootstrap Tools Autonomous Documentation & GitOps Maintenance Agent"
+  standby:
+    idleTimeout: "30m"

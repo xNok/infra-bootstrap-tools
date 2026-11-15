@@ -1,0 +1,23 @@
+apiVersion: kubeopencode.io/v1alpha1
+kind: CronTask
+metadata:
+  name: infra-docs-audit
+  namespace: tenant-infra-bootstrap-tools
+  labels:
+    app.kubernetes.io/part-of: infra-bootstrap-tools
+    app.kubernetes.io/component: crontask
+spec:
+  # Runs weekly on Mondays at 09:00 UTC
+  schedule: "0 9 * * 1"
+  concurrencyPolicy: Forbid
+  maxRetainedTasks: 5
+  taskTemplate:
+    spec:
+      agentRef:
+        name: infra-bootstrap-agent
+      description: |
+        Conduct an automated repository consistency audit for infra-bootstrap-tools:
+        1. Check docs/1-projects for active projects against staging articles.
+        2. Validate that Nix flake shells and Kubernetes manifests are consistent.
+        3. Audit website/docs links and ensure changesets are documented.
+        4. Propose fixes or updates via branch and pull request if discrepancies are detected.
