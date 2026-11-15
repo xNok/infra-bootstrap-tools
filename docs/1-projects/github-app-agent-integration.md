@@ -277,7 +277,7 @@ Locks down the tenant's agent pods:
   kind: Kustomization
   namespace: tenant-cncf-landscape
   resources:
-    - https://github.com/mekitmedia/cncf-landscape-a-to-z//k8s/kubeopencode?ref=main
+    - https://github.com/mekitmedia/cncf-landscape-a-to-z//.kubeopencode?ref=main
   ```
 - `spec.patches` in `kustomization.yaml` overlays `credentials`, security contexts, and bot git identity without touching the upstream repository.
 
