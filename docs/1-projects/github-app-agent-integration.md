@@ -157,6 +157,7 @@ spec:
   interval: 10m
   path: ./tenants/infra-bootstrap-tools/1-workload
   prune: true
+  targetNamespace: tenant-infra-bootstrap-tools
   serviceAccountName: tenant-infra-bootstrap-tools-applier
   sourceRef:
     kind: OCIRepository
@@ -166,9 +167,10 @@ spec:
 ```
 
 ### Guarantees:
-1. **Determinism**: The `tenant-infra-bootstrap-enrollment` stage verifies that the `Namespace`, `NetworkPolicy`, `ExternalSecret` (`github-creds`), and applier `ServiceAccount` exist before any agent template is processed.
-2. **Hard Isolation**: The workload reconciliation is executed by `tenant-infra-bootstrap-tools-applier`. Even if an upstream contributor submits a malicious PR adding a cryptominer `Deployment` into `.kubeopencode/`, the apply step fails with `403 Forbidden`.
-3. **Consistency**: Both `cncf-landscape-a-to-z` and `infra-bootstrap-tools` reference their `.kubeopencode` via `https://github.com/<owner>/<repo>//.kubeopencode?ref=main`, establishing a uniform standard for all future repositories onboarded to the platform.
+1. **Forced Namespace via `spec.targetNamespace`**: The Flux `Kustomization` forces the namespace onto all reconciled resources. Regardless of whether an upstream contributor in `.kubeopencode/` omits `namespace` or hardcodes `namespace: kubeopencode` or `default`, Flux's `targetNamespace` overrides and guarantees that all namespaced resources are deployed strictly into `tenant-infra-bootstrap-tools`.
+2. **Determinism**: The `tenant-infra-bootstrap-enrollment` stage verifies that the `Namespace`, `NetworkPolicy`, `ExternalSecret` (`github-creds`), and applier `ServiceAccount` exist before any agent template is processed.
+3. **Hard Isolation**: The workload reconciliation is executed by `tenant-infra-bootstrap-tools-applier`. Even if an upstream contributor submits a malicious PR adding a cryptominer `Deployment` into `.kubeopencode/`, the apply step fails with `403 Forbidden`.
+4. **Consistency**: Both `cncf-landscape-a-to-z` and `infra-bootstrap-tools` reference their `.kubeopencode` via `https://github.com/<owner>/<repo>//.kubeopencode?ref=main`, establishing a uniform standard for all future repositories onboarded to the platform.
 
 ---
 
@@ -308,23 +310,30 @@ spec:
 
 ---
 
-## 9. Defense-in-Depth: Kyverno Admission Control
+## 9. Defense-in-Depth: Modern CEL Admission Control (Replacing Deprecated `ClusterPolicy`)
 
-RBAC operates at the API boundary, but Kyverno admission control provides a kernel-level policy engine that validates invariants regardless of RBAC permissions.
+RBAC operates at the Kubernetes API authorization boundary, but admission control provides an in-tree policy engine that validates invariants regardless of RBAC permissions.
 
-We introduce [`tenant-workload-isolation`](file:///kubernetes/apps/tenants/policies/tenant-workload-isolation.yaml) with two critical enforcement rules:
+> [!NOTE]
+> **Deprecation of `ClusterPolicy`**: Legacy `ClusterPolicy` and `Policy` custom resources (`kyverno.io/v1`) are officially deprecated in modern Kyverno in favor of native Common Expression Language (CEL) policy types under **`policies.kyverno.io/v1`** (`ValidatingPolicy`, `MutatingPolicy`, `GeneratingPolicy`). This aligns directly with Kubernetes' native `ValidatingAdmissionPolicy` architecture while retaining Kyverno's policy reporting and exception framework.
 
-### Rule 1: `disallow-unauthorized-workloads`
-- **Target**: Namespaces matching `tenant-*`.
-- **Blocked Kinds**: `Deployment`, `StatefulSet`, `DaemonSet`, `ReplicaSet`.
-- **Action**: `Enforce` (Hard Rejection).
+We introduce two CEL-based [`ValidatingPolicy`](file:///kubernetes/apps/tenants/policies/tenant-workload-isolation.yaml) resources under `policies.kyverno.io/v1`:
+
+### Policy 1: `tenant-workload-isolation`
+- **Kind**: `ValidatingPolicy` (`policies.kyverno.io/v1`)
+- **Blocked Kinds**: `Deployment`, `StatefulSet`, `DaemonSet`, `ReplicaSet` (`apps/v1`).
+- **CEL Rule**: `expression: "!request.namespace.startsWith('tenant-')"`
+- **Action**: `Deny` (Hard Rejection).
 - **Rationale**: Tenants must NEVER run arbitrary long-running container daemons, cryptominers, or unmanaged web servers. Only the `kubeopencode-controller` is permitted to spawn ephemeral task execution pods.
 
-### Rule 2: `require-tenant-applier-service-account`
-- **Target**: `Kustomization` resources in `flux-system` with `targetNamespace: tenant-*`.
-- **Validation**: Enforces that `spec.serviceAccountName` matches `tenant-*-applier`.
-- **Action**: `Enforce`.
-- **Rationale**: Prevents accidental platform reconciliation where a cluster-admin Flux runner applies tenant manifests without dropping privileges.
+### Policy 2: `require-tenant-applier-service-account`
+- **Kind**: `ValidatingPolicy` (`policies.kyverno.io/v1`)
+- **Target**: `Kustomization` resources (`kustomize.toolkit.fluxcd.io/v1`).
+- **CEL Rule 1 (Forced Namespace)**: `expression: "!has(object.spec.path) || !object.spec.path.contains('tenants/') || (has(object.spec.targetNamespace) && object.spec.targetNamespace.startsWith('tenant-'))"`
+  - Enforces that any Flux Kustomization deploying tenant workloads MUST force the namespace via `spec.targetNamespace`.
+- **CEL Rule 2 (Restricted Applier)**: `expression: "!has(object.spec.targetNamespace) || !object.spec.targetNamespace.startsWith('tenant-') || !object.spec.path.contains('1-workload') || (has(object.spec.serviceAccountName) && object.spec.serviceAccountName.startsWith('tenant-') && object.spec.serviceAccountName.endsWith('-applier'))"`
+  - Enforces that tenant workload Kustomizations drop cluster-admin privileges and impersonate the restricted `tenant-*-applier`.
+- **Action**: `Deny`.
 
 ---
 
