@@ -1,0 +1,208 @@
+# Flux Operator ResourceSet Factory & ResourceSetInputProvider
+# Enables dynamic enrollment of repositories running KubeOpenCode agents
+# with automated tenant envelope generation and least-privilege applier impersonation.
+# Ref: https://fluxoperator.dev/docs/crd/resourceset/
+# Ref: https://fluxoperator.dev/docs/crd/resourcesetinputprovider/
+---
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSetInputProvider
+metadata:
+  name: enrolled-tenant-repos
+  namespace: flux-system
+  annotations:
+    fluxcd.controlplane.io/reconcile: "enabled"
+    fluxcd.controlplane.io/reconcileEvery: "5m"
+spec:
+  type: ExternalService
+  url: https://tenant-registry.internal.corp/api/v1/kubeopencode-tenants
+  secretRef:
+    name: tenant-registry-token
+---
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  name: kubeopencode-tenant-factory
+  namespace: flux-system
+spec:
+  inputStrategy:
+    name: Flatten
+  # Core dogfooding tenants defined statically
+  inputs:
+    - name: cncf-landscape-a-to-z
+      repo: https://github.com/mekitmedia/cncf-landscape-a-to-z.git
+      branch: main
+      appId: "123456"
+      installId: "7891011"
+    - name: infra-bootstrap-tools
+      repo: https://github.com/xNok/infra-bootstrap-tools.git
+      branch: main
+      appId: "123456"
+      installId: "7891012"
+  # Dynamic tenants discovered from external registry
+  inputsFrom:
+    - apiVersion: fluxcd.controlplane.io/v1
+      kind: ResourceSetInputProvider
+      name: enrolled-tenant-repos
+  resources:
+    # 1. Tenant Namespace with Restricted Pod Security Standard
+    - apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: tenant-<< inputs.name >>
+        labels:
+          pod-security.kubernetes.io/enforce: restricted
+          pod-security.kubernetes.io/audit: restricted
+          pod-security.kubernetes.io/warn: restricted
+          app.kubernetes.io/part-of: << inputs.name >>
+
+    # 2. Impersonated ServiceAccount in flux-system
+    - apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: tenant-<< inputs.name >>-applier
+        namespace: flux-system
+
+    # 3. Restricted Workload Role (kubeopencode.io only)
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: tenant-<< inputs.name >>-applier-role
+        namespace: tenant-<< inputs.name >>
+      rules:
+        - apiGroups: ["kubeopencode.io"]
+          resources: ["agents", "agents/status", "agents/finalizers", "agenttemplates", "crontasks", "tasks", "tasks/status", "tasks/finalizers"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources: ["configmaps"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+    # 4. Applier RoleBinding
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: tenant-<< inputs.name >>-applier-binding
+        namespace: tenant-<< inputs.name >>
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: Role
+        name: tenant-<< inputs.name >>-applier-role
+      subjects:
+        - kind: ServiceAccount
+          name: tenant-<< inputs.name >>-applier
+          namespace: flux-system
+
+    # 5. Controller RBAC RoleBinding
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: kubeopencode-controller-<< inputs.name >>-binding
+        namespace: tenant-<< inputs.name >>
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: Role
+        name: kubeopencode-controller-tenant-role
+      subjects:
+        - kind: ServiceAccount
+          name: kubeopencode-controller
+          namespace: kubeopencode-system
+
+    # 6. ExternalSecret & GithubAccessToken Generator
+    - apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: github-creds
+        namespace: tenant-<< inputs.name >>
+      spec:
+        refreshInterval: 50m
+        target:
+          name: github-creds
+          creationPolicy: Owner
+          template:
+            engineVersion: v2
+            data:
+              token: "{{ .token }}"
+        dataFrom:
+          - sourceRef:
+              generatorRef:
+                apiVersion: generators.external-secrets.io/v1alpha1
+                kind: GithubAccessToken
+                name: github-app-token-generator
+    - apiVersion: generators.external-secrets.io/v1alpha1
+      kind: GithubAccessToken
+      metadata:
+        name: github-app-token-generator
+        namespace: tenant-<< inputs.name >>
+      spec:
+        appID: << inputs.appId | quote >>
+        installID: << inputs.installId | quote >>
+        url: https://api.github.com
+        auth:
+          privateKey:
+            secretRef:
+              name: github-app-private-key
+              key: private-key.pem
+
+    # 7. Egress NetworkPolicy
+    - apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: isolate-tenant-egress
+        namespace: tenant-<< inputs.name >>
+      spec:
+        podSelector: {}
+        policyTypes: [Ingress, Egress]
+        ingress:
+          - from:
+              - podSelector: {}
+        egress:
+          - to:
+              - namespaceSelector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: kube-system
+                podSelector:
+                  matchLabels:
+                    k8s-app: kube-dns
+            ports:
+              - protocol: UDP
+                port: 53
+              - protocol: TCP
+                port: 53
+          - to:
+              - ipBlock:
+                  cidr: 0.0.0.0/0
+                  except:
+                    - 10.0.0.0/8
+                    - 172.16.0.0/12
+                    - 192.168.0.0/16
+                    - 169.254.169.254/32
+            ports:
+              - protocol: TCP
+                port: 443
+
+    # 8. Source: GitRepository for the tenant
+    - apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      metadata:
+        name: tenant-<< inputs.name >>
+        namespace: flux-system
+      spec:
+        interval: 10m
+        url: << inputs.repo >>
+        ref:
+          branch: << inputs.branch | default "main" >>
+
+    # 9. Child Flux Kustomization (Impersonating Tenant Applier)
+    - apiVersion: kustomize.toolkit.fluxcd.io/v1
+      kind: Kustomization
+      metadata:
+        name: tenant-<< inputs.name >>-workload
+        namespace: flux-system
+      spec:
+        interval: 10m
+        path: "./.kubeopencode"
+        prune: true
+        targetNamespace: tenant-<< inputs.name >>
+        serviceAccountName: tenant-<< inputs.name >>-applier
+        sourceRef:
+          kind: GitRepository
+          name: tenant-<< inputs.name >>
