@@ -683,3 +683,33 @@ spec:
 ```
 The key-value pairs from `config.yaml` are exported directly into `ExternalArtifact.status.exportedInputs`. Downstream controllers, specifically the **Flux Operator `ResourceSet`**, can bind to these exported inputs to dynamically provision namespace envelopes, external secrets, and applier RBAC without any static lists committed to platform Git!
 
+---
+
+## 10. Architectural Retrospective & Decision Check Matrix
+
+### A. What Went Wrong: Retrospective on Flawed Directions
+
+| Flawed Direction | Fatal Symptom / Failure Mode | Root Cause & Resolution |
+| :--- | :--- | :--- |
+| **1. Single Lump Overlay** (Merging `0-enrollment` and `1-workload`) | Privilege escalation (applied as `cluster-admin`). Sandbox git clone failures (`evalsymlink /tmp/kustomize` error). | Conflated platform envelope with developer workload in one Kustomize tree. Resolved by strict Two-Tier separation; `1-workload` applied exclusively by Flux SA impersonation. |
+| **2. Deprecated Kyverno `ClusterPolicy`** | Deprecated CRD warnings. Out of sync with modern Kubernetes admission control. | Kyverno deprecated legacy `ClusterPolicy` in v1.13+. Replaced with native CEL `ValidatingPolicy` custom resources (`policies.kyverno.io/v1`). |
+| **3. Invalidation Fallacy** (Catalogue vs Tenant) | Confusion over whether Sovereign Tenant Agents invalidated the Shared Agent Catalogue. | Conflated reusable cross-cutting tools (UX auditor "Palette") with domain-specific repository agents. Established that Catalogue and Sovereign Agents are complementary layers. |
+| **4. Inline String Patch** (`spec.patches` in `ResourceSet`) | 40 lines of YAML string escaping inside Go templates. Unlintable by `yamllint`. High risk of syntax bugs. | Embedded application schema into an infrastructure CRD. Rejected: adopted clean, lintable file-based overlays in Git. |
+| **5. Misplaced Factory** (`ResourceSet` in `kubernetes/apps/`) | Violated Flux 3-Tier D2 architecture. Factory not reconciled by cluster root sync. | Stored concrete cluster state inside reusable OCI apps package. Resolved by moving `ResourceSet` to cluster root (`kubernetes/fleet/k3s/apps/tenants.yaml`). |
+| **6. The 16-File Boilerplate Explosion** | 16 redundant files committed for 2 tenants. Adding repo #3 required copying 8 files. | Maintained static enrollment folders alongside the `ResourceSet`. Resolved by deleting all 16 static enrollment files; `ResourceSet` is single source of truth. |
+
+---
+
+### B. Decision Check Matrix (Is the Current Architecture Right?)
+
+| # | Architectural Dimension | Requirement | Current Implementation Status |
+| :-: | :--- | :--- | :--- |
+| **1** | **Privilege Isolation** | Workloads must NEVER execute as `cluster-admin`. | ✅ **VERIFIED**: Applied exclusively by Flux `kustomize-controller` impersonating `tenant-<name>-applier` (`spec.serviceAccountName`), strictly restricted to `kubeopencode.io/*` and `configmaps`. |
+| **2** | **Admission Hardening** | Invariant admission enforcement beyond RBAC. | ✅ **VERIFIED**: Kyverno CEL `ValidatingPolicy` denies non-agent workloads (`Deployment`, `DaemonSet`, `StatefulSet`) in tenant namespaces and enforces applier SA and `targetNamespace`. |
+| **3** | **Cluster Root Placement** | Factory must reside in the cluster sync root. | ✅ **VERIFIED**: `ResourceSet` deployed in `kubernetes/fleet/k3s/apps/tenants.yaml`, reconciled directly by the `k3s` root `FluxInstance`. `kubernetes/apps` remains a pure OCI package library. |
+| **4** | **DRY Platform Envelopes** | Zero boilerplate duplication for platform security primitives. | ✅ **VERIFIED**: 16 redundant files deleted. A single parameterized `ResourceSet` stamps out Namespace, ServiceAccount, RBAC Roles/RoleBindings, ExternalSecrets, NetworkPolicy, and child Kustomizations. |
+| **5** | **Clean Workload Overlays** | No YAML-in-YAML strings; standard lintable Kustomize. | ✅ **VERIFIED**: Workload overlays reside in dedicated files (`patch-agent-template.yaml` and `kustomization.yaml`). Zero inline patch strings in the factory. |
+| **6** | **Repo #3 Onboarding** | Adding a new repo must be fast, minimal, and repeatable. | ✅ **VERIFIED**: **3 Steps**: Add 6 lines to `tenants.yaml`, add 2 files to `apps/tenants/<repo>/1-workload/`, commit and push. All envelope resources are auto-generated. |
+| **7** | **Future Escape Gate** | Path to zero-file GitOps and dynamic config composition. | ✅ **VERIFIED**: Fully documented [Flux ArtifactGenerator](https://fluxcd.io/flux/components/source/artifactgenerators/) (`source.extensions.fluxcd.io/v1beta1`) as the future escape gate to compose sources in-cluster and feed `ResourceSet.inputsFrom`. |
+
+
