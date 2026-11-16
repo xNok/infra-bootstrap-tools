@@ -372,22 +372,7 @@ spec:
               - protocol: TCP
                 port: 443
 
-    # 8. Source: GitRepository for the tenant
-    - apiVersion: source.toolkit.fluxcd.io/v1
-      kind: GitRepository
-      metadata:
-        name: tenant-<< inputs.name >>
-        namespace: flux-system
-      spec:
-        interval: 10m
-        url: << inputs.repo >>
-        ref:
-          branch: << inputs.branch | default "main" >>
-        ignore: |
-          /*
-          !/.kubeopencode
-
-    # 9. Child Flux Kustomization (Impersonating Tenant Applier with Environment Overlay)
+    # 8. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
@@ -395,53 +380,19 @@ spec:
         namespace: flux-system
       spec:
         interval: 10m
-        path: "./.kubeopencode"
+        path: ./tenants/<< inputs.name >>/1-workload
         prune: true
         targetNamespace: tenant-<< inputs.name >>
         serviceAccountName: tenant-<< inputs.name >>-applier
         sourceRef:
-          kind: GitRepository
-          name: tenant-<< inputs.name >>
-        patches:
-          # Overlay: Inject in-cluster credentials, bot committer identity, and security hardening
-          - target:
-              kind: AgentTemplate
-            patch: |
-              apiVersion: kubeopencode.io/v1alpha1
-              kind: AgentTemplate
-              metadata:
-                name: ignored
-              spec:
-                credentials:
-                  - name: github-token
-                    secretRef:
-                      name: github-creds
-                      key: token
-                    env: GITHUB_TOKEN
-                  - name: google-api-key
-                    secretRef:
-                      name: google-creds
-                      key: api-key
-                    env: GOOGLE_API_KEY
-                podSpec:
-                  env:
-                    - name: GIT_AUTHOR_NAME
-                      value: "<< inputs.name >>-agent[bot]"
-                    - name: GIT_AUTHOR_EMAIL
-                      value: "<< inputs.appId >>+<< inputs.name >>-agent[bot]@users.noreply.github.com"
-                    - name: GIT_COMMITTER_NAME
-                      value: "<< inputs.name >>-agent[bot]"
-                    - name: GIT_COMMITTER_EMAIL
-                      value: "<< inputs.appId >>+<< inputs.name >>-agent[bot]@users.noreply.github.com"
-                  securityContext:
-                    runAsNonRoot: true
-                    allowPrivilegeEscalation: false
-                    capabilities:
-                      drop:
-                        - ALL
-                    seccompProfile:
-                      type: RuntimeDefault
+          kind: OCIRepository
+          name: apps
 ```
+
+> [!NOTE]
+> **Why File-Based Overlays Win Over Inline Overlays**:
+> - **Rejection of Inline Overlays**: Embedding 40-line YAML patch strings (`spec.patches: [ - patch: | ... ]`) directly into the `ResourceSet` CR introduces brittle string escaping, prevents schema validation/linting by `yamllint`, and bloats the platform factory with application-layer schema details.
+> - **Clean File-Based Overlays**: By targeting `./tenants/<< inputs.name >>/1-workload` from `OCIRepository/apps`, all environment variables (`GIT_AUTHOR_NAME`, `GIT_AUTHOR_EMAIL`), credentials (`github-creds`, `google-creds`), and security contexts reside in dedicated, lintable, native YAML files ([`patch-agent-template.yaml`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/apps/tenants/infra-bootstrap-tools/1-workload/patch-agent-template.yaml)). The factory remains 100% clean and focused purely on envelope lifecycle.
 
 ### C. Future Evolution: Dynamic Discovery via `ResourceSetInputProvider`
 When scaling beyond the initial two repositories to dozens or hundreds of tenants, the static `ResourceSet` can seamlessly adopt `.spec.inputsFrom` referencing a [ResourceSetInputProvider](https://fluxoperator.dev/docs/crd/resourcesetinputprovider/):
