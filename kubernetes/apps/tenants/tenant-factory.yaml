@@ -1,32 +1,14 @@
-# Flux Operator ResourceSet Factory & ResourceSetInputProvider
-# Enables dynamic enrollment of repositories running KubeOpenCode agents
-# with automated tenant envelope generation and least-privilege applier impersonation.
+# Flux Operator ResourceSet Factory (Static 2-Tenant Dogfooding)
+# Statically provisions tenant security envelopes and least-privilege appliers
+# for the 2 initial repositories: cncf-landscape-a-to-z and infra-bootstrap-tools.
+# Note: ResourceSetInputProvider can be introduced later when scaling beyond static repos.
 # Ref: https://fluxoperator.dev/docs/crd/resourceset/
-# Ref: https://fluxoperator.dev/docs/crd/resourcesetinputprovider/
----
-apiVersion: fluxcd.controlplane.io/v1
-kind: ResourceSetInputProvider
-metadata:
-  name: enrolled-tenant-repos
-  namespace: flux-system
-  annotations:
-    fluxcd.controlplane.io/reconcile: "enabled"
-    fluxcd.controlplane.io/reconcileEvery: "5m"
-spec:
-  type: ExternalService
-  url: https://tenant-registry.internal.corp/api/v1/kubeopencode-tenants
-  secretRef:
-    name: tenant-registry-token
----
 apiVersion: fluxcd.controlplane.io/v1
 kind: ResourceSet
 metadata:
   name: kubeopencode-tenant-factory
   namespace: flux-system
 spec:
-  inputStrategy:
-    name: Flatten
-  # Core dogfooding tenants defined statically
   inputs:
     - name: cncf-landscape-a-to-z
       repo: https://github.com/mekitmedia/cncf-landscape-a-to-z.git
@@ -38,11 +20,6 @@ spec:
       branch: main
       appId: "123456"
       installId: "7891012"
-  # Dynamic tenants discovered from external registry
-  inputsFrom:
-    - apiVersion: fluxcd.controlplane.io/v1
-      kind: ResourceSetInputProvider
-      name: enrolled-tenant-repos
   resources:
     # 1. Tenant Namespace with Restricted Pod Security Standard
     - apiVersion: v1

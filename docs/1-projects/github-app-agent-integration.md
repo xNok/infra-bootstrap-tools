@@ -66,21 +66,60 @@ Official Flux architectures strictly partition GitOps into two separate planes:
 
 ---
 
-## 2. Evaluation of Architectural Approaches
+## 2. Complementary Paradigms: Shared Agent Catalogue vs. Sovereign Tenant Agents
 
-| Dimension | Approach 1: Single Lump Overlay | Approach 2: Static 2-Tier with Flux CRs | Approach 3: Flux Operator `ResourceSet` Factory | Approach 4: Dynamic `ResourceSetInputProvider` |
+A crucial architectural principle of this system is that **the new Tenant Onboarding pattern does NOT invalidate the Agent Catalogue pattern** previously established. They are complementary layers addressing different operational models:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           AGENT PLATFORM TAXONOMY                               │
+├──────────────────────────────────────┬──────────────────────────────────────────┤
+│ 1. THE SHARED AGENT CATALOGUE        │ 2. THE SOVEREIGN TENANT PATTERN          │
+│ (e.g. Palette Agent)                 │ (e.g. .kubeopencode/ in tenant repos)    │
+├──────────────────────────────────────┼──────────────────────────────────────────┤
+│ • Focus: Reusable Agent Roles        │ • Focus: Repository Sovereignty & Domain │
+│ • Governance: Platform/Central Team  │ • Governance: Repository Developers      │
+│ • Experiment in Reusability:         │ • Decentralized Intent:                  │
+│   Shared templates (AgentTemplate,   │   Custom Agent, AgentTemplate, CronTasks │
+│   CronTask) curated in catalogue     │   committed directly to .kubeopencode/   │
+│ • Namespace: Central/shared          │ • Namespace: Dedicated tenant boundary   │
+│   (e.g. agentic-workflows)          │   (tenant-<repo> with PSS: restricted)   │
+│ • Reusability: Write once, target    │ • Identity: Isolated GitHub App token    │
+│   multiple repos from central runner │   minted per-tenant via ExternalSecrets  │
+│ • Security: Platform-managed SA      │ • Security: Least-privilege tenant applier│
+│                                      │   (kubeopencode.io/* only) + egress fw   │
+└──────────────────────────────────────┴──────────────────────────────────────────┘
+```
+
+### How They Coexist and Interlock:
+1. **The Shared Agent Catalogue (`kubernetes/apps/kubeopencode-agents/`)**:
+   - Acts as an internal "app store" for agents with specialized personas.
+   - Example: **Palette** (`palette-agent-template`) is an experiment in a reusable, focused UX and accessibility auditor. Any repository can be targeted by Palette without having to author prompts, configure images, or reinvent UX guidelines.
+   - The catalogue lives in `kubernetes/apps` and is deployed centrally to `agentic-workflows`.
+2. **The Sovereign Tenant Pattern (`kubernetes/apps/tenants/` & `.kubeopencode/`)**:
+   - Solves the problem of repository-owned, custom agent workflows. A development team can define bespoke prompts, cron schedules, and agent definitions specific to their application domain.
+   - Provides a hardened security envelope (`tenant-<name>`) with its own short-lived GitHub App tokens, network egress controls, and impersonated appliers.
+3. **The Synergistic Intersection**:
+   - A tenant repository's `.kubeopencode/` can either define entirely custom agents **OR** reference/overlay a template from the Shared Agent Catalogue.
+   - In either case, the execution occurs safely within the tenant's isolated security boundary. The two patterns reinforce each other.
+
+---
+
+## 3. Evaluation of Architectural Approaches
+
+| Dimension | Approach 1: Single Lump Overlay | Approach 2: Static 2-Tier with Flux CRs | Approach 3: Static `ResourceSet` Factory (Adopted) | Approach 4: Dynamic `ResourceSetInputProvider` |
 | :--- | :--- | :--- | :--- | :--- |
-| **Mechanics** | One `kustomization.yaml` combining envelope and workload. | `0-enrollment/` + `flux-kustomization.yaml` emitting a child Flux `Kustomization` CR. | Parameterized `ResourceSet` CR templating envelope, SA, and child Kustomization from an `inputs` list. | `ResourceSet` fed by `ResourceSetInputProvider` querying an external API, GitHub PRs, or tags. |
+| **Mechanics** | One `kustomization.yaml` combining envelope and workload. | `0-enrollment/` + `flux-kustomization.yaml` emitting a child Flux `Kustomization` CR. | Parameterized `ResourceSet` CR templating envelope, SA, and child Kustomization from static `inputs`. | `ResourceSet` fed by `ResourceSetInputProvider` querying an external API, GitHub PRs, or tags. |
 | **Privilege Isolation** | ❌ Broken (Runs as cluster-admin; self-RBAC paradox). | ✅ **Strict**: Workload applied via SA impersonation. | ✅ **Strict**: Workload applied via SA impersonation. | ✅ **Strict**: Workload applied via SA impersonation. |
 | **Apply Ordering** | ❌ None (Random batch apply). | ✅ Flux `dependsOn` state machine. | ✅ Native `spec.steps` or `dependsOn`. | ✅ Native `spec.steps` or `dependsOn`. |
 | **Boilerplate & Scaling** | Minimal files, fatal security flaws. | Moderate (7-9 YAML files per tenant committed to Git). | **Zero boilerplate** (5 lines in `inputs:` per tenant). | **Zero Git commits** (automated discovery from external system). |
 | **Garbage Collection Lifecycle** | ❌ High risk of orphan deadlock if SA deleted before resources. | ⚠️ Requires manual sequencing when deleting tenants. | 🌟 **Native Staged GC**: Prunes workloads via SA *before* deleting SA & namespace. | 🌟 **Native Staged GC**: Prunes workloads via SA *before* deleting SA & namespace. |
 | **Tooling & Auditability** | Raw YAML. | **100% standard YAML**, visible in PR diffs, lintable. | Dynamic rendering in-cluster; inspected via `kubectl describe rset`. | Dynamic in-cluster; inspected via `kubectl describe rsip,rset`. |
-| **Best For** | Anti-pattern; do not use. | Small installations (1-10 tenants) needing explicit git reviews per tenant. | Fleet platforms (10-100 tenants) with uniform onboarding templates. | Large-scale enterprise self-service / Gitless GitOps / PR preview environments. |
+| **Best For** | Anti-pattern; do not use. | Small installations (1-10 tenants) needing explicit git reviews per tenant. | **Current State (2 Repos)**: Ideal dogfooding with minimal footprint. | Future scaling (20+ tenants, Gitless GitOps, PR previews). |
 
 ---
 
-## 3. Implemented Architecture: Two-Tier Static Model with Flux Workload Applier
+## 4. Implemented Architecture: Two-Tier Static Model with Flux Workload Applier
 
 ### Directory Structure
 
@@ -108,21 +147,23 @@ kubernetes/apps/
     │   ├── flux-kustomization.yaml             # Flux Kustomization CR (impersonates applier SA)
     │   └── kustomization.yaml                  # Aggregates 0-enrollment & flux-kustomization.yaml ONLY
     │
-    └── infra-bootstrap-tools/                  # Tenant 2: Current repo (dogfooding)
-        ├── 0-enrollment/                       # Platform Security & Identity Envelope
-        │   ├── namespace.yaml                  # Namespace: tenant-infra-bootstrap-tools (PSS: restricted)
-        │   ├── applier-rbac.yaml               # ServiceAccount tenant-infra-bootstrap-tools-applier in flux-system
-        │   ├── controller-rbac.yaml            # Scopes kubeopencode-controller to tenant namespace
-        │   ├── github-app-token.yaml           # ESO GithubAccessToken generator -> Secret github-creds
-        │   ├── network-policy.yaml             # Egress firewall (DNS, GitHub HTTPS, LLM APIs)
-        │   └── kustomization.yaml
-        ├── 1-workload/                         # Developer Agent Workloads (applied by child Flux Kustomization)
-        │   ├── base/
-        │   │   └── kustomization.yaml          # URL: https://github.com/xNok/infra-bootstrap-tools//.kubeopencode?ref=main
-        │   ├── patch-agent-template.yaml       # Injects credentials, bot git identity, security context
-        │   └── kustomization.yaml
-        ├── flux-kustomization.yaml             # Flux Kustomization CR (impersonates applier SA)
-        └── kustomization.yaml                  # Aggregates 0-enrollment & flux-kustomization.yaml ONLY
+    ├── infra-bootstrap-tools/                  # Tenant 2: Current repo (dogfooding)
+    │   ├── 0-enrollment/                       # Platform Security & Identity Envelope
+    │   │   ├── namespace.yaml                  # Namespace: tenant-infra-bootstrap-tools (PSS: restricted)
+    │   │   ├── applier-rbac.yaml               # ServiceAccount tenant-infra-bootstrap-tools-applier in flux-system
+    │   │   ├── controller-rbac.yaml            # Scopes kubeopencode-controller to tenant namespace
+    │   │   ├── github-app-token.yaml           # ESO GithubAccessToken generator -> Secret github-creds
+    │   │   ├── network-policy.yaml             # Egress firewall (DNS, GitHub HTTPS, LLM APIs)
+    │   │   └── kustomization.yaml
+    │   ├── 1-workload/                         # Developer Agent Workloads (applied by child Flux Kustomization)
+    │   │   ├── base/
+    │   │   │   └── kustomization.yaml          # URL: https://github.com/xNok/infra-bootstrap-tools//.kubeopencode?ref=main
+    │   │   ├── patch-agent-template.yaml       # Injects credentials, bot git identity, security context
+    │   │   └── kustomization.yaml
+    │   ├── flux-kustomization.yaml             # Flux Kustomization CR (impersonates applier SA)
+    │   └── kustomization.yaml                  # Aggregates 0-enrollment & flux-kustomization.yaml ONLY
+    │
+    └── tenant-factory.yaml                     # Static ResourceSet blueprint for 2 repos
 
 .kubeopencode/                                  # Pure upstream agent intent for infra-bootstrap-tools
 ├── agent-template.yaml                         # Pure intent template (NO secretRef)
@@ -158,7 +199,7 @@ spec:
 
 ---
 
-## 4. Deep Dive: Flux Operator `ResourceSet` Factory Architecture
+## 5. Flux Operator `ResourceSet` Factory Architecture
 
 The **Flux Operator** ([ResourceSet CRD](https://fluxoperator.dev/docs/crd/resourceset/)) provides a Kubernetes-native templating engine based on Go text templates (with `<< >>` delimiters and slim-sprig functions) that natively solves the boilerplate and lifecycle challenges of multi-tenancy.
 
@@ -173,12 +214,9 @@ The Flux Operator garbage collection process removes stale resources in **strict
 2. It waits for the Flux controllers to finalize and clean up the child resources using the impersonated `ServiceAccount`.
 3. Only after the Flux child resources are completely finalized does the operator proceed with deleting the `ServiceAccount`, `RoleBinding`, and `Namespace`.
 
-### B. Declarative Multi-Step Execution (`spec.steps`)
-Instead of relying on fragile manual `dependsOn` chains across multiple CRs, a `ResourceSet` can organize reconciliation into sequential steps with implied health-checks:
-- **Step 1 (`enrollment`)**: Deploys `Namespace`, `ServiceAccount`, `Role`, `RoleBinding`, `ExternalSecret`, and `NetworkPolicy`. Reconciler waits for health checks to pass.
-- **Step 2 (`workload`)**: Deploys the child `GitRepository` and `Kustomization` (with `serviceAccountName`).
-
-### C. Concrete Manifest: `ResourceSet` Tenant Factory
+### B. Starting Simple: Static 2-Tenant Factory
+Because we currently have only two dogfooding repositories (`cncf-landscape-a-to-z` and `infra-bootstrap-tools`), introducing `ResourceSetInputProvider` and an external service registry adds premature complexity.
+We start with a **static `ResourceSet`** configuring both repositories directly in `spec.inputs`:
 
 ```yaml
 apiVersion: fluxcd.controlplane.io/v1
@@ -250,7 +288,7 @@ spec:
     - apiVersion: rbac.authorization.k8s.io/v1
       kind: RoleBinding
       metadata:
-        name: kubeopencode-controller-tenant-binding
+        name: kubeopencode-controller-<< inputs.name >>-binding
         namespace: tenant-<< inputs.name >>
       roleRef:
         apiGroup: rbac.authorization.k8s.io
@@ -363,83 +401,11 @@ spec:
           name: tenant-<< inputs.name >>
 ```
 
----
-
-## 5. Dynamic Repository Enrollment via `ResourceSetInputProvider`
-
-The **`ResourceSetInputProvider`** ([ResourceSetInputProvider CRD](https://fluxoperator.dev/docs/crd/resourcesetinputprovider/)) decouples tenant registration from static GitOps file management, enabling **Gitless GitOps**:
-
-### A. How `ResourceSetInputProvider` Works
-Instead of modifying YAML files in git to onboard a repository:
-1. An external system (e.g. GitHub App webhook handler, internal developer portal, Backstage) maintains the list of enrolled repositories.
-2. A `ResourceSetInputProvider` queries this source and exposes the tenant list in `.status.exportedInputs`.
-3. The parent `ResourceSet` consumes these inputs via `.spec.inputsFrom` and reconciles all tenant environments dynamically.
-
-```
-┌───────────────────────────┐      Webhook Install      ┌─────────────────────────────┐
-│ GitHub Organization / App │ ────────────────────────> │ Webhook / Developer Portal  │
-└───────────────────────────┘                           └──────────────┬──────────────┘
-                                                                       │ Exposes JSON API
-                                                                       ▼
-                                                        ┌─────────────────────────────┐
-                                                        │ ResourceSetInputProvider    │
-                                                        │ (type: ExternalService)     │
-                                                        └──────────────┬──────────────┘
-                                                                       │ Exports inputs
-                                                                       ▼
-                                                        ┌─────────────────────────────┐
-                                                        │ ResourceSet                 │
-                                                        │ - Creates tenant Namespace  │
-                                                        │ - Creates Applier SA & RBAC │
-                                                        │ - Spawns Flux Kustomization │
-                                                        └─────────────────────────────┘
-```
-
-### B. Concrete Manifest: Dynamic Tenant Provider
-
-```yaml
-apiVersion: fluxcd.controlplane.io/v1
-kind: ResourceSetInputProvider
-metadata:
-  name: enrolled-tenant-repos
-  namespace: flux-system
-  annotations:
-    fluxcd.controlplane.io/reconcile: "enabled"
-    fluxcd.controlplane.io/reconcileEvery: "5m"
-spec:
-  type: ExternalService
-  url: https://tenant-registry.internal.corp/api/v1/kubeopencode-tenants
-  secretRef:
-    name: tenant-registry-token
----
-apiVersion: fluxcd.controlplane.io/v1
-kind: ResourceSet
-metadata:
-  name: dynamic-tenant-factory
-  namespace: flux-system
-spec:
-  inputStrategy:
-    name: Flatten
-  # Core dogfooding tenants configured statically
-  inputs:
-    - name: infra-bootstrap-tools
-      repo: https://github.com/xNok/infra-bootstrap-tools.git
-      branch: main
-      appId: "123456"
-      installId: "7891012"
-  # Dynamic tenants discovered from external registry
-  inputsFrom:
-    - apiVersion: fluxcd.controlplane.io/v1
-      kind: ResourceSetInputProvider
-      name: enrolled-tenant-repos
-  resources:
-    # [Same templated resources as Section 4.C]
-```
-
-### C. Other Supported Dynamic Patterns:
-- **`type: GitHubPullRequest`**: Spawns ephemeral agent preview environments on PRs labeled `agent-preview`, automatically tearing them down when the PR is closed or merged.
-- **`type: GitHubBranch`**: Provisions feature branch environments matching regex `^agent/.*`.
-- **`type: ExternalArtifact`**: Decoupled in-cluster registration where independent teams create an `ExternalArtifact` custom resource.
+### C. Future Evolution: Dynamic Discovery via `ResourceSetInputProvider`
+When scaling beyond the initial two repositories to dozens or hundreds of tenants, the static `ResourceSet` can seamlessly adopt `.spec.inputsFrom` referencing a [ResourceSetInputProvider](https://fluxoperator.dev/docs/crd/resourcesetinputprovider/):
+- **`type: ExternalService`**: Integrates with Backstage or an internal developer portal API that tracks GitHub App installations in real time.
+- **`type: GitHubPullRequest` / `GitHubBranch`**: Automatically provisions and tears down ephemeral preview environments.
+- For our current phase, this remains a zero-change architectural evolution: the `resources` template stays identical, only the input source expands.
 
 ---
 
@@ -476,6 +442,7 @@ We deploy two CEL-based [`ValidatingPolicy`](file:///kubernetes/apps/tenants/pol
    - Fix the separation of concerns in `kubernetes/apps/tenants/`: `kustomization.yaml` files reference `0-enrollment` and `flux-kustomization.yaml`.
    - Workload manifests (`1-workload`) are kept out of the parent Kustomize tree, resolving the sandbox git clone error and guaranteeing SA impersonation.
    - Enforce CEL-based `ValidatingPolicy` admission control.
+   - Clarify the relationship between the Shared Agent Catalogue (reusable agent library) and Sovereign Tenant Agents (repo-specific domain workflows).
 2. **Phase 2 (Fleet Deployment & Factory Scaling)**:
-   - Deploy `tenant-factory.yaml` using Flux Operator `ResourceSet` in `kubernetes/fleet/k3s/apps/` to manage multiple tenants via a unified template.
+   - Deploy `tenant-factory.yaml` using the static Flux Operator `ResourceSet` (2 repos) in `kubernetes/fleet/k3s/apps/` to manage multiple tenants via a unified template.
    - Introduce `ResourceSetInputProvider` for automated repository discovery when expanding beyond the initial dogfooding tenants.
