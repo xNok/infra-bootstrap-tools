@@ -1,0 +1,57 @@
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: tenant-workload-isolation
+  annotations:
+    policies.kyverno.io/title: Tenant Workload Isolation
+    policies.kyverno.io/category: Multi-Tenancy & Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Deployment, StatefulSet, DaemonSet, ReplicaSet
+    policies.kyverno.io/description: >-
+      Restricts tenant namespaces to KubeOpenCode agent resources only.
+      Deployments, StatefulSets, DaemonSets, and ReplicaSets are strictly forbidden
+      to prevent unauthorized workloads in tenant namespaces.
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["apps"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          - deployments
+          - statefulsets
+          - daemonsets
+          - replicasets
+  validations:
+    - expression: "!request.namespace.startsWith('tenant-')"
+      message: "Tenant namespaces (tenant-*) are strictly restricted to KubeOpenCode agent resources. Deployments, StatefulSets, and DaemonSets are forbidden."
+---
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-tenant-applier-service-account
+  annotations:
+    policies.kyverno.io/title: Require Tenant Applier Service Account
+    policies.kyverno.io/category: Multi-Tenancy & Security
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Kustomization
+    policies.kyverno.io/description: >-
+      Flux Kustomizations targeting tenant namespaces must force the namespace
+      via spec.targetNamespace and specify a restricted tenant applier serviceAccountName.
+spec:
+  validationActions:
+    - Deny
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["kustomize.toolkit.fluxcd.io"]
+        apiVersions: ["v1"]
+        operations: ["CREATE", "UPDATE"]
+        resources:
+          - kustomizations
+  validations:
+    - expression: "!has(object.spec.path) || !object.spec.path.contains('tenants/') || (has(object.spec.targetNamespace) && object.spec.targetNamespace.startsWith('tenant-'))"
+      message: "Flux Kustomizations managing tenant workloads MUST force the namespace using spec.targetNamespace."
+    - expression: "!has(object.spec.targetNamespace) || !object.spec.targetNamespace.startsWith('tenant-') || !object.spec.path.contains('1-workload') || (has(object.spec.serviceAccountName) && object.spec.serviceAccountName.startsWith('tenant-') && object.spec.serviceAccountName.endsWith('-applier'))"
+      message: "Flux Kustomizations targeting tenant workloads must specify a restricted tenant applier serviceAccountName (e.g., tenant-*-applier)."
