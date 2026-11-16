@@ -119,51 +119,38 @@ A crucial architectural principle of this system is that **the new Tenant Onboar
 
 ---
 
-## 4. Implemented Architecture: Two-Tier Static Model with Flux Workload Applier
+## 4. Implemented Architecture: Cluster-Root Factory with File-Based Workload Overlays
 
 ### Directory Structure
 
 ```
+kubernetes/fleet/k3s/apps/
+├── 0-source.yaml                               # OCIRepository source: apps
+├── kubeopencode/                               # KubeOpenCode controller deployment
+├── palette-agent/                              # Palette agent instance
+├── tenants.yaml                                # Flux Operator ResourceSet Factory (Cluster Root Envelope)
+└── kustomization.yaml                          # Aggregates sources, controllers, agents, and tenants factory
+
 kubernetes/apps/
-├── kustomization.yaml                          # Root apps kustomization
+├── kustomization.yaml                          # Root apps kustomization (kubeopencode, palette, policies)
 └── tenants/
     ├── policies/                               # Admission control policies
     │   ├── kustomization.yaml
     │   └── tenant-workload-isolation.yaml      # CEL-based ValidatingPolicies
     │
     ├── cncf-landscape-a-to-z/                  # Tenant 1: External repo
-    │   ├── 0-enrollment/                       # Platform Security & Identity Envelope
-    │   │   ├── namespace.yaml                  # Namespace: tenant-cncf-landscape (PSS: restricted)
-    │   │   ├── applier-rbac.yaml               # ServiceAccount tenant-cncf-landscape-applier in flux-system
-    │   │   ├── controller-rbac.yaml            # Scopes kubeopencode-controller to tenant namespace
-    │   │   ├── github-app-token.yaml           # ESO GithubAccessToken generator -> Secret github-creds
-    │   │   ├── network-policy.yaml             # Egress firewall (DNS, GitHub HTTPS, LLM APIs)
-    │   │   └── kustomization.yaml
-    │   ├── 1-workload/                         # Developer Agent Workloads (applied by child Flux Kustomization)
-    │   │   ├── base/
-    │   │   │   └── kustomization.yaml          # URL: https://github.com/mekitmedia/cncf-landscape-a-to-z//.kubeopencode?ref=main
-    │   │   ├── patch-agent-template.yaml       # Injects credentials, bot git identity, security context
-    │   │   └── kustomization.yaml
-    │   ├── flux-kustomization.yaml             # Flux Kustomization CR (impersonates applier SA)
-    │   └── kustomization.yaml                  # Aggregates 0-enrollment & flux-kustomization.yaml ONLY
+    │   └── 1-workload/                         # Developer Agent Workloads (applied by child Flux Kustomization)
+    │       ├── base/
+    │       │   └── kustomization.yaml          # URL: https://github.com/mekitmedia/cncf-landscape-a-to-z//.kubeopencode?ref=main
+    │       ├── patch-agent-template.yaml       # Injects credentials, bot git identity, security context
+    │       └── kustomization.yaml
     │
-    ├── infra-bootstrap-tools/                  # Tenant 2: Current repo (dogfooding)
-    │   ├── 0-enrollment/                       # Platform Security & Identity Envelope
-    │   │   ├── namespace.yaml                  # Namespace: tenant-infra-bootstrap-tools (PSS: restricted)
-    │   │   ├── applier-rbac.yaml               # ServiceAccount tenant-infra-bootstrap-tools-applier in flux-system
-    │   │   ├── controller-rbac.yaml            # Scopes kubeopencode-controller to tenant namespace
-    │   │   ├── github-app-token.yaml           # ESO GithubAccessToken generator -> Secret github-creds
-    │   │   ├── network-policy.yaml             # Egress firewall (DNS, GitHub HTTPS, LLM APIs)
-    │   │   └── kustomization.yaml
-    │   ├── 1-workload/                         # Developer Agent Workloads (applied by child Flux Kustomization)
-    │   │   ├── base/
-    │   │   │   └── kustomization.yaml          # URL: https://github.com/xNok/infra-bootstrap-tools//.kubeopencode?ref=main
-    │   │   ├── patch-agent-template.yaml       # Injects credentials, bot git identity, security context
-    │   │   └── kustomization.yaml
-    │   ├── flux-kustomization.yaml             # Flux Kustomization CR (impersonates applier SA)
-    │   └── kustomization.yaml                  # Aggregates 0-enrollment & flux-kustomization.yaml ONLY
-    │
-    └── tenant-factory.yaml                     # Static ResourceSet blueprint for 2 repos
+    └── infra-bootstrap-tools/                  # Tenant 2: Current repo (dogfooding)
+        └── 1-workload/                         # Developer Agent Workloads (applied by child Flux Kustomization)
+            ├── base/
+            │   └── kustomization.yaml          # URL: https://github.com/xNok/infra-bootstrap-tools//.kubeopencode?ref=main
+            ├── patch-agent-template.yaml       # Injects credentials, bot git identity, security context
+            └── kustomization.yaml
 
 .kubeopencode/                                  # Pure upstream agent intent for infra-bootstrap-tools
 ├── agent-template.yaml                         # Pure intent template (NO secretRef)
@@ -214,9 +201,12 @@ The Flux Operator garbage collection process removes stale resources in **strict
 2. It waits for the Flux controllers to finalize and clean up the child resources using the impersonated `ServiceAccount`.
 3. Only after the Flux child resources are completely finalized does the operator proceed with deleting the `ServiceAccount`, `RoleBinding`, and `Namespace`.
 
-### B. Starting Simple: Static 2-Tenant Factory
-Because we currently have only two dogfooding repositories (`cncf-landscape-a-to-z` and `infra-bootstrap-tools`), introducing `ResourceSetInputProvider` and an external service registry adds premature complexity.
-We start with a **static `ResourceSet`** configuring both repositories directly in `spec.inputs`:
+### B. Placement in Cluster Root (`kubernetes/fleet/k3s/apps/tenants.yaml`)
+In accordance with the Flux 3-Tier D2 architecture:
+- `kubernetes/apps/` houses reusable packages, admission policies, and tenant workload overlays published to OCI (`oci://ghcr.io/xnok/manifests/kubernetes/apps`).
+- `kubernetes/fleet/k3s/apps/` is the cluster root for the `k3s` cluster. It contains the active instantiation of which applications and tenants run on `k3s`.
+- The `ResourceSet` factory is deployed in [`kubernetes/fleet/k3s/apps/tenants.yaml`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/fleet/k3s/apps/tenants.yaml) and registered in `kubernetes/fleet/k3s/apps/kustomization.yaml`.
+- This eliminates all duplicated `0-enrollment/` directories (16 files) from `kubernetes/apps/tenants/`, making the platform envelope 100% DRY.
 
 ```yaml
 apiVersion: fluxcd.controlplane.io/v1
@@ -284,7 +274,44 @@ spec:
           name: tenant-<< inputs.name >>-applier
           namespace: flux-system
 
-    # 5. Controller RBAC RoleBinding
+    # 5. Controller RBAC Role
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: kubeopencode-controller-tenant-role
+        namespace: tenant-<< inputs.name >>
+      rules:
+        - apiGroups: ["kubeopencode.io"]
+          resources:
+            - agents
+            - agents/status
+            - agents/finalizers
+            - agenttemplates
+            - crontasks
+            - tasks
+            - tasks/status
+            - tasks/finalizers
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources:
+            - pods
+            - pods/exec
+            - pods/log
+            - pods/status
+            - configmaps
+            - secrets
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: ["batch"]
+          resources:
+            - jobs
+            - jobs/status
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources:
+            - events
+          verbs: ["create", "patch"]
+
+    # 6. Controller RBAC RoleBinding
     - apiVersion: rbac.authorization.k8s.io/v1
       kind: RoleBinding
       metadata:
@@ -299,7 +326,7 @@ spec:
           name: kubeopencode-controller
           namespace: kubeopencode-system
 
-    # 6. ExternalSecret & GithubAccessToken Generator
+    # 7. ExternalSecret & GithubAccessToken Generator
     - apiVersion: external-secrets.io/v1beta1
       kind: ExternalSecret
       metadata:
@@ -335,7 +362,26 @@ spec:
               name: github-app-private-key
               key: private-key.pem
 
-    # 7. Egress NetworkPolicy
+    # 8. ExternalSecret for Shared LLM Credentials
+    - apiVersion: external-secrets.io/v1
+      kind: ExternalSecret
+      metadata:
+        name: google-creds
+        namespace: tenant-<< inputs.name >>
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          kind: ClusterSecretStore
+          name: onepassword
+        target:
+          name: google-creds
+          creationPolicy: Owner
+        data:
+          - secretKey: api-key
+            remoteRef:
+              key: KUBEOPENCODE_GOOGLE_API_KEY/password
+
+    # 9. Egress NetworkPolicy
     - apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
       metadata:
@@ -372,7 +418,7 @@ spec:
               - protocol: TCP
                 port: 443
 
-    # 8. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
+    # 10. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
@@ -380,13 +426,15 @@ spec:
         namespace: flux-system
       spec:
         interval: 10m
-        path: ./tenants/<< inputs.name >>/1-workload
+        path: << inputs.workloadPath | default (printf "./tenants/%s/1-workload" inputs.name) >>
         prune: true
         targetNamespace: tenant-<< inputs.name >>
         serviceAccountName: tenant-<< inputs.name >>-applier
         sourceRef:
           kind: OCIRepository
           name: apps
+        dependsOn:
+          - name: kubeopencode-controller
 ```
 
 > [!NOTE]
@@ -395,7 +443,7 @@ spec:
 > - **Clean File-Based Overlays**: By targeting `./tenants/<< inputs.name >>/1-workload` from `OCIRepository/apps`, all environment variables (`GIT_AUTHOR_NAME`, `GIT_AUTHOR_EMAIL`), credentials (`github-creds`, `google-creds`), and security contexts reside in dedicated, lintable, native YAML files ([`patch-agent-template.yaml`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/apps/tenants/infra-bootstrap-tools/1-workload/patch-agent-template.yaml)). The factory remains 100% clean and focused purely on envelope lifecycle.
 
 ### C. Future Evolution: Dynamic Discovery via `ResourceSetInputProvider`
-When scaling beyond the initial two repositories to dozens or hundreds of tenants, the static `ResourceSet` can seamlessly adopt `.spec.inputsFrom` referencing a [ResourceSetInputProvider](https://fluxoperator.dev/docs/crd/resourcesetinputprovider/):
+When scaling beyond the initial repositories to dozens or hundreds of tenants, the static `ResourceSet` can seamlessly adopt `.spec.inputsFrom` referencing a [ResourceSetInputProvider](https://fluxoperator.dev/docs/crd/resourcesetinputprovider/):
 - **`type: ExternalService`**: Integrates with Backstage or an internal developer portal API that tracks GitHub App installations in real time.
 - **`type: GitHubPullRequest` / `GitHubBranch`**: Automatically provisions and tears down ephemeral preview environments.
 - For our current phase, this remains a zero-change architectural evolution: the `resources` template stays identical, only the input source expands.
@@ -429,13 +477,81 @@ We deploy two CEL-based [`ValidatingPolicy`](file:///kubernetes/apps/tenants/pol
 
 ---
 
-## 7. Summary Decision & Evolution Path
+## 7. The Runbook: Onboarding Repo #3 in 3 Steps
 
-1. **Phase 1 (Current PR #253)**:
-   - Fix the separation of concerns in `kubernetes/apps/tenants/`: `kustomization.yaml` files reference `0-enrollment` and `flux-kustomization.yaml`.
-   - Workload manifests (`1-workload`) are kept out of the parent Kustomize tree, resolving the sandbox git clone error and guaranteeing SA impersonation.
-   - Enforce CEL-based `ValidatingPolicy` admission control.
-   - Clarify the relationship between the Shared Agent Catalogue (reusable agent library) and Sovereign Tenant Agents (repo-specific domain workflows).
-2. **Phase 2 (Fleet Deployment & Factory Scaling)**:
-   - Deploy `tenant-factory.yaml` using the static Flux Operator `ResourceSet` (2 repos) in `kubernetes/fleet/k3s/apps/` to manage multiple tenants via a unified template.
-   - Introduce `ResourceSetInputProvider` for automated repository discovery when expanding beyond the initial dogfooding tenants.
+To onboard a 3rd repository (e.g., `cool-tool`), follow this 3-step runbook:
+
+### Step 1: Register in Cluster Root ([`kubernetes/fleet/k3s/apps/tenants.yaml`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/fleet/k3s/apps/tenants.yaml))
+Add 6 lines to `spec.inputs`:
+```yaml
+    - name: cool-tool
+      repo: https://github.com/myorg/cool-tool.git
+      branch: main
+      appId: "123456"
+      installId: "7891013"
+```
+*Result*: The `ResourceSet` automatically creates the entire security envelope (`Namespace/tenant-cool-tool`, `ServiceAccount/tenant-cool-tool-applier`, RBAC, ExternalSecrets, NetworkPolicy, and child Flux Kustomization) with zero additional envelope files!
+
+### Step 2: Create Workload Overlay (`kubernetes/apps/tenants/cool-tool/1-workload/`)
+Create just 2 files in `kubernetes/apps/tenants/cool-tool/1-workload/`:
+
+1. **`kustomization.yaml`**:
+   ```yaml
+   apiVersion: kustomize.config.k8s.io/v1beta1
+   kind: Kustomization
+   resources:
+     - https://github.com/myorg/cool-tool//.kubeopencode?ref=main
+   patches:
+     - path: patch-agent-template.yaml
+   ```
+
+2. **`patch-agent-template.yaml`**:
+   ```yaml
+   apiVersion: kubeopencode.io/v1alpha1
+   kind: AgentTemplate
+   metadata:
+     name: cool-tool-base
+   spec:
+     credentials:
+       - name: github-token
+         secretRef:
+           name: github-creds
+           key: token
+         env: GITHUB_TOKEN
+       - name: google-api-key
+         secretRef:
+           name: google-creds
+           key: api-key
+         env: GOOGLE_API_KEY
+     podSpec:
+       env:
+         - name: GIT_AUTHOR_NAME
+           value: "cool-tool-agent[bot]"
+         - name: GIT_AUTHOR_EMAIL
+           value: "123456+cool-tool-agent[bot]@users.noreply.github.com"
+         - name: GIT_COMMITTER_NAME
+           value: "cool-tool-agent[bot]"
+         - name: GIT_COMMITTER_EMAIL
+           value: "123456+cool-tool-agent[bot]@users.noreply.github.com"
+   ```
+
+### Step 3: Git Commit & Push
+Commit and push. Flux reconciles the cluster root, stamps out the envelope from `tenants.yaml`, and impersonates `tenant-cool-tool-applier` to deliver the workload overlay into `tenant-cool-tool`.
+
+---
+
+## 8. Tenant Differentiation (Opt-In Overrides)
+
+When a tenant requires custom behavior, developers have full control:
+1. **Custom LLM Model / System Prompts**: Edit `patch-agent-template.yaml` in the tenant's `1-workload/` (e.g. `model: anthropic/claude-3-5-sonnet`).
+2. **Custom Third-Party Secrets**: Add an `ExternalSecret` manifest directly into `1-workload/` and reference it under `spec.credentials`.
+3. **Custom Network Egress**: Add a specialized `NetworkPolicy` directly into `1-workload/`.
+4. **Custom Subpath or Branch**: Specify `workloadPath` or `branch` in `kubernetes/fleet/k3s/apps/tenants.yaml`:
+   ```yaml
+   - name: special-repo
+     repo: https://github.com/myorg/special-repo.git
+     branch: release-v2
+     workloadPath: ./tenants/special-repo/custom-overlay
+     appId: "123456"
+     installId: "7891014"
+   ```
