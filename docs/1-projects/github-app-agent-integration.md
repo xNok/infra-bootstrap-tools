@@ -9,6 +9,7 @@ related_resources:
   - kubeopencode
   - external-secrets-operator
   - github-apps
+  - flux-artifact-generator
 related_areas:
   - ai-workflow-automation
   - kubernetes-gitops
@@ -555,3 +556,130 @@ When a tenant requires custom behavior, developers have full control:
      appId: "123456"
      installId: "7891014"
    ```
+
+---
+
+## 9. Future Escape Gate: Dynamic Config Composition via Flux `ArtifactGenerator`
+
+As the platform scales beyond static repositories, [Flux ArtifactGenerator](https://fluxcd.io/flux/components/source/artifactgenerators/) (`source.extensions.fluxcd.io/v1beta1`) serves as our **future architectural escape gate**. It resolves the tension between repository sovereignty (pure developer intent in `.kubeopencode/`) and platform governance (injecting credentials, bot identities, and security contexts) by enabling **in-cluster source composition and decomposition** at the source-controller tier.
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        FLUX ARTIFACT GENERATOR PIPELINE                                │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ 1. UPSTREAM SOURCES                                                                    │
+│    • Tenant GitRepository (@repo)        ──► Pure developer intent (.kubeopencode/)   │
+│    • Platform OCIRepository (@platform)  ──► Platform base overlay & credentials       │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ 2. ARTIFACT GENERATOR (source.extensions.fluxcd.io/v1beta1)                            │
+│    • Composition: Combines @repo and @platform into a unified filesystem tree.         │
+│    • Strategy: Merge / Overwrite applies platform patches cleanly in memory.           │
+│    • Directory Discovery: pathPattern (@repo/agents/{agent}) auto-discovers targets.   │
+│    • Input Export: inputsFrom exports YAML metadata to .status.exportedInputs.         │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ 3. OUTPUT & CONSUMPTION                                                                │
+│    • Emits: ExternalArtifact (revision: latest@sha256:<composite-hash>)                │
+│    • Ingestion:                                                                        │
+│      - ResourceSet: Consumes .status.exportedInputs for dynamic envelope templating.   │
+│      - Flux Kustomization: spec.sourceRef -> ExternalArtifact (applies the workload)   │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### A. Why `ArtifactGenerator` is the Ultimate Escape Gate
+
+1. **Elimination of GitOps Glue Boilerplate ("Zero-File Apps")**:
+   - In our current Phase 2 model, onboarding a repository requires maintaining 2 small overlay files in `kubernetes/apps/tenants/<tenant>/1-workload/`.
+   - With `ArtifactGenerator`, **zero files** need to be committed to `kubernetes/apps/` for new tenants. The platform dynamically composes the upstream `.kubeopencode/` with the central platform patch in-cluster.
+2. **Safe from String Escaping & YAML-in-YAML**:
+   - Unlike the rejected inline patch anti-pattern (`spec.patches: [ - patch: | ... ]`), `ArtifactGenerator` performs native file-based copies and YAML merges (`strategy: Merge` or `strategy: Overwrite`) using real, validated YAML files from managed sources.
+3. **Automatic Multi-Source Drift & Revision Hashing**:
+   - The revision of an `ExternalArtifact` is computed as `latest@sha256:<hash>`, where `<hash>` is the SHA256 checksum of the final composed files.
+   - If *either* the developer updates `.kubeopencode/` in their repository *or* the platform team updates the base security patch in `apps`, Flux generates a new artifact revision and automatically reconciles downstream workloads.
+
+---
+
+### B. Blueprint: In-Cluster Tenant Workload Composition
+
+Below is the concrete configuration blueprint for generating a composite tenant workload from an upstream repository and a shared platform overlay:
+
+```yaml
+apiVersion: source.extensions.fluxcd.io/v1beta1
+kind: ArtifactGenerator
+metadata:
+  name: tenant-cool-tool
+  namespace: flux-system
+spec:
+  interval: 10m
+  sources:
+    # Source A: Upstream Tenant Repository (Developer Intent)
+    - alias: repo
+      kind: GitRepository
+      name: tenant-cool-tool
+    # Source B: Central Platform Library (Governance & Credentials)
+    - alias: platform
+      kind: OCIRepository
+      name: apps
+  artifacts:
+    - name: cool-tool-workload
+      originRevision: "@repo"
+      copy:
+        # 1. Copy upstream developer agent manifests
+        - from: "@repo/.kubeopencode/**"
+          to: "@artifact/"
+        # 2. Merge platform credentials, bot committer identity, and PSS hardening
+        - from: "@platform/tenants/_base/patch-agent-template.yaml"
+          to: "@artifact/patch-agent-template.yaml"
+          strategy: Overwrite
+        # 3. Inject root kustomization to link base and patch
+        - from: "@platform/tenants/_base/kustomization.yaml"
+          to: "@artifact/kustomization.yaml"
+          strategy: Overwrite
+```
+
+The downstream Flux `Kustomization` then simply references the generated `ExternalArtifact`:
+
+```yaml
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: tenant-cool-tool-workload
+  namespace: flux-system
+spec:
+  interval: 10m
+  prune: true
+  targetNamespace: tenant-cool-tool
+  serviceAccountName: tenant-cool-tool-applier
+  sourceRef:
+    kind: ExternalArtifact
+    name: cool-tool-workload
+```
+
+---
+
+### C. Advanced Synergy: Dynamic Discovery with `pathPattern` and `inputsFrom`
+
+`ArtifactGenerator` provides two transformative capabilities that unlock fully automated, self-service onboarding:
+
+#### 1. Dynamic Monorepo / Multi-Agent Discovery (`pathPattern`)
+If a tenant repository hosts multiple agents in subdirectories:
+```yaml
+spec:
+  pathPattern: "@repo/agents/{agent}"
+  artifacts:
+    - name: "agent-{agent}"
+      copy:
+        - from: "@repo/agents/{agent}/**"
+          to: "@artifact/"
+```
+Flux automatically traverses the repository, discovers every directory under `agents/`, extracts the `{agent}` capture variable, and stamps out an `ExternalArtifact` named `agent-<name>` without any platform team intervention.
+
+#### 2. Feeding the Factory with `inputsFrom`
+`ArtifactGenerator` can inspect a tenant's in-repo configuration file (e.g. `@repo/.kubeopencode/config.yaml`) using `.spec.artifacts[].inputsFrom`:
+```yaml
+spec:
+  artifacts:
+    - name: cool-tool-workload
+      inputsFrom: "@repo/.kubeopencode/config.yaml"
+```
+The key-value pairs from `config.yaml` are exported directly into `ExternalArtifact.status.exportedInputs`. Downstream controllers, specifically the **Flux Operator `ResourceSet`**, can bind to these exported inputs to dynamically provision namespace envelopes, external secrets, and applier RBAC without any static lists committed to platform Git!
+
