@@ -383,8 +383,11 @@ spec:
         url: << inputs.repo >>
         ref:
           branch: << inputs.branch | default "main" >>
+        ignore: |
+          /*
+          !/.kubeopencode
 
-    # 9. Child Flux Kustomization (Impersonating Tenant Applier)
+    # 9. Child Flux Kustomization (Impersonating Tenant Applier with Environment Overlay)
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
@@ -399,6 +402,45 @@ spec:
         sourceRef:
           kind: GitRepository
           name: tenant-<< inputs.name >>
+        patches:
+          # Overlay: Inject in-cluster credentials, bot committer identity, and security hardening
+          - target:
+              kind: AgentTemplate
+            patch: |
+              apiVersion: kubeopencode.io/v1alpha1
+              kind: AgentTemplate
+              metadata:
+                name: ignored
+              spec:
+                credentials:
+                  - name: github-token
+                    secretRef:
+                      name: github-creds
+                      key: token
+                    env: GITHUB_TOKEN
+                  - name: google-api-key
+                    secretRef:
+                      name: google-creds
+                      key: api-key
+                    env: GOOGLE_API_KEY
+                podSpec:
+                  env:
+                    - name: GIT_AUTHOR_NAME
+                      value: "<< inputs.name >>-agent[bot]"
+                    - name: GIT_AUTHOR_EMAIL
+                      value: "<< inputs.appId >>+<< inputs.name >>-agent[bot]@users.noreply.github.com"
+                    - name: GIT_COMMITTER_NAME
+                      value: "<< inputs.name >>-agent[bot]"
+                    - name: GIT_COMMITTER_EMAIL
+                      value: "<< inputs.appId >>+<< inputs.name >>-agent[bot]@users.noreply.github.com"
+                  securityContext:
+                    runAsNonRoot: true
+                    allowPrivilegeEscalation: false
+                    capabilities:
+                      drop:
+                        - ALL
+                    seccompProfile:
+                      type: RuntimeDefault
 ```
 
 ### C. Future Evolution: Dynamic Discovery via `ResourceSetInputProvider`
