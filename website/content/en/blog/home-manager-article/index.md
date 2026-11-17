@@ -11,8 +11,6 @@ tags:
   - Dotfiles
 ---
 
-# My Personal Nix Configuration: Discoveries and Learnings
-
 In [The Holy Grail of Development Environments](/blog/journey-to-nix/), I talked about my transition to quest for the perfect development environment which roughly goes allong those lines:
 1. **The Docker Era**: Containerizing CLI tools - worked fine but really not ideal when working with local filesytem, simply akward to use after the fact.
 2. **The Bash Era (`ibt`)**: Custom scripts dispatching host setup - that again worked just fine and served for my gitpod setups and local env, but why did i try to write my own package manager wrapper !!!.

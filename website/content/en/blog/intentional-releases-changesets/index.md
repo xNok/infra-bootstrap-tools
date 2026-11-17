@@ -11,8 +11,6 @@ tags:
   - Open Source
 ---
 
-# Intentional Releases: Why I Chose Changesets over Semantic-Release
-
 In the world of DevOps, sometimes maybe I automate a little bit too much. I aim for a smooth and continuous deployment process where I automate builds, testing, deployment, and versioning. The gold standard is probably tools like `semantic-release`—utilities that parse your git history, look for keywords like "feat" or "fix" prefixes, and automatically bump versions and generate changelogs (this is called semantic release by conventional commits).
 
 It sounds perfect, and the promise is genius: make small intentional commits with clear descriptions such that you don't need to waste time writing a changelog later. While the idea is sound, the changelogs produced with this workflow are rarely up to the expectations of the end users.
