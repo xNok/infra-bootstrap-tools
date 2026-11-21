@@ -42,3 +42,8 @@ During analysis and local verification of the PR 248 commit tree against current
 - **Commit 2 (Author: Alexandre Couedelo / xNok)**:
   `feat(ci): integrate pagefind into nix docs shell and automated website build`
   Contains `common.nix` package additions, `build-website.sh` automation, dynamic `relURL` bundle path, portable hero URL, and updated links in `stacks/README.md`.
+
+## Resolution & Pull Request
+- Revived PR opened: [#258](https://github.com/xNok/infra-bootstrap-tools/pull/258)
+- Head branch: `revive_infra_bootstrap_pr` -> Base branch: `main`
+- Status: All pre-commit hooks and website/pagefind build steps verified and passing.
