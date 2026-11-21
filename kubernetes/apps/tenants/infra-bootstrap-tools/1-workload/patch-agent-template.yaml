@@ -15,6 +15,16 @@ spec:
         name: google-creds
         key: api-key
       env: GOOGLE_API_KEY
+    - name: google-genai-api-key
+      secretRef:
+        name: google-creds
+        key: api-key
+      env: GOOGLE_GENERATIVE_AI_API_KEY
+    - name: opencode-go-api-key
+      secretRef:
+        name: opencode-go-creds
+        key: api-key
+      env: OPENCODE_API_KEY
 
   # Pod specifications, Git bot committer identity, and security hardening
   podSpec:

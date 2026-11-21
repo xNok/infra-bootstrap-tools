@@ -210,7 +210,7 @@ spec:
               name: github-app-private-key
               key: private-key.pem
 
-    # 10. ExternalSecret for Shared LLM Credentials
+    # 10. ExternalSecret for Google Gemini Provider
     - apiVersion: external-secrets.io/v1
       kind: ExternalSecret
       metadata:
@@ -229,7 +229,26 @@ spec:
             remoteRef:
               key: KUBEOPENCODE_GOOGLE_API_KEY/password
 
-    # 11. Egress NetworkPolicy
+    # 11. ExternalSecret for OpenCode Go Provider
+    - apiVersion: external-secrets.io/v1
+      kind: ExternalSecret
+      metadata:
+        name: opencode-go-creds
+        namespace: tenant-<< inputs.name >>
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          kind: ClusterSecretStore
+          name: onepassword
+        target:
+          name: opencode-go-creds
+          creationPolicy: Owner
+        data:
+          - secretKey: api-key
+            remoteRef:
+              key: KUBEOPENCODE_OPENCODE_GO/password
+
+    # 12. Egress NetworkPolicy
     - apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
       metadata:
@@ -266,7 +285,7 @@ spec:
               - protocol: TCP
                 port: 443
 
-    # 12. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
+    # 13. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
