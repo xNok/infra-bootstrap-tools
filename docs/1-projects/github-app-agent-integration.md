@@ -849,3 +849,44 @@ Following these fixes:
      3. Restarted `helm-controller` deployment.
      4. Flux cleanly executed `Helm install` for `kyverno` (v3.9.2) and `kyverno-policies` (v3.9.2).
    - **Verification**: All 4 Kyverno pods reached `1/1 Running`, and all 10 HelmReleases across the cluster are `READY: True`.
+
+---
+
+## 13. Multi-Provider LLM Integration: OpenCode Go & Google Gemini
+
+### A. Diagnosed Issues & Resolution
+
+1. **Google Generative AI Key Missing Error**:
+   - **Symptom**: In the KubeOpenCode Web Terminal UI, executing prompts failed with:
+     ```text
+     Google Generative AI API key is missing. Pass it using the 'apiKey' parameter or the GOOGLE_GENERATIVE_AI_API_KEY environment variable.
+     ```
+   - **Root Cause**: While OpenCode's provider check recognizes `GOOGLE_API_KEY`, the underlying Google Generative AI SDK strictly requires **`GOOGLE_GENERATIVE_AI_API_KEY`**.
+   - **Fix**: Added `GOOGLE_GENERATIVE_AI_API_KEY` mapping referencing `Secret/google-creds` (`key: api-key`) in the tenant `AgentTemplate` credentials.
+
+2. **OpenCode Go Provider & Model Pool Integration**:
+   - **Requirement**: Allow agents to use the OpenCode Go model pool (`opencode-go/*`) powered by the 1Password secret `KUBEOPENCODE_OPENCODE_GO/password`.
+   - **Implementation**:
+     - Added `ExternalSecret/opencode-go-creds` to `ResourceSet/kubeopencode-tenant-factory` in [`kubernetes/fleet/k3s/apps/tenants.yaml`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/fleet/k3s/apps/tenants.yaml).
+     - Added `opencode-go-api-key` credential to `patch-agent-template.yaml` injecting `env: OPENCODE_API_KEY`.
+     - Automatically connects `opencode-go` provider, giving access to all 33+ models (DeepSeek, Claude Haiku, GPT-5/6 Luna, Grok, Qwen, etc.).
+
+### B. Live Cluster Verification (`k3s-ziti`)
+
+1. **Secret Synchronization**:
+   - `Secret/opencode-go-creds` and `Secret/google-creds` are synced and ready in both `tenant-infra-bootstrap-tools` and `tenant-cncf-landscape-a-to-z`.
+2. **Connected Providers**:
+   - In-pod verification on `:4096/provider` confirms all four providers are active:
+     ```json
+     ["google", "opencode", "opencode-go", "github-copilot"]
+     ```
+3. **Execution Verification**:
+   - **Google Gemini**:
+     ```bash
+     $ /tools/opencode run --model google/gemini-flash-lite-latest "say hello from google gemini"
+     > build · gemini-flash-lite-latest
+     hello from google gemini
+     ```
+   - **OpenCode Go**:
+     Authenticated and connected to organization `org_01M6YR9ZMC4T85EEXGCF13SQPN`.
+
