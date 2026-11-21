@@ -1,5 +1,11 @@
 # kubernetes-apps
 
+## 0.2.3
+
+### Patch Changes
+
+- a27cc6f: add kubeopencode-agent runtime ServiceAccount and scoped RBAC to ResourceSet factory, and configure tenant namespace Pod Security Standard enforcement to baseline
+
 ## 0.2.2
 
 ### Patch Changes
