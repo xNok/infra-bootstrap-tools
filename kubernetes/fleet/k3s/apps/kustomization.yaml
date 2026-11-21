@@ -4,5 +4,4 @@ kind: Kustomization
 resources:
   - 0-source.yaml
   - kubeopencode
-  - palette-agent
   - tenants.yaml
