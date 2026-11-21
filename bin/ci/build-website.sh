@@ -27,9 +27,13 @@ hugo \
   --minify \
   --baseURL "${BASE_URL}/"
 
+echo "Building search index with Pagefind..."
+pagefind --site public
+
 # Output summary to GitHub step summary if running in CI
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
   echo "### :rocket: Website Built Successfully" >> "$GITHUB_STEP_SUMMARY"
   echo "**Hugo Version**: \`${HUGO_VERSION}\`" >> "$GITHUB_STEP_SUMMARY"
   echo "**Base URL**: \`${BASE_URL}\`" >> "$GITHUB_STEP_SUMMARY"
+  echo "**Search Index**: Generated with Pagefind" >> "$GITHUB_STEP_SUMMARY"
 fi

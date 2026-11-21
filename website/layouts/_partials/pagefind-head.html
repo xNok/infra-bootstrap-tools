@@ -1,0 +1,4 @@
+{{ with site.Params.enablePageFind }}
+<pagefind-config bundle-path="{{ "pagefind/" | relURL }}"></pagefind-config>
+<link href="{{ "pagefind/pagefind-component-ui.css" | absURL }}" rel="stylesheet">
+{{ end }}

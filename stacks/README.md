@@ -45,7 +45,7 @@ For production, use the standard `.yaml` files. These can be deployed:
 	```
 
 - **Via Portainer:**  
-	Upload or point Portainer to the stack YAML file, or use a GitOps workflow to manage stacks from a Git repository. See [Portainer documentation](../../website/content/en/docs/a2.portainer.md) for more details.
+	Upload or point Portainer to the stack YAML file, or use a GitOps workflow to manage stacks from a Git repository. See [Portainer documentation](../../website/content/en/docs/c2.portainer.md) for more details.
 
 ## Structure
 
@@ -58,7 +58,7 @@ For production, use the standard `.yaml` files. These can be deployed:
 ## Best Practices
 
 - **Secrets & Sensitive Data:**  
-	Do not hardcode secrets in stack files. Use Docker secrets, environment variables, or integrate with secret management tools (see [Secrets Management Guide](../../website/content/en/docs/gs1.getting_started.md#configuration---secrets-management)).
+	Do not hardcode secrets in stack files. Use Docker secrets, environment variables, or integrate with secret management tools (see [Secrets Management Guide](../../website/content/en/docs/a2.getting-started.md#configuration-secrets-management)).
 - **Modularity:**  
 	Compose stacks from multiple files to enable flexible combinations for different environments.
 - **Portainer Templates:**  
@@ -71,7 +71,7 @@ For production, use the standard `.yaml` files. These can be deployed:
 
 ## Further Reading
 
-- [Getting Started Guide](../../website/content/en/docs/gs1.getting_started.md)
-- [Portainer Management UI](../../website/content/en/docs/a2.portainer.md)
-- [Docker Swarm Setup](../../website/content/en/docs/b3.docker_swarm.md)
+- [Getting Started Guide](../../website/content/en/docs/a2.getting-started.md)
+- [Portainer Management UI](../../website/content/en/docs/c2.portainer.md)
+- [Docker Swarm Setup](../../website/content/en/docs/b3.docker-swarm-setup.md)
 
