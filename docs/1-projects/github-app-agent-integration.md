@@ -825,3 +825,27 @@ Following these fixes:
      - **The Catalogue Library** remains preserved in [`kubernetes/apps/kubeopencode-agents/palette-agent/`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/apps/kubeopencode-agents/palette-agent/) (published to OCI) as the reusable persona and template blueprint.
      - **The Fleet Deployment** in [`kubernetes/fleet/k3s/apps/`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/fleet/k3s/apps/) was pruned by removing `- palette-agent` from `kustomization.yaml`.
      - Flux's root `prune: true` automatically garbage collects the child Kustomizations and the `agentic-workflows` namespace, resolving the dangling health-check errors and removing the duplicate entry from the KubeOpenCode UI.
+
+### C. Live Verification: Pruning, Agent Standby, and Kyverno Remediation
+
+1. **Successful Pruning of Prototype Agent (`palette-agent`)**:
+   - Following PR #259 merge and OCI artifact publishing, `flux-system` reconciled revision `latest@sha256:8ad8d74a`.
+   - The child Kustomizations `palette-agent-instance` and `palette-agent-catalogue` were automatically pruned.
+   - The namespace `agentic-workflows` and `Agent/palette-agent` were cleanly deleted from the cluster.
+   - `http://opencode.ziti/api/v1/namespaces/agentic-workflows/agents/palette-agent` returns `404 Not Found`.
+   - The KubeOpenCode Web UI at `http://opencode.ziti/agents/` now exclusively surfaces the two sovereign tenant agents: `infra-bootstrap-agent` and `cncf-landscape-agent`.
+
+2. **KubeOpenCode Agent Standby (Scale-to-Zero)**:
+   - KubeOpenCode controller enforces the configured `spec.standby.idleTimeout: 30m`.
+   - After 30 minutes of inactivity, `cncf-landscape-agent` was automatically placed in standby (`reason: Standby`, `type: Suspended`). The deployment `cncf-landscape-agent-server` was scaled from 1 to 0 replicas to conserve cluster resources.
+   - When a task or user request triggers the agent, the controller automatically clears `suspend` and scales the deployment back to 1 replica.
+
+3. **Kyverno Helm Uninstall Loop Resolution**:
+   - **Incident**: Flux reported `Helm uninstall failed for release kyverno/kyverno-kyverno.v1 with chart kyverno@3.9.2: timeout waiting for: [Job/kyverno/kyverno-kyverno-scale-to-zero status: 'InProgress']`.
+   - **Root Cause**: A 10-day-old Helm release secret `sh.helm.release.v1.kyverno-kyverno.v1` in `flux-system` was stuck in `uninstalling`. Kyverno's pre-delete hook failed because `serviceaccount/kyverno-admission-controller` was absent, leaving 10 orphaned webhook configurations blocking admission.
+   - **Remediation**:
+     1. Removed the 10 orphaned Kyverno `ValidatingWebhookConfiguration` and `MutatingWebhookConfiguration` objects.
+     2. Deleted the stuck Helm release secret `sh.helm.release.v1.kyverno-kyverno.v1` in `flux-system`.
+     3. Restarted `helm-controller` deployment.
+     4. Flux cleanly executed `Helm install` for `kyverno` (v3.9.2) and `kyverno-policies` (v3.9.2).
+   - **Verification**: All 4 Kyverno pods reached `1/1 Running`, and all 10 HelmReleases across the cluster are `READY: True`.
