@@ -1,5 +1,12 @@
 # kubernetes-apps
 
+## 0.2.4
+
+### Patch Changes
+
+- 7d70484: Add OpenCode Go provider (`OPENCODE_API_KEY`) and Google Generative AI (`GOOGLE_GENERATIVE_AI_API_KEY`) credentials to tenant agent templates.
+- 42069b7: Migrate KubeOpenCode fleet and tenant agent templates to the Single Router Key pattern (`OPENCODE_API_KEY` only) routed through OpenCode AI Gateway, removing direct Google API secrets from Kubernetes.
+
 ## 0.2.3
 
 ### Patch Changes
