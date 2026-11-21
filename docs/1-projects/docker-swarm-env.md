@@ -413,12 +413,12 @@ Only run playbooks for roles that have changed:
 
 ## Documentation Links
 
-- [Getting Started Guide](../../website/content/en/docs/gs1.getting_started.md)
-- [Ansible Concepts](../../website/content/en/docs/b1.ansible_concepts.md)
-- [Docker Swarm Setup](../../website/content/en/docs/b3.docker_swarm.md)
-- [Caddy Documentation](../../website/content/en/docs/a1.caddy.md)
-- [Portainer Documentation](../../website/content/en/docs/a2.portainer.md)
-- [Terraform + Ansible](../../website/content/en/docs/b2.terraform_ansible.md)
+- [Getting Started Guide](../../website/content/en/docs/a2.getting-started.md)
+- [Ansible Concepts](../../website/content/en/docs/b1.understanding-ansible-concepts.md)
+- [Docker Swarm Setup](../../website/content/en/docs/b3.docker-swarm-setup.md)
+- [Caddy Documentation](../../website/content/en/docs/c1.caddy.md)
+- [Portainer Documentation](../../website/content/en/docs/c2.portainer.md)
+- [Terraform + Ansible](../../website/content/en/docs/b2.combining-ansible-and-terraform.md)
 - [Ansible Collection README](../../ansible/README.md)
 
 ### Blog Posts / Tutorials

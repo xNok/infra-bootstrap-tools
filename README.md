@@ -127,7 +127,7 @@ Alternatively, you can use Gitpod to get a pre-configured development environmen
 
 ## 🚀 Quick Start
 
-Got your [prerequisites](./website/content/en/docs/gs1.getting_started.md#prerequisites) and [secrets configured](./website/content/en/docs/gs1.getting_started.md#configuration-secrets-management)?
+Got your [prerequisites](website/content/en/docs/a2.getting-started.md#prerequisites) and [secrets configured](website/content/en/docs/a2.getting-started.md#configuration-secrets-management)?
 
 Deploy your entire infrastructure with a single command:
 
@@ -147,9 +147,9 @@ To tear down the infrastructure:
 make down
 ```
 
-For a detailed step-by-step guide, including prerequisites and secret management options, please refer to our **[Full Getting Started Guide](./website/content/en/docs/gs1.getting_started.md)**.
+For a detailed step-by-step guide, including prerequisites and secret management options, please refer to our **[Full Getting Started Guide](website/content/en/docs/a2.getting-started.md)**.
 
-To understand the underlying Ansible concepts, check out **[Understanding Ansible Concepts](./website/content/en/docs/b1.ansible_concepts.md)**.
+To understand the underlying Ansible concepts, check out **[Understanding Ansible Concepts](website/content/en/docs/b1.understanding-ansible-concepts.md)**.
 
 ## Articles and Tutorials
 
@@ -191,9 +191,9 @@ These articles cover setting up local test environments and exploring specific c
 
 ### Learn about the applications used in this setup
 
-* [ ] WIP: ☸️ 1: [What is Portainer and why you might need it.]() (Covered by [Portainer Management UI](./website/content/en/docs/a2.portainer.md))
+* [ ] WIP: ☸️ 1: [What is Portainer and why you might need it.]() (Covered by [Portainer Management UI](website/content/en/docs/c2.portainer.md))
 * [ ] WIP: ☸️ 2: [What is Prometheus and why you might need it.]()
-* [ ] WIP: ☸️ 3: [What is Caddy and why you might need it.]() (Covered by [Caddy Web Server](./website/content/en/docs/a1.caddy.md))
+* [ ] WIP: ☸️ 3: [What is Caddy and why you might need it.]() (Covered by [Caddy Web Server](website/content/en/docs/c1.caddy.md))
 
 ### Deep Dives
 
