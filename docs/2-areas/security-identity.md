@@ -9,6 +9,7 @@ related_resources:
   - spire-spiffe
   - keycloak
   - docker-secrets
+  - external-secrets-operator
 ---
 
 # Security & Identity

@@ -12,13 +12,15 @@ spec:
     - name: cncf-landscape-a-to-z
       repo: https://github.com/mekitmedia/cncf-landscape-a-to-z.git
       branch: main
-      appId: "123456"
-      installId: "7891011"
+      workloadPath: ./tenants/cncf-landscape-a-to-z/1-workload
+      appId: "5866072"
+      installId: "184456098"
     - name: infra-bootstrap-tools
       repo: https://github.com/xNok/infra-bootstrap-tools.git
       branch: main
-      appId: "123456"
-      installId: "7891012"
+      workloadPath: ./tenants/infra-bootstrap-tools/1-workload
+      appId: "5866072"
+      installId: "184455973"
   resources:
     # 1. Tenant Namespace with Restricted Pod Security Standard
     - apiVersion: v1
@@ -119,8 +121,27 @@ spec:
           name: kubeopencode-controller
           namespace: kubeopencode-system
 
-    # 7. ExternalSecret & GithubAccessToken Generator
-    - apiVersion: external-secrets.io/v1beta1
+    # 7. ExternalSecret for GitHub App Private Key (synced from 1Password)
+    - apiVersion: external-secrets.io/v1
+      kind: ExternalSecret
+      metadata:
+        name: github-app-private-key
+        namespace: tenant-<< inputs.name >>
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          kind: ClusterSecretStore
+          name: onepassword
+        target:
+          name: github-app-private-key
+          creationPolicy: Owner
+        data:
+          - secretKey: private-key.pem
+            remoteRef:
+              key: xnok-kubeopencode.2026-11-21.private-key/private key
+
+    # 8. ExternalSecret & GithubAccessToken Generator (Dynamic Token Exchange)
+    - apiVersion: external-secrets.io/v1
       kind: ExternalSecret
       metadata:
         name: github-creds
@@ -155,7 +176,7 @@ spec:
               name: github-app-private-key
               key: private-key.pem
 
-    # 8. ExternalSecret for Shared LLM Credentials
+    # 9. ExternalSecret for Shared LLM Credentials
     - apiVersion: external-secrets.io/v1
       kind: ExternalSecret
       metadata:
@@ -174,7 +195,7 @@ spec:
             remoteRef:
               key: KUBEOPENCODE_GOOGLE_API_KEY/password
 
-    # 9. Egress NetworkPolicy
+    # 10. Egress NetworkPolicy
     - apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
       metadata:
@@ -211,7 +232,7 @@ spec:
               - protocol: TCP
                 port: 443
 
-    # 10. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
+    # 11. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
@@ -219,7 +240,7 @@ spec:
         namespace: flux-system
       spec:
         interval: 10m
-        path: << inputs.workloadPath | default (printf "./tenants/%s/1-workload" inputs.name) >>
+        path: << index inputs "workloadPath" | default (printf "./tenants/%s/1-workload" inputs.name) >>
         prune: true
         targetNamespace: tenant-<< inputs.name >>
         serviceAccountName: tenant-<< inputs.name >>-applier

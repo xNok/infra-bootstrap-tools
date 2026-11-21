@@ -2,7 +2,6 @@ apiVersion: kubeopencode.io/v1alpha1
 kind: AgentTemplate
 metadata:
   name: infra-bootstrap-base
-  namespace: tenant-infra-bootstrap-tools
 spec:
   # Credentials injected centrally by infra-bootstrap-tools
   credentials:
@@ -19,15 +18,15 @@ spec:
 
   # Pod specifications, Git bot committer identity, and security hardening
   podSpec:
-    env:
+    extraEnv:
       - name: GIT_AUTHOR_NAME
-        value: "infra-bootstrap-agent[bot]"
+        value: "xnok-kubeopencode[bot]"
       - name: GIT_AUTHOR_EMAIL
-        value: "123456+infra-bootstrap-agent[bot]@users.noreply.github.com"
+        value: "5866072+xnok-kubeopencode[bot]@users.noreply.github.com"
       - name: GIT_COMMITTER_NAME
-        value: "infra-bootstrap-agent[bot]"
+        value: "xnok-kubeopencode[bot]"
       - name: GIT_COMMITTER_EMAIL
-        value: "123456+infra-bootstrap-agent[bot]@users.noreply.github.com"
+        value: "5866072+xnok-kubeopencode[bot]@users.noreply.github.com"
     securityContext:
       runAsNonRoot: true
       allowPrivilegeEscalation: false

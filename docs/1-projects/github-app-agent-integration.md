@@ -712,4 +712,103 @@ The key-value pairs from `config.yaml` are exported directly into `ExternalArtif
 | **6** | **Repo #3 Onboarding** | Adding a new repo must be fast, minimal, and repeatable. | ✅ **VERIFIED**: **3 Steps**: Add 6 lines to `tenants.yaml`, add 2 files to `apps/tenants/<repo>/1-workload/`, commit and push. All envelope resources are auto-generated. |
 | **7** | **Future Escape Gate** | Path to zero-file GitOps and dynamic config composition. | ✅ **VERIFIED**: Fully documented [Flux ArtifactGenerator](https://fluxcd.io/flux/components/source/artifactgenerators/) (`source.extensions.fluxcd.io/v1beta1`) as the future escape gate to compose sources in-cluster and feed `ResourceSet.inputsFrom`. |
 
+---
+
+## 11. Production GitHub App Provisioning & Credentials Integration
+
+The production GitHub App has been provisioned, installed, and wired into the cluster GitOps configuration with automated token rotation and verified bot committer identities.
+
+### A. GitHub App Parameters & Verified Permissions
+
+| Parameter | Production Value | Description |
+| :--- | :--- | :--- |
+| **App Name** | `xNok KubeOpencode` | Display name in GitHub UI |
+| **App Slug** | `xnok-kubeopencode` | Canonical identifier for GitHub bot URLs and badges |
+| **App ID** | `5866072` | Top-level GitHub application identifier |
+| **HTML URL** | `https://github.com/apps/xnok-kubeopencode` | Public profile for the GitHub App |
+| **Homepage URL** | `https://github.com/xNok/infra-bootstrap-tools` | Informational project homepage |
+| **Webhooks** | **Disabled** (`active: false`) | Tasks run via Kubernetes/Flux CronTask schedules; no ingress webhook needed |
+| **Installation 1** | `184455973` | Target: `xNok/infra-bootstrap-tools` (Personal Account) |
+| **Installation 2** | `184456098` | Target: `mekitmedia/cncf-landscape-a-to-z` (Organization) |
+
+#### Granted Repository Permissions (Tested & Verified via GitHub API)
+- **`contents: write`**: Clone source code, create git branches, commit files, and push changes.
+- **`pull_requests: write`**: Open PRs, update PR descriptions, assign reviewers, and comment.
+- **`issues: write`**: Read issue descriptions, comment on agent progress, and manage labels.
+- **`workflows: write`**: Author or modify CI workflows under `.github/workflows/`.
+- **`metadata: read`**: Access repository metadata (default requirement for GitHub Apps).
+
+---
+
+### B. Automated Secret Management & Dynamic Token Rotation Pipeline
+
+```
+┌───────────────────────────────────────────────────────────────────────────────────────┐
+│                        GITHUB APP TOKEN ROTATION PIPELINE                             │
+├───────────────────────────────────────────────────────────────────────────────────────┤
+│ 1. VAULT STORAGE (1Password)                                                          │
+│    • Item: xnok-kubeopencode.2026-11-21.private-key                                   │
+│    • Field: private key (SSHKEY / RSA 2048-bit PEM)                                   │
+│    • Vault: infra-bootstrap-tools                                                     │
+├───────────────────────────────────────────────────────────────────────────────────────┤
+│ 2. IN-CLUSTER SYNCHRONIZATION (External Secrets Operator)                             │
+│    • ClusterSecretStore: onepassword (provider: onepasswordSDK)                       │
+│    • ResourceSet templates ExternalSecret in each tenant namespace:                   │
+│      - Secret/github-app-private-key (key: private-key.pem, refresh: 1h)              │
+├───────────────────────────────────────────────────────────────────────────────────────┤
+│ 3. DYNAMIC TOKEN EXCHANGE (generators.external-secrets.io/v1alpha1)                   │
+│    • ResourceSet templates GithubAccessToken generator per tenant:                    │
+│      - appID: "5866072"                                                               │
+│      - installID: << inputs.installId >> (184455973 or 184456098)                    │
+│      - privateKey: Secret/github-app-private-key                                      │
+│    • ExternalSecret/github-creds triggers exchange every 50m (token lifetime: 1h)     │
+│    • Injects short-lived installation token into Secret/github-creds (key: token)     │
+├───────────────────────────────────────────────────────────────────────────────────────┤
+│ 4. AGENT POD INGESTION                                                                │
+│    • AgentTemplate mounts Secret/github-creds as GITHUB_TOKEN                         │
+│    • Workloads authenticate autonomously without long-lived personal tokens           │
+└───────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### C. Bot Committer Identity Standard
+
+When an agent commits code or creates branches, Git commits are signed and attributed to the official GitHub App bot:
+- **`GIT_AUTHOR_NAME`**: `xnok-kubeopencode[bot]`
+- **`GIT_AUTHOR_EMAIL`**: `5866072+xnok-kubeopencode[bot]@users.noreply.github.com`
+- **`GIT_COMMITTER_NAME`**: `xnok-kubeopencode[bot]`
+- **`GIT_COMMITTER_EMAIL`**: `5866072+xnok-kubeopencode[bot]@users.noreply.github.com`
+
+*Outcome*: GitHub automatically associates all agent commits with the official verified `bot` badge linked directly to `https://github.com/apps/xnok-kubeopencode`.
+
+---
+
+## 12. Cluster Live Deployment & Schema Validation (`k3s-ziti`)
+
+Direct cluster reconciliation and server dry-run validation against the live cluster (`ns3118807`, context `k3s-ziti`) revealed four critical production schema constraints:
+
+### A. Diagnosed Production Blockers & Fixes
+
+| Issue Identified in Cluster | Root Cause | Fix Applied |
+| :--- | :--- | :--- |
+| **1. ResourceSet Template Crash** | Go text template crashed on missing map key: `map has no entry for key "workloadPath"`. | Explicitly declared `workloadPath` in `inputs:` and safely accessed via `<< index inputs "workloadPath" \| default ... >>`. |
+| **2. Deprecated `v1beta1` ExternalSecret** | ESO cluster CRD only serves `v1` (`v1beta1 served=false`). Dry-run failed with `no matches for kind ExternalSecret in version external-secrets.io/v1beta1`. | Updated `github-creds` to `apiVersion: external-secrets.io/v1`. |
+| **3. 1Password Secret Reference Format** | ESO 1Password SDK rejected `key` without slash when `property` was used (`secret reference has invalid format`). | Changed to standard `key: xnok-kubeopencode.2026-11-21.private-key/private key`. |
+| **4. AgentTemplate Schema Mismatch** | KubeOpenCode `AgentTemplate` CRD does not have `podSpec.env`; it defines `podSpec.extraEnv`. | Renamed `env:` to `extraEnv:` in workload patch overlays. |
+| **5. Cross-Namespace Patch Selection** | Upstream base declared `tenant-cncf-landscape`; Kustomize patch failed to match target. | Switched to Kustomize `target: {kind: AgentTemplate, name: ...}` selector with root `namespace:` transformation. |
+
+### B. Live Cluster Status
+
+Following these fixes:
+1. **`ResourceSet/kubeopencode-tenant-factory`**: Successfully reconciled (`Reconciliation finished in 779ms`, Status: `True`).
+2. **Namespaces Created**: `tenant-infra-bootstrap-tools` and `tenant-cncf-landscape-a-to-z` are Active.
+3. **Applier ServiceAccounts & RBAC**: `tenant-*-applier` created in `flux-system` with impersonation permissions strictly bound to `kubeopencode.io/*` and `configmaps`.
+4. **Secret Synchronization**:
+   - `Secret/github-app-private-key`: Successfully synced from 1Password (`SecretSynced: True`).
+   - `Secret/github-creds`: Dynamic 1-hour GitHub App access token generated and auto-rotated every 50m (`SecretSynced: True`).
+   - `Secret/google-creds`: Successfully synced from 1Password (`SecretSynced: True`).
+5. **Workload Server Dry-Run**: Validated via impersonation (`--as=system:serviceaccount:flux-system:tenant-*-applier`); all `Agent`, `AgentTemplate`, and `CronTask` resources compile and validate against Kubernetes API admission controls.
+
+
 
