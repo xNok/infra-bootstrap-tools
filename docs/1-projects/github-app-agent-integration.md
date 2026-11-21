@@ -890,3 +890,51 @@ Following these fixes:
    - **OpenCode Go**:
      Authenticated and connected to organization `org_01M6YR9ZMC4T85EEXGCF13SQPN`.
 
+---
+
+## 14. Architecture: Single Router Key Pattern (`OPENCODE_API_KEY`) & KubeOpenCode Config
+
+### A. Context & Verification
+We investigated whether maintaining multiple API keys (Google API Key + OpenCode Key) in Kubernetes can be reduced to a single key: `OPENCODE_API_KEY`.
+OpenCode Console acts as an AI Gateway reverse proxy (`https://opencode.ai/inference/custom/conn_<id>`). When authenticated with `OPENCODE_API_KEY`, OpenCode Console attaches the stored BYO Google API key and forwards inference to Google AI, tagging it with `billing_source: byok`.
+
+Live cluster testing in `infra-bootstrap-agent-server` confirmed:
+1. Direct cURL test with `OPENCODE_API_KEY` and header `x-org-id` returned HTTP 200 from Google Gemini (`gemini-3.5-flash-lite`, `billing_source: byok`).
+2. OpenCode configuration natively supports environment variable interpolation (`{env:OPENCODE_API_KEY}`) without baking tokens into files or Git.
+3. OpenCode CLI executed an agent run successfully with `GOOGLE_API_KEY` and `GOOGLE_GENERATIVE_AI_API_KEY` unset, using solely `OPENCODE_API_KEY` routed through OpenCode Gateway.
+
+### B. Config Management Strategy for KubeOpenCode
+
+In KubeOpenCode, configuration is managed across three distinct layers:
+
+1. **Factory Layer (Fleet Infrastructure - `ResourceSet/kubeopencode-tenant-factory`)**:
+   - Manages shared infrastructure and credentials.
+   - For single router key, only `ExternalSecret/opencode-go-creds` is needed. `ExternalSecret/google-creds` can be completely eliminated.
+
+2. **Blueprint Layer (Catalogue Base - `AgentTemplate`)**:
+   - `AgentTemplate` supports two configuration approaches:
+     - **Inline `spec.config` (Recommended for GitOps)**: Directly embed the OpenCode configuration schema in YAML. KubeOpenCode automatically serializes it to JSON and injects it into the agent's `/tools/opencode.json` via the context ConfigMap (`<agent>-server-context`). This works seamlessly with Kustomize patches.
+     - **External `spec.configRef.configMapRef`**: References a standalone ConfigMap. Best if multiple distinct `AgentTemplate` definitions share identical configurations.
+   - For the router key pattern:
+     ```yaml
+     spec:
+       config:
+         model: google/gemini-flash-lite-latest
+         share: disabled
+         autoupdate: false
+         provider:
+           google:
+             options:
+               baseURL: "https://opencode.ai/inference/custom/conn_01M6YV88K9TD9M17A40KCF15SZ"
+               apiKey: "{env:OPENCODE_API_KEY}"
+               headers:
+                 x-org-id: "org_01M6YR9ZMC4T85EEXGCF13SQPN"
+                 Authorization: "Bearer {env:OPENCODE_API_KEY}"
+     ```
+
+3. **Tenant Workload Layer (`1-workload/patch-agent-template.yaml`)**:
+   - Patches the base `AgentTemplate` with tenant-specific overrides:
+     - Credentials: only `github` (`github-token-creds`) and `opencode` (`opencode-go-creds`).
+     - Models: can override `model:` or `small_model:` per tenant if needed.
+
+

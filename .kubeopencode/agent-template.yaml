@@ -28,11 +28,19 @@ spec:
           policy: HotReload
       mountPath: .
 
-  # OpenCode LLM configuration
+  # OpenCode LLM configuration routed through OpenCode AI Gateway
   config:
     $schema: https://opencode.ai/config.json
     model: google/gemini-flash-lite-latest
     small_model: google/gemini-flash-lite-latest
+    provider:
+      google:
+        options:
+          baseURL: "https://opencode.ai/inference/custom/conn_01M6YV88K9TD9M17A40KCF15SZ"
+          apiKey: "{env:OPENCODE_API_KEY}"
+          headers:
+            x-org-id: "org_01M6YR9ZMC4T85EEXGCF13SQPN"
+            Authorization: "Bearer {env:OPENCODE_API_KEY}"
 
   # Concurrency limits and rate limiting
   maxConcurrentTasks: 3

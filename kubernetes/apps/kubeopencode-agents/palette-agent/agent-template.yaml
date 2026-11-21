@@ -37,13 +37,23 @@ spec:
     - name: github
       secretRef:
         name: github-token-creds
-    - name: llm
+    - name: opencode
       secretRef:
-        name: llm-api-creds
-  # Default LLM Configuration
+        name: opencode-go-creds
+        key: api-key
+      env: OPENCODE_API_KEY
+  # Default LLM Configuration routed through OpenCode AI Gateway
   config:
     model: google/gemini-flash-lite-latest
     share: disabled
     autoupdate: false
+    provider:
+      google:
+        options:
+          baseURL: "https://opencode.ai/inference/custom/conn_01M6YV88K9TD9M17A40KCF15SZ"
+          apiKey: "{env:OPENCODE_API_KEY}"
+          headers:
+            x-org-id: "org_01M6YR9ZMC4T85EEXGCF13SQPN"
+            Authorization: "Bearer {env:OPENCODE_API_KEY}"
 
 
