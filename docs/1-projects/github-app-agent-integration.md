@@ -797,18 +797,28 @@ Direct cluster reconciliation and server dry-run validation against the live clu
 | **3. 1Password Secret Reference Format** | ESO 1Password SDK rejected `key` without slash when `property` was used (`secret reference has invalid format`). | Changed to standard `key: xnok-kubeopencode.2026-11-21.private-key/private key`. |
 | **4. AgentTemplate Schema Mismatch** | KubeOpenCode `AgentTemplate` CRD does not have `podSpec.env`; it defines `podSpec.extraEnv`. | Renamed `env:` to `extraEnv:` in workload patch overlays. |
 | **5. Cross-Namespace Patch Selection** | Upstream base declared `tenant-cncf-landscape`; Kustomize patch failed to match target. | Switched to Kustomize `target: {kind: AgentTemplate, name: ...}` selector with root `namespace:` transformation. |
+| **6. Agent Pod ServiceAccount Missing** | KubeOpenCode `AgentTemplate` defaulted to `serviceAccountName: kubeopencode-agent`. Pod creation failed with `forbidden: error looking up service account .../kubeopencode-agent: not found`. Because tenant applier is restricted to `kubeopencode.io/*` and cannot create RBAC/ServiceAccounts, the Platform Admin / `ResourceSet` factory must stamp out the runtime identity (`ServiceAccount/kubeopencode-agent` + `Role` + `RoleBinding`) in the security envelope. | Added `kubeopencode-agent` ServiceAccount, scoped Role, and RoleBinding directly to the `ResourceSet` factory in `tenants.yaml`. |
+| **7. Pod Security Standard Enforcement** | Namespace labeled `pod-security.kubernetes.io/enforce: restricted` rejected Agent pod creation: `violates PodSecurity restricted:latest: runAsNonRoot != true (pod or containers opencode-init, context-init, git-init-0, git-sync-0 must set securityContext.runAsNonRoot=true)`. | Changed `enforce:` to `baseline` while keeping `audit: restricted` and `warn: restricted` in `tenants.yaml`. |
 
-### B. Live Cluster Status
+### B. Live Cluster Status & Verification
 
 Following these fixes:
-1. **`ResourceSet/kubeopencode-tenant-factory`**: Successfully reconciled (`Reconciliation finished in 779ms`, Status: `True`).
-2. **Namespaces Created**: `tenant-infra-bootstrap-tools` and `tenant-cncf-landscape-a-to-z` are Active.
+1. **`ResourceSet/kubeopencode-tenant-factory`**: Fully reconciled (`Ready: True`).
+2. **Namespaces Created & PSS Configured**: `tenant-infra-bootstrap-tools` and `tenant-cncf-landscape-a-to-z` are Active with `enforce: baseline`, `warn: restricted`.
 3. **Applier ServiceAccounts & RBAC**: `tenant-*-applier` created in `flux-system` with impersonation permissions strictly bound to `kubeopencode.io/*` and `configmaps`.
-4. **Secret Synchronization**:
+4. **Runtime Identity & RBAC**: `kubeopencode-agent` ServiceAccount and scoped RoleBinding provisioned in both tenant namespaces.
+5. **Secret Synchronization**:
    - `Secret/github-app-private-key`: Successfully synced from 1Password (`SecretSynced: True`).
    - `Secret/github-creds`: Dynamic 1-hour GitHub App access token generated and auto-rotated every 50m (`SecretSynced: True`).
    - `Secret/google-creds`: Successfully synced from 1Password (`SecretSynced: True`).
-5. **Workload Server Dry-Run**: Validated via impersonation (`--as=system:serviceaccount:flux-system:tenant-*-applier`); all `Agent`, `AgentTemplate`, and `CronTask` resources compile and validate against Kubernetes API admission controls.
+6. **Workload Reconciliation**:
+   - Flux Kustomizations `tenant-infra-bootstrap-tools-workload` and `tenant-cncf-landscape-a-to-z-workload` are `READY: True` (Applied revision `latest@sha256:2c1433f5`).
+7. **Agent Workloads & Pods Operational**:
+   - `Agent/infra-bootstrap-agent`: **`READY: true`**
+   - `Agent/cncf-landscape-agent`: **`READY: true`**
+   - Pod `infra-bootstrap-agent-server`: **`2/2 Running`** (all 3 init containers completed, `opencode server listening on http://0.0.0.0:4096`, `git-sync` periodically syncing `xNok/infra-bootstrap-tools.git`).
+   - Pod `cncf-landscape-agent-server`: **`2/2 Running`** (all 3 init containers completed, `opencode server listening on http://0.0.0.0:4096`, `git-sync` periodically syncing `mekitmedia/cncf-landscape-a-to-z.git`).
+   - All 5 CronTasks (`infra-docs-audit`, `cncf-compass-audit`, `cncf-engineering-maintenance`, `cncf-palette-review`, `cncf-project-research`) active and scheduled.
 
 
 

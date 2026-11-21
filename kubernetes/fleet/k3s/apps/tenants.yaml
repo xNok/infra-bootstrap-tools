@@ -22,13 +22,13 @@ spec:
       appId: "5866072"
       installId: "184455973"
   resources:
-    # 1. Tenant Namespace with Restricted Pod Security Standard
+    # 1. Tenant Namespace with Baseline Pod Security Standard
     - apiVersion: v1
       kind: Namespace
       metadata:
         name: tenant-<< inputs.name >>
         labels:
-          pod-security.kubernetes.io/enforce: restricted
+          pod-security.kubernetes.io/enforce: baseline
           pod-security.kubernetes.io/audit: restricted
           pod-security.kubernetes.io/warn: restricted
           app.kubernetes.io/part-of: << inputs.name >>
@@ -121,7 +121,41 @@ spec:
           name: kubeopencode-controller
           namespace: kubeopencode-system
 
-    # 7. ExternalSecret for GitHub App Private Key (synced from 1Password)
+    # 7. Agent Runtime ServiceAccount & Least-Privilege RBAC
+    - apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: kubeopencode-agent
+        namespace: tenant-<< inputs.name >>
+
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: kubeopencode-agent-role
+        namespace: tenant-<< inputs.name >>
+      rules:
+        - apiGroups: ["kubeopencode.io"]
+          resources: ["tasks"]
+          verbs: ["get", "list", "watch", "update", "patch"]
+        - apiGroups: [""]
+          resources: ["pods", "pods/log", "events"]
+          verbs: ["get", "list", "watch"]
+
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: kubeopencode-agent-rolebinding
+        namespace: tenant-<< inputs.name >>
+      subjects:
+        - kind: ServiceAccount
+          name: kubeopencode-agent
+          namespace: tenant-<< inputs.name >>
+      roleRef:
+        kind: Role
+        name: kubeopencode-agent-role
+        apiGroup: rbac.authorization.k8s.io
+
+    # 8. ExternalSecret for GitHub App Private Key (synced from 1Password)
     - apiVersion: external-secrets.io/v1
       kind: ExternalSecret
       metadata:
@@ -140,7 +174,7 @@ spec:
             remoteRef:
               key: xnok-kubeopencode.2026-11-21.private-key/private key
 
-    # 8. ExternalSecret & GithubAccessToken Generator (Dynamic Token Exchange)
+    # 9. ExternalSecret & GithubAccessToken Generator (Dynamic Token Exchange)
     - apiVersion: external-secrets.io/v1
       kind: ExternalSecret
       metadata:
@@ -176,7 +210,7 @@ spec:
               name: github-app-private-key
               key: private-key.pem
 
-    # 9. ExternalSecret for Shared LLM Credentials
+    # 10. ExternalSecret for Shared LLM Credentials
     - apiVersion: external-secrets.io/v1
       kind: ExternalSecret
       metadata:
@@ -195,7 +229,7 @@ spec:
             remoteRef:
               key: KUBEOPENCODE_GOOGLE_API_KEY/password
 
-    # 10. Egress NetworkPolicy
+    # 11. Egress NetworkPolicy
     - apiVersion: networking.k8s.io/v1
       kind: NetworkPolicy
       metadata:
@@ -232,7 +266,7 @@ spec:
               - protocol: TCP
                 port: 443
 
-    # 11. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
+    # 12. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
     - apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
