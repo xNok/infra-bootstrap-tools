@@ -1,5 +1,11 @@
 # kubernetes-apps
 
+## 0.2.2
+
+### Patch Changes
+
+- ed0f857: feat(tenants): wire live GitHub App bot identity and fix AgentTemplate extraEnv schema
+
 ## 0.2.1
 
 ### Patch Changes
