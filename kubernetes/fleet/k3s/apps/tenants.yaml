@@ -1,0 +1,230 @@
+# Flux Operator ResourceSet Factory (Static 2-Tenant Dogfooding)
+# Statically provisions tenant security envelopes and least-privilege appliers
+# for the 2 initial repositories: cncf-landscape-a-to-z and infra-bootstrap-tools.
+# Ref: https://fluxoperator.dev/docs/crd/resourceset/
+apiVersion: fluxcd.controlplane.io/v1
+kind: ResourceSet
+metadata:
+  name: kubeopencode-tenant-factory
+  namespace: flux-system
+spec:
+  inputs:
+    - name: cncf-landscape-a-to-z
+      repo: https://github.com/mekitmedia/cncf-landscape-a-to-z.git
+      branch: main
+      appId: "123456"
+      installId: "7891011"
+    - name: infra-bootstrap-tools
+      repo: https://github.com/xNok/infra-bootstrap-tools.git
+      branch: main
+      appId: "123456"
+      installId: "7891012"
+  resources:
+    # 1. Tenant Namespace with Restricted Pod Security Standard
+    - apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: tenant-<< inputs.name >>
+        labels:
+          pod-security.kubernetes.io/enforce: restricted
+          pod-security.kubernetes.io/audit: restricted
+          pod-security.kubernetes.io/warn: restricted
+          app.kubernetes.io/part-of: << inputs.name >>
+
+    # 2. Impersonated ServiceAccount in flux-system
+    - apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: tenant-<< inputs.name >>-applier
+        namespace: flux-system
+
+    # 3. Restricted Workload Role (kubeopencode.io only)
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: tenant-<< inputs.name >>-applier-role
+        namespace: tenant-<< inputs.name >>
+      rules:
+        - apiGroups: ["kubeopencode.io"]
+          resources: ["agents", "agents/status", "agents/finalizers", "agenttemplates", "crontasks", "tasks", "tasks/status", "tasks/finalizers"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources: ["configmaps"]
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+    # 4. Applier RoleBinding
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: tenant-<< inputs.name >>-applier-binding
+        namespace: tenant-<< inputs.name >>
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: Role
+        name: tenant-<< inputs.name >>-applier-role
+      subjects:
+        - kind: ServiceAccount
+          name: tenant-<< inputs.name >>-applier
+          namespace: flux-system
+
+    # 5. Controller RBAC Role
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: Role
+      metadata:
+        name: kubeopencode-controller-tenant-role
+        namespace: tenant-<< inputs.name >>
+      rules:
+        - apiGroups: ["kubeopencode.io"]
+          resources:
+            - agents
+            - agents/status
+            - agents/finalizers
+            - agenttemplates
+            - crontasks
+            - tasks
+            - tasks/status
+            - tasks/finalizers
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources:
+            - pods
+            - pods/exec
+            - pods/log
+            - pods/status
+            - configmaps
+            - secrets
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: ["batch"]
+          resources:
+            - jobs
+            - jobs/status
+          verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+        - apiGroups: [""]
+          resources:
+            - events
+          verbs: ["create", "patch"]
+
+    # 6. Controller RBAC RoleBinding
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+      metadata:
+        name: kubeopencode-controller-<< inputs.name >>-binding
+        namespace: tenant-<< inputs.name >>
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: Role
+        name: kubeopencode-controller-tenant-role
+      subjects:
+        - kind: ServiceAccount
+          name: kubeopencode-controller
+          namespace: kubeopencode-system
+
+    # 7. ExternalSecret & GithubAccessToken Generator
+    - apiVersion: external-secrets.io/v1beta1
+      kind: ExternalSecret
+      metadata:
+        name: github-creds
+        namespace: tenant-<< inputs.name >>
+      spec:
+        refreshInterval: 50m
+        target:
+          name: github-creds
+          creationPolicy: Owner
+          template:
+            engineVersion: v2
+            data:
+              token: "{{ .token }}"
+        dataFrom:
+          - sourceRef:
+              generatorRef:
+                apiVersion: generators.external-secrets.io/v1alpha1
+                kind: GithubAccessToken
+                name: github-app-token-generator
+    - apiVersion: generators.external-secrets.io/v1alpha1
+      kind: GithubAccessToken
+      metadata:
+        name: github-app-token-generator
+        namespace: tenant-<< inputs.name >>
+      spec:
+        appID: << inputs.appId | quote >>
+        installID: << inputs.installId | quote >>
+        url: https://api.github.com
+        auth:
+          privateKey:
+            secretRef:
+              name: github-app-private-key
+              key: private-key.pem
+
+    # 8. ExternalSecret for Shared LLM Credentials
+    - apiVersion: external-secrets.io/v1
+      kind: ExternalSecret
+      metadata:
+        name: google-creds
+        namespace: tenant-<< inputs.name >>
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          kind: ClusterSecretStore
+          name: onepassword
+        target:
+          name: google-creds
+          creationPolicy: Owner
+        data:
+          - secretKey: api-key
+            remoteRef:
+              key: KUBEOPENCODE_GOOGLE_API_KEY/password
+
+    # 9. Egress NetworkPolicy
+    - apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: isolate-tenant-egress
+        namespace: tenant-<< inputs.name >>
+      spec:
+        podSelector: {}
+        policyTypes: [Ingress, Egress]
+        ingress:
+          - from:
+              - podSelector: {}
+        egress:
+          - to:
+              - namespaceSelector:
+                  matchLabels:
+                    kubernetes.io/metadata.name: kube-system
+                podSelector:
+                  matchLabels:
+                    k8s-app: kube-dns
+            ports:
+              - protocol: UDP
+                port: 53
+              - protocol: TCP
+                port: 53
+          - to:
+              - ipBlock:
+                  cidr: 0.0.0.0/0
+                  except:
+                    - 10.0.0.0/8
+                    - 172.16.0.0/12
+                    - 192.168.0.0/16
+                    - 169.254.169.254/32
+            ports:
+              - protocol: TCP
+                port: 443
+
+    # 10. Child Flux Kustomization (Impersonating Tenant Applier with File-Based Overlay)
+    - apiVersion: kustomize.toolkit.fluxcd.io/v1
+      kind: Kustomization
+      metadata:
+        name: tenant-<< inputs.name >>-workload
+        namespace: flux-system
+      spec:
+        interval: 10m
+        path: << inputs.workloadPath | default (printf "./tenants/%s/1-workload" inputs.name) >>
+        prune: true
+        targetNamespace: tenant-<< inputs.name >>
+        serviceAccountName: tenant-<< inputs.name >>-applier
+        sourceRef:
+          kind: OCIRepository
+          name: apps
+        dependsOn:
+          - name: kubeopencode-controller
