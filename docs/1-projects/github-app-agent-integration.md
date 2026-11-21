@@ -818,7 +818,10 @@ Following these fixes:
    - `Agent/cncf-landscape-agent`: **`READY: true`**
    - Pod `infra-bootstrap-agent-server`: **`2/2 Running`** (all 3 init containers completed, `opencode server listening on http://0.0.0.0:4096`, `git-sync` periodically syncing `xNok/infra-bootstrap-tools.git`).
    - Pod `cncf-landscape-agent-server`: **`2/2 Running`** (all 3 init containers completed, `opencode server listening on http://0.0.0.0:4096`, `git-sync` periodically syncing `mekitmedia/cncf-landscape-a-to-z.git`).
-   - All 5 CronTasks (`infra-docs-audit`, `cncf-compass-audit`, `cncf-engineering-maintenance`, `cncf-palette-review`, `cncf-project-research`) active and scheduled.
-
-
-
+8. **Decommissioning Legacy Prototype Deployment while Preserving the Agent Catalogue**:
+   - The Phase 1 prototype deployment [`kubernetes/fleet/k3s/apps/palette-agent/`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/fleet/k3s/apps/palette-agent/) deployed a duplicate `Agent/palette-agent` into `agentic-workflows` (accessible at `http://opencode.ziti/agents/agentic-workflows/palette-agent`).
+   - Because `tenant-cncf-landscape-a-to-z` now runs the sovereign `cncf-landscape-agent` and `cncf-palette-review` task, this cluster deployment was retired.
+   - **Architectural Division**:
+     - **The Catalogue Library** remains preserved in [`kubernetes/apps/kubeopencode-agents/palette-agent/`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/apps/kubeopencode-agents/palette-agent/) (published to OCI) as the reusable persona and template blueprint.
+     - **The Fleet Deployment** in [`kubernetes/fleet/k3s/apps/`](file:///home/xnok/.gemini/antigravity/worktrees/infra-bootstrap-tools/github_app_agent_integration/kubernetes/fleet/k3s/apps/) was pruned by removing `- palette-agent` from `kustomization.yaml`.
+     - Flux's root `prune: true` automatically garbage collects the child Kustomizations and the `agentic-workflows` namespace, resolving the dangling health-check errors and removing the duplicate entry from the KubeOpenCode UI.

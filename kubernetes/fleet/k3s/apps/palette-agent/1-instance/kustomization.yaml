@@ -1,7 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  - agent.yaml
-  - external-secret-github.yaml
-  - external-secret-llm.yaml
