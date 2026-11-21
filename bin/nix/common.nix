@@ -49,6 +49,7 @@ let
   docsPackages = with pkgs; [
     go
     hugo
+    pagefind
   ];
 
   # --- Shell Hook Generator ---

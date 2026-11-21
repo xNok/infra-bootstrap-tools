@@ -13,6 +13,7 @@ dist/
 terraform.tfstate*
 
 website/public
+website/resources/
 
 # copied files
 ansible/roles/terraform-*/terraform/backend.tf
