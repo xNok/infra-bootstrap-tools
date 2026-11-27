@@ -1,294 +1,165 @@
-# Startup Infra for Small Self-hosted Projects
+# Infra-Bootstrap-Tools (IBT)
 
-![Ansible](https://img.shields.io/badge/ansible-%231A1918.svg?style=for-the-badge&logo=ansible&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white) ![Vagrant](https://img.shields.io/badge/vagrant-%231563FF.svg?style=for-the-badge&logo=vagrant&logoColor=white) ![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
+> **Production-grade Infrastructure as Code for homelabs, edge nodes, and self-hosted clouds — from minimalist Docker Swarm to Zero-Trust Kubernetes GitOps.**
 
-This repository provides Ansible playbooks to set up a minimal infrastructure for a simple self-hosted application. Ideal for small hobby projects. I made this repository a place to **Learn** about DevOps and Cloud Infrastructure. You have all the tutorial you need to get started.
+[![Docs](https://img.shields.io/badge/docs-xnok.github.io-blue.svg?style=flat-square)](https://xnok.github.io/infra-bootstrap-tools/)
+[![Ansible Galaxy](https://img.shields.io/badge/galaxy-xnok.infra__bootstrap__tools-68217A.svg?style=flat-square&logo=ansible)](https://galaxy.ansible.com/ui/repo/published/xnok/infra_bootstrap_tools/)
+[![Nix](https://img.shields.io/badge/nix-flakes-5277C3.svg?style=flat-square&logo=nixos&logoColor=white)](https://nixos.org)
+[![Kubernetes](https://img.shields.io/badge/k8s-k3s%20%2B%20flux%20d2-326CE5.svg?style=flat-square&logo=kubernetes&logoColor=white)](https://k3s.io)
+[![Zero-Trust](https://img.shields.io/badge/zero--trust-openziti-FFA500.svg?style=flat-square)](https://openziti.io)
+[![Docker Swarm](https://img.shields.io/badge/docker-swarm-2496ED.svg?style=flat-square&logo=docker&logoColor=white)](https://docs.docker.com/engine/swarm/)
+[![Terraform](https://img.shields.io/badge/terraform-1.14+-844FBA.svg?style=flat-square&logo=terraform&logoColor=white)](https://www.terraform.io/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](./LICENSE)
 
+---
 
-## Development Environment Setup
+## 🎯 Reusable Deliverables & Artifacts
 
+Infra-Bootstrap-Tools produces concrete, production-ready deliverables that you can consume directly in your own infrastructure:
 
-This project provides a convenient dispatcher command, `ibt`, to help you set up your local development environment and manage project tools. Additionally, a Gitpod configuration is available for a cloud-based, ready-to-use environment.
+| Deliverable | Description | Location / Install Command |
+| :--- | :--- | :--- |
+| **🌐 Documentation Website** | Full architecture guides, interactive runbooks, and diagrams | [xnok.github.io/infra-bootstrap-tools](https://xnok.github.io/infra-bootstrap-tools/) |
+| **📦 Ansible Galaxy Collection** | Battle-tested roles for Docker, Swarm, K3s, UFW hardening, and Flux | `ansible-galaxy collection install xnok.infra_bootstrap_tools` |
+| **🚢 OCI GitOps Fleet Artifacts** | Versioned Flux D2 manifests & platform add-ons on GitHub Packages | `oci://ghcr.io/xnok/infra-bootstrap-tools/manifests/...` |
+| **🐳 Production Compose Stacks** | Caddy (automated Let's Encrypt + OAuth portal), Portainer CE, Rclone | [`stacks/`](./stacks/) |
+| **🧪 Local Test Harness** | Zero-cost Kind + local OCI registry integration test environment | `make k3s-test` (`bin/tests/flux-d2/test.sh`) |
 
-### Unified Tools Bash script: `ibt`
+---
 
-The `ibt` command (Infra Bootstrap Tools) is a shell function that provides a unified interface to the main project scripts with subcommands and auto-completion support.
+## 🏛️ Architecture: The Dual-Orchestration Model
 
-**Subcommands:**
+Infrastructure is not one-size-fits-all. A simple personal homelab does not warrant the overhead of an enterprise control plane. Conversely, complex multi-service architectures demand declarative GitOps, fine-grained RBAC, and zero-trust perimeter isolation.
 
-- `ibt setup [tool ...]` &mdash; Install required tools and dependencies (see below)
-- `ibt stacks [args ...]` &mdash; Manage and run infrastructure stacks
-- `ibt tools [args ...]` &mdash; Use Docker-based aliases for Ansible, AWS CLI, etc.
+`infra-bootstrap-tools` maintains strict **architectural parity** across two distinct orchestration tracks:
 
-**Auto-completion:**
+![Architectural Parity: Docker Swarm vs Dark K3s](website/static/images/diagrams/architectural-parity-swarm-k3s.png)
 
-Tab-completion is available for subcommands and for the `setup` tool list (e.g., `ibt setup [TAB]`).
+### Choosing Your Track
 
-**To enable `ibt` in your shell:**
+| Concern | Docker Swarm Track (Pragmatic Homelab) | Kubernetes Track (Dark K3s & GitOps) |
+| :--- | :--- | :--- |
+| **Design Philosophy** | Minimalist, single-binary, low operational overhead | Enterprise GitOps & Zero-Trust defense-in-depth |
+| **Control Plane** | Docker Swarm internal Raft manager | K3s server bound strictly to `127.0.0.1` |
+| **Perimeter & Ingress** | **Caddy**: Open ports 80/443, automated Let's Encrypt TLS | **OpenZiti**: Zero public ports; API is completely dark |
+| **Workload Definition** | Docker Compose / Stack files (`deploy:` stanza) | Kustomize Components & HelmReleases via Flux |
+| **Cluster Operations** | **Portainer**: Graphical web management dashboard | **FluxCD Operator**: Branchless OCI GitOps reconciliation |
+| **Recommended For** | Low-spec hardware, utility containers, rapid homelabs | Production homelabs, GitOps workflows, zero-trust edge |
 
-```bash
-source ./bin/bash/ibt.sh
-```
+---
 
-You can add this line to your `~/.bashrc` or `~/.bash_profile` for persistence.
+## 🚀 10-Minute Quickstart
 
-**Example usage:**
-
-```bash
-# Install pre-commit and Ansible
-ibt setup pre-commit ansible
-
-# List available stacks
-ibt stacks list
-
-# Use Docker-based Ansible
-ibt tools dasb --version
-```
-
-
-### Nix Shell
-
-**Prerequisites:** This requires [Nix](https://nixos.org/download.html) to be installed on your system.
-
-For a fully automated and reproducible development environment using Nix, you have two options:
-
-#### Option 1: Using Traditional Nix Shell (Most Compatible)
-
-Use this option if `nix develop` fails with `experimental Nix feature 'nix-command' is disabled`.
+### 1. Enter the Hermetic Nix Environment
+Avoid tool version conflicts by entering our pre-configured [Nix](https://nixos.org) development shell:
 
 ```bash
-nix-shell bin/nix/shell.nix
-
-# Or select a specific shell
-nix-shell bin/nix/shell.nix --argstr shell flux
-```
-
-Shell overview:
-- `default`: general development shell with Python, Docker, Git, and pre-commit
-- `ansible`: adds Ansible tooling and installs Galaxy dependencies
-- `flux`: adds `jq`, `kubectl`, `helm`, `kind`, and `flux` for Kubernetes/Flux work
-- `docs`: adds Hugo and Go for website/documentation work
-- `full`: includes everything when you need the broadest environment
-
-The shells are ready to use after their hooks complete. Python-based shells create and activate a local virtual environment (`.venv`) to avoid conflicts with the Nix-provided Python.
-
-#### Option 2: Using Nix Flakes (Optional)
-
-Nix Flakes provide a more modern and reproducible approach, but require the `nix-command` and `flakes` experimental features:
-
-```bash
-# Enable flakes if not already enabled (add to ~/.config/nix/nix.conf or /etc/nix/nix.conf):
-# experimental-features = nix-command flakes
-
-# Enter the default general-purpose development environment
-nix develop
-```
-
-Task-focused shells are also available:
-
-```bash
-# Infrastructure / Ansible work
+# For Ansible & Swarm deployment:
 nix develop .#ansible
 
-# Flux / Kind / Kubernetes work
+# For Kubernetes, Flux, and Kind testing:
 nix develop .#flux
 
-# Website / Hugo work
-nix develop .#docs
-
-# Full kitchen-sink environment
+# Full unified environment:
 nix develop .#full
 ```
 
-### GitHub Codespaces
+*(If you use `direnv`, run `direnv allow` once to load dependencies automatically on directory entry).*
 
-The repository includes a `.devcontainer/devcontainer.json` that keeps the current base image (`mcr.microsoft.com/devcontainers/base:ubuntu-24.04`), installs Nix by default, and enables flakes (`nix-command flakes`) out of the box. Docker access is enabled as well.
-
-You can use:
-
+### 2. Configure Credentials
+Generate template secrets or connect via [1Password CLI](https://developer.1password.com/docs/cli/):
 ```bash
-nix develop
-nix develop .#ansible
-nix develop .#flux
+./bin/bash/setup-secrets.sh
 ```
 
-If you are in a different environment where flakes are not enabled, use:
+### 3. Deploy Your Chosen Track
 
 ```bash
-nix-shell bin/nix/shell.nix
-```
+# Track A: Deploy Docker Swarm on Cloud VMs (DigitalOcean / AWS)
+make swarm-up
 
+# Track B1: Run Zero-Cost Local Kubernetes Validation (Kind + Local Registry)
+make k3s-test
 
-### Gitpod
+# Track B2: Deploy Dark K3s on Cloud VMs
+make k3s-up
 
-Alternatively, you can use Gitpod to get a pre-configured development environment in your browser. Click the button below to get started:
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/from-referrer/)
-
-## 🚀 Quick Start
-
-Got your [prerequisites](./website/content/en/docs/gs1.getting_started.md#prerequisites) and [secrets configured](./website/content/en/docs/gs1.getting_started.md#configuration-secrets-management)?
-
-Deploy your entire infrastructure with a single command:
-
-```bash
-make up
-```
-
-This command will:
-*   Provision infrastructure on DigitalOcean using Terraform.
-*   Install Docker on all hosts.
-*   Initialize a Docker Swarm cluster.
-*   Deploy Caddy and Portainer applications.
-
-To tear down the infrastructure:
-
-```bash
+# Teardown Cloud Infrastructure
 make down
 ```
 
-For a detailed step-by-step guide, including prerequisites and secret management options, please refer to our **[Full Getting Started Guide](./website/content/en/docs/gs1.getting_started.md)**.
+For the complete step-by-step walkthrough, see the **[Getting Started Runbook](https://xnok.github.io/infra-bootstrap-tools/docs/getting-started-deploy-your-infrastructure/)**.
 
-To understand the underlying Ansible concepts, check out **[Understanding Ansible Concepts](./website/content/en/docs/b1.ansible_concepts.md)**.
+---
 
-## Articles and Tutorials
+## 🛠️ Using & Contributing to This Monorepo Layout
 
-The articles/tutorials are divided into sections. 
-* **Introduction** -> What are the tools to manage infrastructure? Perfect to learn the basis.
-* **How-tos** -> Good takeaway from this project - Answers many questions you could encounter in the future
-* **Deepening Understanding** -> Learn more about each application used in this setup (Portainer, Graphana, Caddy, etc.)
-* **Local Experimentation & Advanced Topics**: Deeper dives into specific setups and components.
+If you are using this repository as a template for your own infrastructure or contributing changes, the monorepo is organized into clear functional layers:
 
-I used [DigitalOcean](https://digitalocean.pxf.io/q4b2qO) for experiments because it is cheap, but any cloud provider should work, as we are mainly playing with Virtual Machines. You can even get [$200 DigitalOcean free credit](https://digitalocean.pxf.io/q4b2qO) when starting 
-* Don't forget to delete everything after a tutorial if you don't want to add unnecessary costs
-
-### Tools Introduction
-
-* [ ] WIP: 📚 1: [What is **Terraform** and why you might need it.]()
-* [X] 📚 2: [What is **Terraform Cloud** and why you might need it.](https://faun.pub/what-is-terraform-cloud-and-why-you-might-need-it-c9847fb8f6e6?sk=ee85423512f39030bb287a3f2a6623d3)
-* [ ] WIP: 📚 3: [What is **Github Action** and why you might need it.]()
-* [ ] WIP: 📚 4: [What is **Ansible** and why you might need it.]()
-* [ ] WIP: 📚 5: [What is **Ansible AWX** and why you might need it.]()
-
-### Learn the Tools
-
-* [X] 🌍 [How to configure GitHub Environments with Terraform?](https://faun.pub/how-to-configure-github-environments-with-terraform-d2b76766547b?sk=b50616eed7da268d5a99c459fc9c57d5)
-* [x] 🏭 [How to provision VM on Digital Ocean with Terraform?](https://faun.pub/how-to-provision-vms-on-digitalocean-with-terraform-898515a0dbbc?sk=7af174d77b4a7bd81e581378beac9a0d)
-* [X] 🔏 [How to create SSH keys with Terraform?](https://faun.pub/how-to-create-ssh-keys-with-terraform-a615dfc631c1?sk=176a8f5c0c0517a01e8fabd5bb7c18fa)
-* [x] 🗺️ [How to create Ansible Inventory with Terraform?](https://faun.pub/how-to-create-ansible-inventory-with-terraform-a32fcbe11be6?sk=da18fba15ee996e4c3b92782229654ee)
-* [x] 👩 [How to run an Ansible playbook using GitHub Action?](https://faun.pub/how-to-run-an-ansible-playbook-using-github-action-42430dec944?sk=7796e8bd44f6b8c394b80507b8ff3e87)
-
-### Local Experimentation & Advanced Topics
-
-These articles cover setting up local test environments and exploring specific components in more detail. They are excellent for understanding the individual parts before or alongside deploying the full cloud infrastructure.
-
-* [X] 🧰 1: [Design and Test Ansible playbook with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0?sk=f2f0e3a6b4fe4215cec13019887b6302)
-   * Example code [.articles/1_vagrant_101](.articles/1_vagrant_101)   
-* [X] 🧰 2 [Experimenting on Docker Swarm with Vagrant and Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4?sk=1eac227cf3c9ec5dc5abbf06f38e92c3)
-   * Example code [.articles/2_docker_swarm_101](.articles/2_docker_swarm_101)
-* [ ] WIP: 🧰 3: [Automate Infrastructure provisioning with Ansible and Github action]() (This might be more of an advanced topic now, focusing on CI/CD aspects beyond the basic `make up`)
-
-
-### Learn about the applications used in this setup
-
-* [ ] WIP: ☸️ 1: [What is Portainer and why you might need it.]() (Covered by [Portainer Management UI](./website/content/en/docs/a2.portainer.md))
-* [ ] WIP: ☸️ 2: [What is Prometheus and why you might need it.]()
-* [ ] WIP: ☸️ 3: [What is Caddy and why you might need it.]() (Covered by [Caddy Web Server](./website/content/en/docs/a1.caddy.md))
-
-### Deep Dives
-
-Below, I've included some explainers on how I solved a specific problem when I encountered it. This should demistify some of the magic happening in this repo.
-
-#### Ansible
-
-* [x] 🏃‍♂️ 1: [Speedup Ansible Playbook Pull-Requests by only running affected roles](https://medium.com/itnext/speedup-ansible-playbook-merge-request-by-only-running-affected-roles-42d9ca3f6433?sk=382b8de777e41deb20f7fefe430b2f26)
-* [x] 🏃‍♂️ 2: [How to rotate Docker Secrets with Ansible](https://medium.com/itnext/rotating-docker-swarm-secrets-with-ansible-cbaddfdd8ee9?sk=886dae52f1570c251a6a664d5ee2c5fe)
-* [x] 🏃‍♂️ 3: [How to implement Pull-Request locking for Ansible](https://medium.com/itnext/safe-infrastructure-as-code-github-actions-workflow-with-a-pr-lock-27bef636f852?sk=a6615ca085348aa2543a68f9c7a41077)
-
-## Ansible Collection
-
-This repository is also available as an Ansible Collection on Ansible Galaxy, allowing you to easily reuse the roles in your own Ansible projects.
-
-**Collection Name:** `xnok.infra_bootstrap_tools`
-
-### Installation
-
-To install this collection from Ansible Galaxy, use the following command:
-
-```bash
-ansible-galaxy collection install xnok.infra_bootstrap_tools
-```
-
-### Usage
-
-Once installed, you can use the roles from this collection in your playbooks. For example, to use the `docker` role:
-
-```yaml
-- hosts: all
-  become: yes
-  roles:
-    - role: xnok.infra_bootstrap_tools.docker
-      # Optional: specify variables for the role
-      # docker_users:
-      #   - your_username
-```
-
-Refer to the `README.md` file within each role's directory (`ansible/roles/[role_name]/README.md`) for detailed information on specific roles, their variables, and dependencies.
-
-You can find the collection on Ansible Galaxy: [xnok.infra_bootstrap_tools](https://galaxy.ansible.com/xnok/infra_bootstrap_tools)
-
-## Release Management
-
-This monorepo uses [Changesets](https://github.com/changesets/changesets) for automated version management and releases. Different package types (Ansible collection, Python package, Docker stacks) are automatically published when versions are bumped.
-
-For detailed information about the release process, see **[RELEASE.md](./RELEASE.md)**.
-
-### Quick Start
-
-To create a changeset for your changes:
-```bash
-npx changeset add
-```
-
-For more details on package types, publishing workflows, and troubleshooting, see the [full release documentation](./RELEASE.md).
-
-## Architecture
-
-![](./diagrams/startup_infra_for_small_self_hosted_project.png)
-
-## Handy toolchain
-
-Do you want to go fast? Too lazy to set up your local environment?
-
-Then, use the tools from a Docker container. I included a simple Toochain in this repository and a useful alias for it.
-
-Use common infrastructure tools in docker with:
-* [docker_tools_alias.sh](bin/bash/docker_tools_alias.sh)
+### Monorepo Directory Layout
 
 ```
-source ./bin/docker_tools_alias.sh
+.
+├── ansible/                  # Ansible Collection: xnok.infra_bootstrap_tools
+│   ├── playbooks/            # Orchestrator entrypoints (main.yml, k3s.yml, docker-swarm.yml)
+│   └── roles/                # Modular roles (docker, k3s_server, k3s_os_hardening, etc.)
+├── kubernetes/               # Enterprise Flux D2 GitOps Layout
+│   ├── fleet/                # Per-cluster manifests & values (k3s, kind)
+│   └── infra-addons/         # Opt-in Kustomize components (cert-manager, openziti, keycloak)
+├── terraform/                # Cloud VM and networking provisioning (DigitalOcean, AWS)
+├── stacks/                   # Docker Swarm Compose application stacks
+├── website/                  # Hugo documentation source (published to GitHub Pages)
+└── docs/                     # PARA Docs-as-Code knowledge management & active project notes
 ```
 
-```
-use dasb for ansible in docker
-use dap for ansible-playbook in docker
-use daws for awscli in docker
-use dpk for packer in docker
-use dtf for terraform in docker
-use dbash for bash in docker
-```
+### Development Standards & Quality Gates
 
-## Tools Showcase
+- **Hermetic Toolchains**: Managed via Nix Flakes in `flake.nix`.
+- **Pre-commit Automation**: Enforces yamllint, shellcheck, and ansible-lint before commits (`.pre-commit-config.yaml`).
+- **Release Automation via Changesets**:
+  Every change that modifies packages creates an intentional changelog entry:
+  ```bash
+  npx changeset add
+  ```
+  GitHub Actions automatically versions packages, updates changelogs, tags releases, and publishes the Ansible Collection to Ansible Galaxy.
+- **Docs-as-Code (PARA Method)**:
+  Active tasks and architectural decisions are captured in `docs/1-projects/` before code is committed, ensuring zero hidden knowledge.
 
-This project leverages several tools to streamline development and improve code quality. Here's a brief overview of some of them:
+---
 
-*   **Pre-commit**: We use pre-commit hooks to automate linting, formatting, and other checks before code is committed. This helps maintain code consistency and catch errors early. Configuration can be found in `.pre-commit-config.yaml`.
-*   **1Password CLI**: For securely managing sensitive information like API keys and passwords, the 1Password CLI can be integrated into your workflow. The setup script provides an option to install it.
-*   **Boilerplate**: [Gruntwork Boilerplate](https://github.com/gruntwork-io/boilerplate) is used to generate répétitive code structures, ensuring consistency and saving time. You can find boilerplate templates in the `.boilerplates` directory.
-*   **Hugo**: The project documentation website (what you're likely reading if you're on the website!) is built using [Hugo](https://gohugo.io/), a fast and flexible static site generator. The website content is in the `website/` directory.
+## 📚 DevOps & Cloud Infrastructure Learning Plan
 
-## Scale Up
+This repository acts as an interactive curriculum for learning modern infrastructure engineering, pairing hands-on code with in-depth technical writeups:
 
-With docker swarm and portainer it because easy to manager multiple nodes.
+### Level 1: Foundations (DevOps 101)
+* 🏭 **[Provisioning VMs on DigitalOcean with Terraform](https://faun.pub/how-to-provision-vms-on-digitalocean-with-terraform-898515a0dbbc)**: Declarative cloud compute and networking.
+* 🔏 **[Creating SSH Keys & GitHub Environments with Terraform](https://faun.pub/how-to-configure-github-environments-with-terraform-d2b76766547b)**: Cryptographic state management and secret isolation.
+* 🗺️ **[Generating Ansible Inventory from Terraform](https://faun.pub/how-to-create-ansible-inventory-with-terraform-a32fcbe11be6)**: Bridging infrastructure provisioning and configuration management.
+* 👩 **[Running Ansible Playbooks via GitHub Actions](https://faun.pub/how-to-run-an-ansible-playbook-using-github-action-42430dec944)**: Automated CI/CD execution patterns.
 
-![](./diagrams/scaled_up_infra_for_small_self_hosted_project.png)
+### Level 2: Docker Swarm & Edge Ingress
+* 🧰 **[Disposable Local Test Environments with Vagrant](https://faun.pub/a-disposable-local-test-environment-is-essential-for-devops-sysadmin-af97fa8f3db0)**: Safe pre-flight playbook testing ([Companion Code](./.articles/1_vagrant_101)).
+* 🐳 **[Multi-Node Clustering on Docker Swarm with Ansible](https://faun.pub/experimenting-on-docker-swarm-with-vagrant-and-ansible-bcc2c79ba7c4)**: Raft quorums and overlay networks ([Companion Code](./.articles/2_docker_swarm_101)).
+* 🏃‍♂️ **[Zero-Downtime Docker Secret Rotation with Ansible](https://medium.com/itnext/rotating-docker-swarm-secrets-with-ansible-cbaddfdd8ee9)**: Rolling container updates without secrets leaking to disk.
+* 🔒 **[Automated SSL & Ingress with Caddy](https://xnok.github.io/infra-bootstrap-tools/docs/caddy/)**: Reverse proxying, automated certificates, and OAuth portals.
+* 📊 **[Cluster Operations with Portainer](https://xnok.github.io/infra-bootstrap-tools/docs/portainer/)**: Visual management dashboards and container metrics.
+
+### Level 3: Zero-Trust Kubernetes & Enterprise GitOps
+* 🛡️ **[Host Hardening & UFW Default-Deny Policies](https://xnok.github.io/infra-bootstrap-tools/docs/kubernetes/k3s-ansible-bootstrap/)**: Defense-in-depth, CNI isolation, and port lockdown.
+* 🌑 **[Hiding the Kubernetes API Server Behind OpenZiti](https://xnok.github.io/infra-bootstrap-tools/blog/dark-k3s-zero-trust/)**: Why port 6443 should never be public, and how overlay networks eliminate port-scanning vulnerabilities.
+* 🔄 **[Enterprise GitOps with Flux D2 & OCI](https://xnok.github.io/infra-bootstrap-tools/docs/kubernetes/flux-d2-gitops/)**: Gitless monorepo syncing, values layering rules, and immediate ConfigMap watch reconciliation.
+* 🧪 **[Reproducing Production Locally with Kind](https://xnok.github.io/infra-bootstrap-tools/docs/kubernetes/local-testing-kind/)**: Local OCI artifact pushes and deep validation assertions without cloud bills.
+* ⚡ **[Safe IaC: Pull-Request Locking for Ansible](https://medium.com/itnext/safe-infrastructure-as-code-github-actions-workflow-with-a-pr-lock-27bef636f852)** & **[Speeding up Playbooks by Running Affected Roles](https://medium.com/itnext/speedup-ansible-playbook-merge-request-by-only-running-affected-roles-42d9ca3f6433)**: Concurrency guards and selective execution in CI.
+
+---
+
+## 🤝 Contributing & Community
+
+Contributions, issue reports, and feature proposals are welcome!
+
+1. Check open issues or create a project note in `docs/1-projects/`.
+2. Enter the development shell (`nix develop`).
+3. Create a changeset for your contribution (`npx changeset add`).
+4. Submit a Pull Request against `main`.
+
+Explore the complete documentation site at **[https://xnok.github.io/infra-bootstrap-tools/](https://xnok.github.io/infra-bootstrap-tools/)**.
