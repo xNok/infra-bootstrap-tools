@@ -3,100 +3,156 @@ title: "🚀 Getting Started"
 slug: getting-started-deploy-your-infrastructure
 ---
 
-This guide walks you through deploying a single-node (expandable) infrastructure on DigitalOcean using the `infra-bootstrap-tools`.
+This runbook provides step-by-step instructions to bootstrap your infrastructure in under 10 minutes. 
 
-We'll use the `make up` target for deployment and `make down` for destruction.
+> [!TIP]
+> If you are deciding between Docker Swarm and Kubernetes (Dark K3s), consult the **[Architecture & Strategy Overview]({{< relref "_overview.md" >}})** for the architectural parity diagram, capability comparison, and decision matrix.
 
-#### Prerequisites
+---
 
-Before you begin, ensure you have the following tools and accounts:
+## Prerequisites
 
-*   **Ansible:** [Installation Guide](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-*   **Terraform:** [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
-*   **DigitalOcean Account:** You'll need an account to provision resources.
-*   **Secret Management Tool:** You'll need a way to provide sensitive data to Ansible.
-    *   **Recommended (That's what I use):** 1Password & 1Password CLI (`op`). [Set up 1Password CLI](https://developer.1password.com/docs/cli/get-started/). The examples in this guide use 1Password.
-    *   **Alternatives:** Ansible Vault, environment variables, direct input in variable files (not recommended for sensitive data in Git), or other Ansible lookup plugins.
+Before deploying, ensure you have the following installed:
 
-##### Development Environment Setup
+* **Ansible**: [Installation Guide](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (or use our Nix dev shell: `nix develop .#ansible`).
+* **Terraform**: [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli).
+* **Cloud Account**: DigitalOcean or AWS account for provisioning VMs.
+* **Secrets Management**:
+  * **Recommended**: [1Password & 1Password CLI (`op`)](https://developer.1password.com/docs/cli/get-started/). Our automation uses the `community.general.onepassword` Ansible lookup plugin. Run `./bin/bash/setup-secrets.sh` to generate the required vault item placeholders.
+  * **Alternatives**: Ansible Vault or environment variables.
 
-While not strictly required for deploying the infrastructure, if you plan to contribute to this project or customize it extensively, setting up a consistent development environment is recommended.
+### Development Environment Setup (Recommended)
 
-*   **Recommended: Unified Tool Dispatcher (`ibt`)**: For a streamlined experience, use the `ibt` command to install common tools for development (such as `pre-commit`, `ansible`, `hugo` for the documentation site, etc.) with subcommand and tool name completion.
+To avoid managing tool versions locally, enter the pre-configured Nix development shell:
 
-    First, enable the dispatcher in your shell:
-    ```bash
-    source ./bin/bash/ibt.sh
-    ```
-    You can add this line to your `~/.bashrc` or `~/.bash_profile` for persistence.
+```bash
+# For Ansible & Swarm deployment
+nix develop .#ansible
 
-    To install specific tools, run:
-    ```bash
-    ibt setup <tool_name_1> <tool_name_2>
-    ```
-    For example, to install `pre-commit` and `hugo`:
-    ```bash
-    ibt setup pre-commit hugo
-    ```
-    Use tab-completion after `ibt setup` to see the list of available tools.
+# For Kubernetes, Flux, and Kind testing
+nix develop .#flux
 
-    Run the script without arguments or with an invalid tool name to see the list of available tools.
+# Or unified shell
+nix develop .#full
+```
 
-*   **Using Gitpod**: For a cloud-based, pre-configured development environment, you can use Gitpod. This is the quickest way to get started without installing anything on your local machine. Look for the "Open in Gitpod" button in the main [`README.md`](https://github.com/xNok/infra-bootstrap-tools/blob/main/README.md) of the project.
+If you use `direnv`, simply `direnv allow` when entering the repository directory to have your environment activate automatically.
 
-#### Configuration - Secrets Management
+---
 
-Sensitive information, such as API keys and tokens, is required to provision and configure the infrastructure. This project requires sensitive information like API keys. The author prefers using 1Password for managing these, and the examples show this method. However, you can adapt this to your preferred secret management tool (e.g., Ansible Vault, environment variables, or other lookup plugins).
+## Configuration & Inventory
 
-If using 1Password, ensure your CLI is configured and you have access to the specified vault. If using other methods, ensure your secrets are available to Ansible in the way your chosen tool requires.
+### 1. Cloud & Secrets Configuration
+Configure your credentials in:
+* `ansible/playbooks/host_vars/localhost.yml`: DigitalOcean API token, SSH keys, AWS credentials for Terraform backend.
+* `ansible/playbooks/group_vars/all.yml`: Rclone DigitalOcean credentials for persistent storage.
+* `ansible/playbooks/group_vars/managers.yaml`: Caddy OAuth credentials (if using Swarm).
 
-The key Ansible variable files involved are:
+### 2. Node Inventory
+Ansible groups separate hosts by role:
+* **Docker Swarm**: `docker_swarm_managers` and `docker_swarm_nodes`.
+* **K3s Kubernetes**: `k3s_servers` and `k3s_agents`.
 
-*   [`ansible/playbooks/host_vars/localhost.yml`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/playbooks/host_vars/localhost.yml): Defines where to find secrets for DigitalOcean token, SSH key details, and AWS credentials (for Terraform backend).
-    *   You will need to store items like `tf_digitalocean_access_token`, `ssh_key_name`, `do_ssh_key_public_path`, `do_ssh_key_private_path`, `aws_access_key_id`, `aws_secret_access_key`.
-*   [`ansible/playbooks/group_vars/all.yml`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/playbooks/group_vars/all.yml): Defines where to find Rclone DigitalOcean secrets.
-    *   Look for variables like `rclone_digitalocean_access_key_id` and `rclone_digitalocean_secret_access_key`.
-*   [`ansible/playbooks/group_vars/managers.yaml`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/playbooks/group_vars/managers.yaml): Defines where to find Caddy secrets.
-    *   Look for variables like `CADDY_GITHUB_APP_CLIENT_ID` and `CADDY_GITHUB_APP_CLIENT_SECRET`.
+---
 
-**Note:** Refer to the role documentation if you need a better indication of all the available configurations. I have yet to write/generate a reference for those.
+## Deployment Tracks: Choosing Your Path
 
-#### Deployment Steps
+### Understanding the Makefile Targets (Disambiguation)
 
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/your-username/infra-bootstrap-tools.git # Replace with the actual repository URL
-    cd infra-bootstrap-tools
-    ```
+> [!NOTE]
+> The target `make swarm-up` (aliased as `make up`) provisions DigitalOcean infrastructure and deploys the **Docker Swarm** stack (`main.yml`). If you are deploying **K3s**, use the dedicated target `make k3s` (or `make k3s-up`).
 
-2.  **Configure Secrets:**
-    Ensure your chosen secret management tool is set up with all necessary secrets as outlined in the "Configuration - Secrets Management" section above. If not using 1Password, you will need to modify the variable files to reflect your chosen secret retrieval method.
+---
 
-3.  **Deploy Infrastructure:**
-    The `make up` command provisions the infrastructure on DigitalOcean, sets up Docker, initializes Docker Swarm, and deploys Caddy and Portainer.
-    ```bash
-    make up
-    ```
+### Track A: Docker Swarm Deployment (Simple & Lightweight)
 
-4.  **Accessing Services:**
-   * Your caddy security portal should be accessible at `https://auth.[YOUR_DOMAIN]/portal`, from there you should have a link to access Portainer, which is waiting for you to set up your admin account. (**Note**: you need to be quick, otherwise Portainer will lock itself, and you will need to restart the Portainer container)
-    
+The Docker Swarm track provisions compute instances, installs Docker, initializes Swarm, and launches Portainer for cluster management and Caddy for automatic HTTPS:
 
-#### Managing the Infrastructure
+```bash
+# Complete one-step deployment:
+make swarm-up  # (or 'make up')
+```
 
-*   **Scaling:**
-    This setup is designed to be scalable. You can adjust the number of manager and worker nodes by modifying variables in your Terraform configuration (e.g., in [`terraform/variables.tf`](https://github.com/xNok/infra-bootstrap-tools/blob/main/ansible/roles/terraform_digitalocean/terraform/variables.tf)). The playbooks can also be adapted to integrate OVH dedicated servers or other providers, though this may require further customization.
+#### Step-by-Step Modular Swarm Deployment
+If you prefer deploying or testing incrementally:
+```bash
+# 1. Initialize Docker Swarm cluster only:
+make swarm
 
-*   **Destroying Infrastructure:**
-    To decommission all resources created by Terraform on DigitalOcean, use the `make down` command.
-    ```bash
-    make down
-    ```
-    This will remove the Droplets and any other associated resources.
+# 2. Add Portainer Management UI:
+make swarm-portainer
 
-#### Next Steps/Further Reading
+# 3. Add Caddy Reverse Proxy & TLS:
+make swarm-portainer-caddy
+```
 
-*   **[Understanding Ansible Concepts]({{< relref "./b1.ansible_concepts.md" >}})**: Learn about core Ansible concepts.
-*   **[Caddy Web Server]({{< relref "./a1.caddy.md" >}})**: Deep dive into Caddy's role.
-*   **[Portainer Management UI]({{< relref "./a2.portainer.md" >}})**: Learn about Portainer.
-*   Review other articles in the "Tools Introduction" and "Learn the Tools" sections of the main [`README.md`](https://github.com/xNok/infra-bootstrap-tools/blob/main/README.md) for a deeper understanding of the components used.
+#### Accessing Swarm Services
+* **Caddy Security Portal**: `https://auth.[YOUR_DOMAIN]/portal`
+* **Portainer UI**: Accessible via the Caddy portal for graphical container and stack deployment.
+
+---
+
+### Track B: Kubernetes / Dark K3s Deployment (Zero-Trust & GitOps)
+
+The Kubernetes track deploys a hardened, zero-trust K3s cluster managed declaratively by FluxCD.
+
+#### 1. Zero-Cost Local Testing with Kind (No Cloud Required)
+Before deploying to cloud servers, you can test the entire GitOps delivery pipeline and OpenZiti integration locally on your machine:
+```bash
+make test-flux-d2
+```
+This boots a Kind cluster, starts a local OCI registry on port 5000, packages your local monorepo manifests, and verifies that `cert-manager`, `trust-manager`, `keycloak`, and `openziti` achieve ready status. See the dedicated **[Local Cluster Testing with Kind Guide]({{< relref "./kubernetes/k7.local_testing_kind.md" >}})** for an in-depth walkthrough.
+
+#### 2. Cloud Server Bootstrap with Ansible
+To provision a production K3s cluster on your target nodes:
+```bash
+make k3s
+```
+This builds the latest Ansible collection and executes `ansible/playbooks/k3s.yml`, orchestrating a 4-stage pipeline:
+
+1. **Stage 1: Host Hardening (`k3s_os_hardening`)**:
+   Enables UFW with a default-deny policy. Closes port 6443 to the public internet, restricts internal traffic to cluster CIDRs, and opens ports 8441/8442 for OpenZiti.
+2. **Stage 2: K3s Control Plane (`k3s_server`)**:
+   Renders declarative `/etc/rancher/k3s/config.yaml` (`bind-address: 127.0.0.1`, `tls-san: k3s.ziti`, `disable: traefik`), starts K3s, and extracts the cluster join token.
+3. **Stage 3: GitOps Bootstrap (`k3s_flux_bootstrap`)**:
+   Fetches the GitHub token from 1Password, installs the Flux Operator, and applies the `FluxInstance` pointing to the monorepo's OCI fleet artifact.
+4. **Stage 4: Worker Node Join (`k3s_agent`)**:
+   Connects agent nodes to the control plane over private network CIDRs using the token registered in Stage 2.
+
+#### 3. Accessing the Dark Cluster
+Because the API server is dark (`127.0.0.1:6443`), internet scanners cannot reach it. Connect from your workstation using the OpenZiti client:
+```bash
+# Enroll your identity:
+ziti-edge-tunnel enroll --jwt admin.jwt --identity admin.json
+
+# Interact with the dark cluster transparently:
+kubectl --kubeconfig ~/.kube/dark-k3s.yaml get nodes
+```
+
+---
+
+## Infrastructure Teardown
+
+To destroy all cloud infrastructure provisioned by Terraform:
+```bash
+make down
+```
+
+---
+
+## Next Steps / In-Depth Documentation
+
+* **Docker Swarm Track**:
+  * [Architecture & Philosophy]({{< relref "./s1.swarm_architecture.md" >}})
+  * [Bootstrapping Swarm with Ansible]({{< relref "./b3.docker_swarm.md" >}})
+  * [Reverse Proxy with Caddy]({{< relref "./a1.caddy.md" >}})
+  * [Cluster Operations with Portainer]({{< relref "./a2.portainer.md" >}})
+* **Kubernetes Track (Dark K3s)**:
+  * [Architecture & Philosophy]({{< relref "./kubernetes/k1.overview.md" >}})
+  * [Bootstrapping K3s with Ansible]({{< relref "./kubernetes/k3.k3s_ansible.md" >}})
+  * [Zero-Trust Mesh with OpenZiti]({{< relref "./kubernetes/k5.openziti_mesh.md" >}})
+  * [Enterprise GitOps with Flux D2 & OCI]({{< relref "./kubernetes/k4.flux_d2_gitops.md" >}})
+* **Foundations & Tooling**:
+  * [Ansible Concepts in IBT]({{< relref "./b1.ansible_concepts.md" >}})
+  * [Terraform & Ansible Cloud Provisioning]({{< relref "./b2.terraform_ansible.md" >}})
+  * [Nix Development Environments]({{< relref "./tools/nix.md" >}})

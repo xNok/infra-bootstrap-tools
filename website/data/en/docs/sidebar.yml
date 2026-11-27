@@ -1,28 +1,62 @@
-- title: Documentation
+- title: Getting Started
   pages:
     - title: Overview
-    - title: "🚀 Getting Started"
+    - title: "🚀 Quickstart"
       path: getting-started-deploy-your-infrastructure
 
 - title: Infrastructure Management
   pages:
-    - title: "Understanding Ansible Concepts"
-    - title: "Spinning up infrastructure"
+    - title: "Core Concerns & Parity"
+      path: infrastructure-concerns
+    - title: "Ansible Concepts"
+      path: understanding-ansible-concepts
+    - title: "Cloud Provisioning"
       path: infrastructure-provisioning-combining-ansible-and-terraform
-    - title: "Docker Swarm Setup"
+
+- title: Docker Swarm Track
+  pages:
+    - title: "Architecture & Philosophy"
+      path: swarm-architecture
+    - title: "Bootstrapping Swarm with Ansible"
+      path: docker-swarm-setup
+    - title: "Reverse Proxy with Caddy"
+      path: caddy
+    - title: "Cluster Operations with Portainer"
+      path: portainer
+
+- title: Kubernetes Track (Dark K3s)
+  pages:
+    - title: "Architecture & Philosophy"
+      path: kubernetes/dark-k3s-architecture
+    - title: "Bootstrapping K3s with Ansible"
+      path: kubernetes/k3s-ansible-bootstrap
+    - title: "Zero-Trust Mesh with OpenZiti"
+      path: kubernetes/openziti-mesh
+    - title: "GitOps with Flux D2 & OCI"
+      path: kubernetes/flux-d2-gitops
 
 - title: Tools Introduction
   pages:
     - title: Caddy
+      path: caddy
     - title: Portainer
+      path: portainer
+    - title: FluxCD
+      path: tools/flux
+    - title: OpenZiti
+      path: tools/openziti
 
 - title: Tools Showcase
   pages:
-    - title: Pre-commit
+    - title: "Nix & Dev Environments"
+      path: tools/nix
+    - title: "Pre-commit Framework"
       path: tools/pre-commit
-    - title: 1Password CLI
+    - title: "Changesets Release Mgmt"
+      path: tools/changesets
+    - title: "1Password CLI Secrets"
       path: tools/1password-cli
-    - title: Boilerplate
+    - title: "Project Boilerplate"
       path: tools/boilerplate
-    - title: Hugo
+    - title: "Hugo Documentation Site"
       path: tools/hugo
