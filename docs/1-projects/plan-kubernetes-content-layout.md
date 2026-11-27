@@ -12,6 +12,7 @@ related_resources:
 related_areas:
   - infra-orchestration
   - developer-experience
+pull_request: https://github.com/xNok/infra-bootstrap-tools/pull/266
 ---
 
 # Plan: Kubernetes Content Layout & Discoverability
