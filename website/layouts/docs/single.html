@@ -46,7 +46,8 @@
           <ul>
             {{ range $index, $page := $group.pages -}}
               {{ $pageSlug := default ($page.title | urlize) $page.path -}}
-              {{ $isActivePage := eq $urlPageSlug $pageSlug -}}
+              {{ $slugLast := index (last 1 (split (strings.TrimRight "/" $pageSlug) "/")) 0 -}}
+              {{ $isActivePage := or (eq $urlPageSlug $pageSlug) (eq $urlPageSlug $slugLast) -}}
               {{ $href := printf "%s%s/%s/" $.Site.Home.RelPermalink $.Section $pageSlug -}}
               {{ $hrefPageTitle := $page.title -}}
               {{ if and (eq $index 0) $group.replaceFirstPageTitle -}}
@@ -101,8 +102,9 @@
                     {{ break -}}
                 {{ end -}}
                 {{ range $page := $group.pages -}}
-                    {{ $pageSlug := $page.title | urlize -}}
-                    {{ $isActivePage := or $isSectionIndex (eq $urlPageSlug $pageSlug) -}}
+                    {{ $pageSlug := default ($page.title | urlize) $page.path -}}
+                    {{ $slugLast := index (last 1 (split (strings.TrimRight "/" $pageSlug) "/")) 0 -}}
+                    {{ $isActivePage := or $isSectionIndex (eq $urlPageSlug $pageSlug) (eq $urlPageSlug $slugLast) -}}
                     {{ if $isActivePagePassed -}}
                         {{ $nextPageTitle = $page.title -}}
                         {{ $nextPageHref = printf "%s%s/%s/" $.Site.Home.RelPermalink $.Section $pageSlug -}}
